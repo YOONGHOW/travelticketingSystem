@@ -1,0 +1,75 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title</title>
+    <link rel="shortcut icon" href="/images/favicon.png">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/css/admin_sidebar.css" asp-append-version="true">
+    @RenderSection("head", false)
+</head>
+<body>
+    <div class="navbar">
+        <div class="main">
+            <div class="selected">
+                <a href="ViewAdmin" class="bar">
+                    <i class="fa fa-globe" aria-hidden="true"></i>
+                    <p>Dashboard</p>
+                </a>
+            </div>
+            <div>
+                <a href="staffAccount.jsp" class="bar">
+                    <i class="fa fa-globe" aria-hidden="true"></i>
+                    <p>Profile</p>
+                </a>
+            </div>
+
+            <div>
+                <a href="/Admin/AdminFeedback" class="bar">
+                    <i class="fa fa-comment" aria-hidden="true"></i>
+                    <p>Review</p>
+                </a>
+            </div>
+            <div>
+                <a href="../../ViewProduct" class="bar">
+                    <i class="fa fa-shopping-cart" aria-hidden="true"></i>
+                    <p>Products</p>
+                </a>
+            </div>
+            <div>
+                <a href="../../OrderStatusDisplay" class="bar">
+                    <i class="fa fa-shopping-bag" aria-hidden="true"></i>
+                    <p>Order</p>
+                </a>
+            </div>
+
+            <div>
+                <a href="../../DiscountView" class="bar">
+                    <i class="fa fa-tag" aria-hidden="true"></i>
+                    <p>Discount</p>
+                </a>
+            </div>
+
+            <div>
+                <a href="../../View/Admin/staffLogin.jsp" class="bar">
+                    <i class="fa fa-sign-out" aria-hidden="true"></i>
+                    <p>Logout</p>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <main>
+        @RenderBody()
+    </main>
+
+    <script src="/js/jquery.min.js"></script>
+    <script src="/js/jquery.unobtrusive-ajax.min.js"></script>
+    <script src="/js/jquery.validate.min.js"></script>
+    <script src="/js/jquery.validate.unobtrusive.min.js"></script>
+    <script src="/js/app.js" asp-append-version="true"></script>
+    @RenderSection("foot", false)
+</body>
+</html>

@@ -1,0 +1,96 @@
+﻿@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    border: none;
+    outline: none;
+    box-sizing: border-box;
+    font-family: "Poppins", sans-serif;
+}
+
+.navbar {
+    position: fixed;
+    width: 5.5%;
+    height: 100vh;
+    padding: 0 1%;
+    color: white;
+    overflow: hidden;
+    transition: all 0.5s linear;
+    background: black;
+    display: grid;
+    align-items: center;
+    z-index: 999;
+}
+
+    .navbar:hover {
+        width: 15%;
+        transition: 0.5s;
+    }
+
+/*.logo{
+    height: 7%;
+    padding: 3%;
+}
+
+*/ .main {
+    /*height: 88%;*/
+    padding: 0;
+    position: relative;
+    list-style: none;
+    display: grid;
+    grid-template-rows: repeat(6, minmax(0, 1fr));
+}
+    /*
+
+*/
+    .main li {
+        padding: 6%;
+        margin: 16% 12px;
+        border-radius: 8px;
+        transition: all 0.5s;
+    }
+    /*
+
+*/
+    .main div:hover,
+    .selected {
+        background-color: gray;
+        border-radius: 20px
+    }
+
+    .main div a {
+        color: white;
+        font-size: 13px;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 28%;
+        height: fit-content;
+    }
+
+        .main div a span {
+            overflow: hidden;
+        }
+
+    .main a i {
+        font-size: 20px;
+    }
+
+.bar {
+    display: flex;
+}
+
+    .bar i {
+        width: 20%;
+
+    }
+
+    .bar p {
+        width: 80%;
+    }
+
+.main div {
+    padding: 20px;
+    margin: 8px 0;
+}
