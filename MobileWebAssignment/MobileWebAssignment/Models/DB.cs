@@ -32,6 +32,8 @@
         public string Location { get; set; }
         [MaxLength(500)]
         public string OperatingHours { get; set; }
+        [MaxLength(200)]
+        public string ImagePath { get; set; }
 
         //FK
         public string AttractionTypeId { get; set; }
