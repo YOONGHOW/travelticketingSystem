@@ -11,8 +11,9 @@
         public DbSet<Feedback> Feedbacks { get; set; }
         public DbSet<Attraction> Attraction { get; set; }
         public DbSet<AttractionType> AttractionType { get; set; }
+        public DbSet<Ticket> Ticket { get; set; }
     }
-
+      
     // Entity Classes -------------------------------------------------------------
 
 #nullable disable warnings
@@ -74,4 +75,24 @@
 
     }// end of feedback
 
+    public class Ticket
+    {
+        [Key, MaxLength(6)] //TK0001
+        public string ticketID { get; set; }
+        [MaxLength(200)]
+        public string ticketName { get; set; }
+        public int stockQty { get; set; }   
+        public double ticketPrice { get; set; }
+        public string ticketStatus { get; set; }
+        [MaxLength(1000)]
+        public string ticektDetails { get; set; }
+        public string ticketType { get; set; }
+
+        //FK
+        public string AttractionId { get; set; }
+        //navigation 
+        public Attraction Attraction { get; set; }
+
+    }
+    
 }
