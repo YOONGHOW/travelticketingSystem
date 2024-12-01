@@ -7,53 +7,50 @@
     <link rel="shortcut icon" href="/images/favicon.png">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-    <link rel="stylesheet" href="/css/admin_sidebar.css" asp-append-version="true">
+    <link rel="stylesheet" href="/css/AdminCss/admin_sidebar.css" asp-append-version="true">
     @RenderSection("head", false)
 </head>
 <body>
     <div class="navbar">
         <div class="main">
             <div class="selected">
-                <a href="ViewAdmin" class="bar">
+                <a href="ViewAdmin" class="bar" role="navigation" aria-label="Dashboard">
                     <i class="fa fa-globe" aria-hidden="true"></i>
                     <p>Dashboard</p>
                 </a>
             </div>
             <div>
-                <a href="staffAccount.jsp" class="bar">
-                    <i class="fa fa-globe" aria-hidden="true"></i>
-                    <p>Profile</p>
+                <a href="/Admin/AdminAttraction" class="bar" role="navigation" aria-label="Attraction">
+                    <i class="fa fa-map" aria-hidden="true"></i>
+                    <p>Attraction</p>
                 </a>
             </div>
-
             <div>
-                <a href="/Admin/AdminFeedback" class="bar">
+                <a href="/Admin/AdminFeedback" class="bar" role="navigation" aria-label="Review">
                     <i class="fa fa-comment" aria-hidden="true"></i>
                     <p>Review</p>
                 </a>
             </div>
             <div>
-                <a href="../../ViewProduct" class="bar">
+                <a href="../../ViewProduct" class="bar" role="navigation" aria-label="Products">
                     <i class="fa fa-shopping-cart" aria-hidden="true"></i>
                     <p>Products</p>
                 </a>
             </div>
             <div>
-                <a href="../../OrderStatusDisplay" class="bar">
+                <a href="../../OrderStatusDisplay" class="bar" role="navigation" aria-label="Order">
                     <i class="fa fa-shopping-bag" aria-hidden="true"></i>
                     <p>Order</p>
                 </a>
             </div>
-
             <div>
-                <a href="../../DiscountView" class="bar">
+                <a href="../../DiscountView" class="bar" role="navigation" aria-label="Discount">
                     <i class="fa fa-tag" aria-hidden="true"></i>
                     <p>Discount</p>
                 </a>
             </div>
-
             <div>
-                <a href="../../View/Admin/staffLogin.jsp" class="bar">
+                <a href="../../View/Admin/staffLogin.jsp" class="bar" role="navigation" aria-label="Logout">
                     <i class="fa fa-sign-out" aria-hidden="true"></i>
                     <p>Logout</p>
                 </a>
