@@ -10,5 +10,11 @@ namespace MobileWebAssignment.Controllers
         {
             return View();
         }
+
+        public IActionResult AdminAttraction()
+
+        {
+            return View();
+        }
     }
 }
