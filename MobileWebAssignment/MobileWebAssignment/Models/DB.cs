@@ -8,7 +8,7 @@
         public DB(DbContextOptions<DB> options) : base(options) { }
 
         // DbSet
-        public DbSet<Feedback> Feedbacks { get; set; }
+        public DbSet<Feedback> Feedback { get; set; }
         public DbSet<Attraction> Attraction { get; set; }
         public DbSet<AttractionType> AttractionType { get; set; }
         public DbSet<Ticket> Ticket { get; set; }
@@ -18,9 +18,7 @@
     // Entity Classes -------------------------------------------------------------
 
 #nullable disable warnings
-
-   
-
+  
     public class Attraction //A0001
     {
         //Column
@@ -70,7 +68,7 @@
 
         //FK
         public string AttractionId { get; set; }
-        public string UserId { get; set; }
+        public int UserId { get; set; }
 
         //Navigation
         public Attraction Attraction { get; set; }
