@@ -1,0 +1,260 @@
+﻿/* entire login form container */
+#login-container {
+    margin: auto;
+    margin-top: 5em;
+    width: 55em;
+    height: 25em;
+    display: flex;
+    box-shadow: 0 6px 10px 0 rgba(0, 0, 0, 0.2), 0 8px 22px 0 rgba(0, 0, 0, 0.19);
+}
+
+.login-component {
+    width: 50em;
+    padding: 1em;
+    opacity: 0.9;
+}
+
+/* login left part */
+#com1 {
+    background-color: white;
+    border-radius: 10px 0 0 10px;
+}
+
+/* login right part */
+#com2 {
+    text-align: center;
+    color: white;
+    padding-top: 5em;
+    background: linear-gradient(to bottom, #000 0%, #88898a 100%);
+    border-radius: 0 10px 10px 0;
+    vertical-align: middle;
+}
+
+/* link button */
+.register-button {
+    text-decoration: none;
+    color: white;
+    border: 1px solid white;
+    padding: 0.6em 2em;
+    border-radius: 12px 12px;
+    transition: 0.3s;
+}
+
+    .register-button:hover {
+        color: black;
+        background-color: whitesmoke;
+    }
+
+/* register table form */
+table#register-table-form,
+td {
+    border: 1px solid black;
+}
+
+/* login button */
+
+.login-submit {
+    background-color: white;
+    text-decoration: none;
+    color: rgb(75, 69, 69);
+    border: 2px solid black;
+    padding: 0.5em;
+    border-radius: 10px 10px;
+    transition: 0.3s;
+    float: right;
+    padding: 3%;
+    width: 25%;
+}
+
+    .login-submit:hover {
+        color: white;
+        background-color: rgb(46, 47, 45);
+    }
+
+/* cancel button */
+.login-cancel {
+    text-align: center;
+    text-decoration: none;
+    color: rgb(75, 69, 69);
+    background-color: white;
+    border: 2px solid black;
+    padding: 0.5em;
+    border-radius: 10px 10px;
+    transition: 0.3s;
+    padding: 2.6% 7%;
+    float: right;
+    margin-left: 1em;
+}
+
+
+    .login-cancel:hover {
+        color: white;
+        background-color: rgb(46, 47, 45);
+    }
+
+
+/* input field */
+.input-box > input {
+    height: 1rem;
+    width: 20rem;
+    border: 2px solid black;
+    border-radius: 12px;
+    margin-top: 5px;
+    margin-bottom: 2px;
+    transition: 0.3s;
+    padding: 2%;
+}
+
+    .input-box > input:focus {
+        outline: none;
+        border-color: blueviolet;
+    }
+
+/* forgetpassword hyperlink */
+.input-box > p > a {
+    text-decoration: none;
+}
+
+    .input-box > p > a:hover {
+        color: #2881ce;
+        text-decoration: underline;
+    }
+
+/*error message*/
+.err {
+    color: red;
+    font-size: 12px;
+}
+
+/* Flash Message ----------------------------------------------------------- */
+
+#info {
+    position: fixed;
+    color: #fff;
+    background: #666;
+    border: 1px solid #333;
+    border-radius: 5px;
+    padding: 10px 20px;
+    left: 50%;
+    translate: -50% 0;
+    z-index: 999;
+    top: 100px;
+    opacity: 0;
+}
+
+    #info:not(:empty) {
+        animation: fade 3s;
+    }
+
+@keyframes fade {
+    0% {
+        top: -100px;
+        opacity: 0;
+    }
+
+    30% {
+        top: 50px;
+        opacity: 1;
+    }
+
+    70% {
+        top: 50px;
+        opacity: 1;
+    }
+
+    100% {
+        top: -100px;
+        opacity: 0;
+    }
+}
+
+/* user details page */
+
+/* image size and position */
+#image-content {
+    width: 12em;
+    height: 12em;
+    margin: auto;
+    border-radius: 60%;
+}
+
+#detail-table {
+    text-align: left;
+    margin: auto;
+    width: 50em;
+}
+
+    #detail-table > tbody > tr {
+        width: 100%;
+    }
+
+        #detail-table > tbody > tr > td {
+            vertical-align: top;
+            padding: 0 2em 0 2em;
+            border: 0;
+            width: 20em;
+        }
+
+#back-hyperlink {
+    color: whitesmoke;
+    text-decoration: none;
+}
+
+    #back-hyperlink:hover {
+        color: white;
+        text-decoration: overline;
+    }
+
+/* block account button */
+button#block {
+    font-size: 15px;
+    width: 15rem;
+    border: 2px solid whitesmoke;
+    border-radius: 12px;
+    margin-top: 5px;
+    margin-bottom: 2px;
+    transition: 0.3s;
+    padding: 2%;
+    color: white;
+    background-color: rgb(46, 47, 45);
+}
+
+    button#block:hover {
+        color: black;
+        background-color: rgb(242, 245, 239);
+    }
+
+/* change password back button */
+a {
+    text-decoration: none;
+    color: black;
+    font-family: 'Poppins', sans-serif;
+    font-size: 18px;
+}
+
+    a:hover {
+        color: rgb(102, 102, 231);
+    }
+
+    a#member-list {
+        border: 1px solid white;
+        padding: 0.6em 2em;
+        border-radius: 12px 12px;
+        transition: 0.3s;
+        margin: 2em;
+    }
+
+        a#member-list:hover {
+            text-decoration: none;
+            color: whitesmoke;
+            background-color: black;
+        }
+
+/* password validation */
+.valid {
+    color: green;
+}
+
+.invalid {
+    color: red;
+}
