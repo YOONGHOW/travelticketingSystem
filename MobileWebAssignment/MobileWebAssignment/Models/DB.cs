@@ -12,6 +12,7 @@
         public DbSet<Attraction> Attraction { get; set; }
         public DbSet<AttractionType> AttractionType { get; set; }
         public DbSet<Ticket> Ticket { get; set; }
+        public DbSet<User> User { get; set; } 
     }
       
     // Entity Classes -------------------------------------------------------------
@@ -33,6 +34,8 @@
         public string Location { get; set; }
         [MaxLength(500)]
         public string OperatingHours { get; set; }
+        [MaxLength(200)]
+        public string ImagePath { get; set; }
 
         //FK
         public string AttractionTypeId { get; set; }
@@ -67,13 +70,14 @@
 
         //FK
         public string AttractionId { get; set; }
-        //public string UserId { get; set};
+        public string UserId { get; set};
 
         //Navigation
         public Attraction Attraction { get; set; }
-        //public User User { get; set; }
+        public User User { get; set; }
 
     }// end of feedback
+
 
     public class Ticket
     {
@@ -95,4 +99,40 @@
 
     }
     
+
+    //User Table
+    public class User
+    {
+        // Columns
+        [Key, MaxLength(10)]
+        public int Id { get; set; }
+
+        [Required, MaxLength(20)]
+        public string Email { get; set; }
+
+        [Required, MaxLength(30)]
+        public string Name { get; set; }
+
+        [Required, MaxLength(50)]
+        public string Password { get; set; }
+
+        [MaxLength(15)]
+        public string IC { get; set; }
+
+        [MaxLength(20)]
+        public string PhoneNumber { get; set; }
+
+        [MaxLength(5)]
+        public string Gender { get; set; }
+
+        public bool Freeze { get; set; }
+
+        [MaxLength(10)]
+        public string Role { get; set; }
+
+        [MaxLength(50)]
+        public string ImagePath { get; set; }
+    }
+
+
 }

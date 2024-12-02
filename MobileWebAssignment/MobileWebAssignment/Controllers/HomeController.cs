@@ -11,6 +11,16 @@ namespace MobileWebAssignment.Controllers
             return View();
         }
 
+        //register for a account
+        public IActionResult RegisterAccount()
+        {
+            return View();
+        }
+
+        public IActionResult login()
+        {
+            return View();
+        }
         
 
     }
