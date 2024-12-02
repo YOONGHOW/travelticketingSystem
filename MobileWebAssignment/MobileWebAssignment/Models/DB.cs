@@ -11,8 +11,10 @@
         public DbSet<Feedback> Feedbacks { get; set; }
         public DbSet<Attraction> Attraction { get; set; }
         public DbSet<AttractionType> AttractionType { get; set; }
+        public DbSet<Ticket> Ticket { get; set; }
+        public DbSet<User> User { get; set; } 
     }
-
+      
     // Entity Classes -------------------------------------------------------------
 
 #nullable disable warnings
@@ -68,12 +70,69 @@
 
         //FK
         public string AttractionId { get; set; }
-        //public string UserId { get; set};
+        public string UserId { get; set};
 
         //Navigation
         public Attraction Attraction { get; set; }
-        //public User User { get; set; }
+        public User User { get; set; }
 
     }// end of feedback
+
+
+    public class Ticket
+    {
+        [Key, MaxLength(6)] //TK0001
+        public string ticketID { get; set; }
+        [MaxLength(200)]
+        public string ticketName { get; set; }
+        public int stockQty { get; set; }   
+        public double ticketPrice { get; set; }
+        public string ticketStatus { get; set; }
+        [MaxLength(1000)]
+        public string ticektDetails { get; set; }
+        public string ticketType { get; set; }
+
+        //FK
+        public string AttractionId { get; set; }
+        //navigation 
+        public Attraction Attraction { get; set; }
+
+    }
+    
+
+    //User Table
+    public class User
+    {
+        // Columns
+        [Key, MaxLength(10)]
+        public int Id { get; set; }
+
+        [Required, MaxLength(20)]
+        public string Email { get; set; }
+
+        [Required, MaxLength(30)]
+        public string Name { get; set; }
+
+        [Required, MaxLength(50)]
+        public string Password { get; set; }
+
+        [MaxLength(15)]
+        public string IC { get; set; }
+
+        [MaxLength(20)]
+        public string PhoneNumber { get; set; }
+
+        [MaxLength(5)]
+        public string Gender { get; set; }
+
+        public bool Freeze { get; set; }
+
+        [MaxLength(10)]
+        public string Role { get; set; }
+
+        [MaxLength(50)]
+        public string ImagePath { get; set; }
+    }
+
 
 }

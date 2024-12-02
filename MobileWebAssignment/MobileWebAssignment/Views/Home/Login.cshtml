@@ -1,0 +1,65 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <title>Login</title>
+    <link href="/css/ClientCss/Login.css" rel="stylesheet" type="text/css" asp-append-version="true" />
+</head>
+<style>
+    html {
+        background-image: url('/images/login_background.jpg');
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+        background-size: cover; /* Ensures full coverage of the screen */
+    }
+</style>
+
+<body>
+
+    <!-- Flash message -->
+    <div id="info">
+        <!-- Display flash message content here -->
+    </div>
+
+    <!-- The entire container for the login form -->
+    <section id="login-container">
+
+        <!-- The left part of the login form -->
+        <div class="login-component" id="com1">
+            <h2>Sign In</h2><br />
+
+            <!-- The data form for user to input their email and password for login purpose -->
+            <form method="POST" action="">
+                <div class="input-box">
+                    <label class="details" for="email">Email</label><br />
+                    <input type="email" id="email" name="email" class="login-input" maxlength="100" placeholder="e.g. xxx@gmail.com" required><br />
+                    <!-- Display error message for email here -->
+                </div>
+                <br>
+                <label class="login-label">Password</label><br />
+                <div class="input-box">
+                    <input type="password" id="password" name="password" class="login-input" placeholder="Enter your password" required><br />
+                    <!-- Display error message for password here -->
+                    <p>Forget password? <a href="forgetPassword.php">Click here</a></p>
+                </div>
+
+                <a href="Index" class="login-cancel">Cancel</a>
+                <input type="submit" class="login-submit" value="LOGIN">
+
+            </form>
+        </div>
+
+        <!-- The right part of the login form -->
+        <div class="login-component" id="com2">
+            <!-- The title and link for register part -->
+            <br />
+            <h1>Welcome to Website Name</h1>
+            <p>Didn't register as member yet?</p><br />
+            <a href="RegisterAccount" class="register-button">Register</a>
+        </div>
+    </section>
+</body>
+
+</html>
