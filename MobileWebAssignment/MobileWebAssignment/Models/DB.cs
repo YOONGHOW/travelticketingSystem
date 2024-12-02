@@ -21,7 +21,7 @@
 
    
 
-    public class Attraction
+    public class Attraction //A0001
     {
         //Column
         [Key, MaxLength(5)]
@@ -45,7 +45,7 @@
 
     }//end of attractionType
 
-    public class AttractionType
+    public class AttractionType //AT0001
     {
         //Column
         [Key, MaxLength(6)]
@@ -57,7 +57,7 @@
         public List<Attraction> Attractions { get; set; } = [];
     }//end of attraction
 
-    public class Feedback
+    public class Feedback//F0001
     {
         //Column
         [Key, MaxLength(5)]
@@ -70,7 +70,7 @@
 
         //FK
         public string AttractionId { get; set; }
-        public string UserId { get; set};
+        public string UserId { get; set; }
 
         //Navigation
         public Attraction Attraction { get; set; }
@@ -101,7 +101,7 @@
     
 
     //User Table
-    public class User
+    public class User //U0001
     {
         // Columns
         [Key, MaxLength(10)]

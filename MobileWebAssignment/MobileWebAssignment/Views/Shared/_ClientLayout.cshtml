@@ -1,0 +1,91 @@
+﻿<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="../image/miyabi.jpeg">
+    <title>Phaethon ELECTRONIC</title>
+    <link rel="stylesheet" href="/css/ClientCss/ClientLayout.css" asp-append-version="true">
+    <link rel="stylesheet" href="/css/ClientCss/ClientAttraction.css" asp-append-version="true">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    @RenderSection("head", false)
+</head>
+
+<body>
+    <!-- Flash message -->
+    <div id="info">hello</div>
+    <header>
+        <div class="header-content">
+            <div class="logo-title">
+                <img src="/images/miyabi.jpeg" alt="logo">
+                <p style="color:white">Phaethon Miyabi</p>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="home.php">Home</a></li>
+                    <li><a href="product_list.php">Products</a></li>
+                    <li><a href="wish_list.php">Wish</a></li>
+                    <li><a href="Toship.php?search=all">Order History</a></li>
+                    <li>
+                        <a href="cart.php">
+                            Cart
+                            <span style="background-color:red; border:none; border-radius:50%; padding:4px;font-size:10px;"><?= $total_item ?></span>
+                        </a>
+                    </li>
+                   
+                    <li><a href="login.php">Login</a></li>
+                    
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        @RenderBody()
+    </main>
+
+    <footer>
+
+        <div class="social-media">
+            <a href="https://facebook.com" target="_blank">
+                <div class="circle-icon">
+                    <img src="/images/facebook-icon.png" alt="Facebook">
+                </div>
+            </a>
+            <a href="https://twitter.com" target="_blank">
+                <div class="circle-icon">
+                    <img src="/images/twitter-icon.png" alt="Twitter">
+                </div>
+            </a>
+            <a href="https://youtube.com" target="_blank">
+                <div class="circle-icon">
+                    <img src="/images/youtube-icon.png" alt="YouTube">
+                </div>
+            </a>
+            <a href="https://instagram.com" target="_blank">
+                <div class="circle-icon">
+                    <img src="/images/instagram-icon.png" alt="Instagram">
+                </div>
+            </a>
+        </div>
+        <div class="footer-links">
+            <a href="home.php">Home</a>
+            <a href="product_list.php">Product</a>
+            <a href="aboutUs.php">About Us</a>
+            <a href="promotion.php">Promotion</a>
+            <a href="contact.php">Contact</a>
+        </div>
+        <br>
+        <p style="color:white">Copiright &copy2024; Designed by <b>Phaethon Electronic</b></p>
+
+    </footer>
+    <script src="/js/jquery.min.js"></script>
+    <script src="/js/jquery.unobtrusive-ajax.min.js"></script>
+    <script src="/js/jquery.validate.min.js"></script>
+    <script src="/js/jquery.validate.unobtrusive.min.js"></script>
+    <script src="/js/app.js" asp-append-version="true"></script>
+    @RenderSection("foot", false)
+</body>
+</html>
