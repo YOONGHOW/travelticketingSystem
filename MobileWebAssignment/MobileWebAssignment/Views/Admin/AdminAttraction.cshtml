@@ -6,93 +6,111 @@
     ViewBag.Title = "Admin | Feedback";
 }
 
+
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-	<link rel="stylesheet" href="/css/AdminCss/AdminAttraction.css" asp-append-version="true">
+    <link rel="stylesheet" href="/css/AdminCss/AdminAttraction.css" asp-append-version="true">
+    <script>
+        // JavaScript to toggle visibility of sections
+        function toggleSection(sectionId, toggleButtonId) {
+            const section = document.getElementById(sectionId);
+            const toggleButton = document.getElementById(toggleButtonId);
+            if (section.style.display === "none") {
+                section.style.display = "block";
+                toggleButton.textContent = "-"; // Expanded state
+            } else {
+                section.style.display = "none";
+                toggleButton.textContent = "+"; // Collapsed state
+            }
+        }
+    </script>
 </head>
 <body>
-<div class="content">
+    <div class="content">
 
-    <div>
-        
         <div class="attractionTypeData">
             <h3 class="attractionTypeTitle">
-					Attraction Type List
-                    <span><button class="create">Create New</button></span>
+                Attraction Type List
+                <span>
+                    <button class="create">Create New</button>
+                    <button id="toggleTypeButton" onclick="toggleSection('attractionTypeSection', 'toggleTypeButton')">+</button>
+                </span>
             </h3>
-            <br />
-            <div class="attractionTypeTable">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Attraction Type ID</th>
-                            <th>Name</th>
-                            <th colspan="2" style="text-align:center;">Action</th>
-                        </tr>
-                    </thead>
-
-                    <tbody>
+            <div id="attractionTypeSection" style="display: none;">
+                <div class="attractionTypeTable">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Attraction Type ID</th>
+                                <th>Name</th>
+                                <th colspan="2" style="text-align:center;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
                             <tr>
                                 <td>AT0001</td>
                                 <td>Water Park</td>
-								<td style="text-align:center;"><button class="update">Update</button></td>
+                                <td style="text-align:center;"><button class="update">Update</button></td>
                                 <td style="text-align:center;"><button class="delete">Delete</button></td>
                             </tr>
-
                             <tr>
                                 <td>AT0002</td>
                                 <td>Bird Park</td>
-								<td style="text-align:center;"><button class="update">Update</button></td>
-								<td style="text-align:center;"><button class="delete">Delete</button></td>
+                                <td style="text-align:center;"><button class="update">Update</button></td>
+                                <td style="text-align:center;"><button class="delete">Delete</button></td>
                             </tr>
-                    </tbody>
-                </table>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
         <div class="attractionTable">
             <h3 class="attractionTitle">
                 Attraction List
-                    <span><button class="create">Create New</button></span>
+                <span>
+                    <button class="create">Create New</button>
+                    <button id="toggleAttractionButton" onclick="toggleSection('attractionSection', 'toggleAttractionButton')">+</button>
+                </span>
             </h3>
-            <br />
-            <div class="attractionTypeTable">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Attraction ID</th>
-                            <th>Attraction Name</th>
-                            <th>Attraction Type</th>
-                            <th>Location(Region)</th>
-                            <th colspan="3" style="text-align:center;">Action</th>
-                        </tr>
-                    </thead>
-
-                    <tbody>
+            <div id="attractionSection" style="display: none;">
+                <div class="attractionTypeTable">
+                    <table>
+                        <thead>
                             <tr>
-                               <td>A0001</td>
-                               <td>Sunway Lagoon</td>
-                               <td>Water Park</td>
-                               <td>Kuala Lumpur</td>
-								<td style="text-align:center;"><button class="detail">Detail</button></td>
-								<td style="text-align:center;"><button class="update">Update</button></td>
-								<td style="text-align:center;"><button class="delete">Delete</button></td>
+                                <th>Attraction ID</th>
+                                <th>Attraction Name</th>
+                                <th>Attraction Type</th>
+                                <th>Location(Region)</th>
+                                <th colspan="3" style="text-align:center;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>A0001</td>
+                                <td>Sunway Lagoon</td>
+                                <td>Water Park</td>
+                                <td>Kuala Lumpur</td>
+                                <td style="text-align:center;"><button class="detail">Detail</button></td>
+                                <td style="text-align:center;"><button class="update">Update</button></td>
+                                <td style="text-align:center;"><button class="delete">Delete</button></td>
                             </tr>
                             <tr>
                                 <td>A0002</td>
                                 <td>A Famosa</td>
                                 <td>Water Park</td>
                                 <td>Melaka</td>
-								<td style="text-align:center;"><button class="detail">Detail</button></td>
-								<td style="text-align:center;"><button class="update">Update</button></td>
-								<td style="text-align:center;"><button class="delete">Delete</button></td>
+                                <td style="text-align:center;"><button class="detail">Detail</button></td>
+                                <td style="text-align:center;"><button class="update">Update</button></td>
+                                <td style="text-align:center;"><button class="delete">Delete</button></td>
                             </tr>
-                    </tbody>
-                </table>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
+
     </div>
-    </div>
-    </body>
-    </html>
+</body>
+</html>

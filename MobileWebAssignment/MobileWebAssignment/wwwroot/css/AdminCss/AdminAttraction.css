@@ -184,3 +184,29 @@ button {
 }
 
 
+/* Default hidden sections */
+#attractionTypeSection, #attractionSection {
+    display: none;
+    transition: all 0.3s ease-in-out;
+}
+
+/* Button styling for toggling */
+button.create {
+    margin-right: 10px;
+}
+
+button#toggleTypeButton, button#toggleAttractionButton {
+    font-size: 16px;
+    font-weight: bold;
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+    button#toggleTypeButton:hover, button#toggleAttractionButton:hover {
+        background-color: #ddd;
+    }
+
+

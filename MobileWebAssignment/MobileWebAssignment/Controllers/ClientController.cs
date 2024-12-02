@@ -32,6 +32,11 @@ namespace MobileWebAssignment.Controllers
             return View();
         }
 
+        public IActionResult ClientAttractionDetail()
+        {
+            return View();
+        }
+
 
     }
 }
