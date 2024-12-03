@@ -16,5 +16,10 @@ namespace MobileWebAssignment.Controllers
         {
             return View();
         }
+
+        public IActionResult AdminDiscount()
+        {
+            return View();
+        }
     }
 }

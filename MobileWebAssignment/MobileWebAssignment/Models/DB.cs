@@ -5,7 +5,16 @@ using System.ComponentModel.DataAnnotations;
 
 public class DB : DbContext
 {
-    public DB(DbContextOptions<DB> options) : base(options) { }
+
+
+// Entity Classes -------------------------------------------------------------
+
+    using Microsoft.EntityFrameworkCore;
+    using System.ComponentModel.DataAnnotations;
+
+    public class DB : DbContext
+    {
+        public DB(DbContextOptions<DB> options) : base(options) { }
 
     // DbSet
     public DbSet<User> User { get; set; }
@@ -21,9 +30,30 @@ public class DB : DbContext
 
 // Entity Classes -------------------------------------------------------------
 
+
 #nullable disable warnings
 
 
+    public class Promotion
+    {
+        [Key, MaxLength(10)]
+        public string PromotionId { get; set; }
+
+        [MaxLength(255)]
+        public string Title { get; set; }
+
+        [Range(0, double.MaxValue)]
+        public decimal PriceDeduction { get; set; }
+        
+            [DataType(DataType.Date)]
+        public DateTime StartDate { get; set; }
+
+        [DataType(DataType.Date)]
+        public DateTime EndDate { get; set; }
+
+        [MaxLength(20)]
+        public string PromoStatus { get; set; }
+        }
 
 //User Table
 public class User //U0001
