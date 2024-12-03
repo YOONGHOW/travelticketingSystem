@@ -1,24 +1,50 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System.ComponentModel.DataAnnotations;
 
-namespace MobileWebAssignment.Models;
+    using System.ComponentModel.DataAnnotations;
+
+    public class DB : DbContext
+    {
+        public DB(DbContextOptions<DB> options) : base(options) { }
+
+        // DbSet
+        public DbSet<Feedback> Feedbacks { get; set; }
+        public DbSet<Attraction> Attraction { get; set; }
+        public DbSet<AttractionType> AttractionType { get; set; }
+        public DbSet<Ticket> Ticket { get; set; }
+        public DbSet<User> User { get; set; }
+        public DbSet<Promotion> Promotion { get; set; }
+        public DbSet<Purchase> Purchase { get; set; }
+        public DbSet<Payment> Payment { get; set; }
+    }
+      
+    // Entity Classes -------------------------------------------------------------
 
 
-public class DB : DbContext
-{
-    public DB(DbContextOptions<DB> options) : base(options) { }
-
-    // DbSet
-    public DbSet<Feedback> Feedbacks { get; set; }
-    public DbSet<Attraction> Attractions { get; set; }
-    public DbSet<AttractionType> AttractionTypes { get; set; }
-    public DbSet<Ticket> Tickets { get; set; }
-    public DbSet<User> Users { get; set; } 
-}
-  
-// Entity Classes -------------------------------------------------------------
 
 #nullable disable warnings
+
+
+
+ public class Promotion
+    {
+        [Key, MaxLength(10)]
+        public string PromotionId { get; set; }
+
+        [MaxLength(255)]
+        public string Title { get; set; }
+
+        [Range(0, double.MaxValue)]
+        public decimal PriceDeduction { get; set; }
+        
+            [DataType(DataType.Date)]
+        public DateTime StartDate { get; set; }
+
+        [DataType(DataType.Date)]
+        public DateTime EndDate { get; set; }
+
+        [MaxLength(20)]
+        public string PromoStatus { get; set; }
+        }
 
 public class Attraction //A0001
 {
@@ -69,13 +95,14 @@ public class Feedback//F0001
 
     //FK
     public string AttractionId { get; set; }
-    public int UserId { get; set; }
+    public string UserId { get; set; }
 
     //Navigation
     public Attraction Attraction { get; set; }
     public User User { get; set; }
 
 }// end of feedback
+
 
 
 public class Ticket
@@ -85,7 +112,8 @@ public class Ticket
     [MaxLength(200)]
     public string ticketName { get; set; }
     public int stockQty { get; set; }   
-    public double ticketPrice { get; set; }
+    [Precision(4,2)]
+    public decimal ticketPrice { get; set; }
     public string ticketStatus { get; set; }
     [MaxLength(1000)]
     public string ticektDetails { get; set; }
@@ -98,6 +126,59 @@ public class Ticket
 
 }
 
+public class Purchase {
+    [Key, MaxLength(6)] //P0001
+    public string Id { get; set; }
+
+    [Required]
+    public DateTime PaymentDateTime { get; set; } // Combines Date and Time for better handling
+
+    [Required]
+    [MaxLength(1)]
+    public string Status { get; set; }
+
+    [Required]
+    [Precision(18, 2)] // Ensures accuracy for monetary values
+    public decimal Amount { get; set; } // Changed to decimal for currency values
+
+    //FK
+    public string UserId { get; set; }
+    public User User { get; set; }
+}
+
+
+public class Payment
+{
+    [Key]
+    [MaxLength(6)] // Example: PA0001
+    public string Id { get; set; }
+
+    [Required]
+    [MaxLength(1)] // Example: B (for Bank)
+    public string Type { get; set; }
+
+    [Required]
+    [MaxLength(1)] // Example: S (Success) or F (Fail)
+    public string Status { get; set; }
+
+    [MaxLength(100)]
+    public string Reference { get; set; } // Renamed REF for clarity
+
+    [Required]
+    public DateTime PaymentDateTime { get; set; } // Combines Date and Time for better handling
+
+    [Required]
+    [Precision(18, 2)] // Ensures accuracy for monetary values
+    public decimal Amount { get; set; } // Changed to decimal for currency values
+
+
+    //fk
+    public String PurchaseId { get; set; }
+
+    public Purchase Purchase {get; set;}
+
+
+}
 
 //User Table
 public class User //U0001
