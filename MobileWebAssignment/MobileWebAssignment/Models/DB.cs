@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+
     using System.ComponentModel.DataAnnotations;
 
     public class DB : DbContext
@@ -19,10 +20,12 @@
     // Entity Classes -------------------------------------------------------------
 
 
+
 #nullable disable warnings
 
 
-    public class Promotion
+
+ public class Promotion
     {
         [Key, MaxLength(10)]
         public string PromotionId { get; set; }
@@ -43,41 +46,6 @@
         public string PromoStatus { get; set; }
         }
 
-//User Table
-public class User //U0001
-{
-    // Columns
-    [Key, MaxLength(10)]
-    public string Id { get; set; }
-
-    [Required, MaxLength(20)]
-    public string Email { get; set; }
-
-    [Required, MaxLength(30)]
-    public string Name { get; set; }
-
-    [Required, MaxLength(50)]
-    public string Password { get; set; }
-
-    [MaxLength(15)]
-    public string IC { get; set; }
-
-    [MaxLength(20)]
-    public string PhoneNumber { get; set; }
-
-    [MaxLength(5)]
-    public string Gender { get; set; }
-
-    public bool Freeze { get; set; }
-
-    [MaxLength(10)]
-    public string Role { get; set; }
-
-    [MaxLength(50)]
-    public string ImagePath { get; set; }
-
-    public List<Purchase> Purchases {get;set;}=[];
-}
 public class Attraction //A0001
 {
     //Column
@@ -134,6 +102,7 @@ public class Feedback//F0001
     public User User { get; set; }
 
 }// end of feedback
+
 
 
 public class Ticket
@@ -209,6 +178,38 @@ public class Payment
     public Purchase Purchase {get; set;}
 
 
-    }
+}
 
+//User Table
+public class User //U0001
+{
+    // Columns
+    [Key, MaxLength(10)]
+    public int Id { get; set; }
+
+    [Required, MaxLength(20)]
+    public string Email { get; set; }
+
+    [Required, MaxLength(30)]
+    public string Name { get; set; }
+
+    [Required, MaxLength(50)]
+    public string Password { get; set; }
+
+    [MaxLength(15)]
+    public string IC { get; set; }
+
+    [MaxLength(20)]
+    public string PhoneNumber { get; set; }
+
+    [MaxLength(5)]
+    public string Gender { get; set; }
+
+    public bool Freeze { get; set; }
+
+    [MaxLength(10)]
+    public string Role { get; set; }
+
+    [MaxLength(50)]
+    public string ImagePath { get; set; }
 }
