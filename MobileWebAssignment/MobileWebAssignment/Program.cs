@@ -1,4 +1,3 @@
-
 global using MobileWebAssignment.Models;
 
 var builder = WebApplication.CreateBuilder(args);
