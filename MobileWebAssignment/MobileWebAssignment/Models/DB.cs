@@ -12,8 +12,8 @@
         public DbSet<Ticket> Ticket { get; set; }
         public DbSet<User> User { get; set; }
         public DbSet<Promotion> Promotion { get; set; }
-    public DbSet<Purchase> Purchase { get; set; }
-    public DbSet<Payment> Payment { get; set; }
+        public DbSet<Purchase> Purchase { get; set; }
+        public DbSet<Payment> Payment { get; set; }
     }
       
     // Entity Classes -------------------------------------------------------------
@@ -143,7 +143,8 @@ public class Ticket
     [MaxLength(200)]
     public string ticketName { get; set; }
     public int stockQty { get; set; }   
-    public double ticketPrice { get; set; }
+    [Precision(4,2)]
+    public decimal ticketPrice { get; set; }
     public string ticketStatus { get; set; }
     [MaxLength(1000)]
     public string ticektDetails { get; set; }
