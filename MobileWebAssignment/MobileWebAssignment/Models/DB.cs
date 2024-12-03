@@ -12,7 +12,8 @@
         public DbSet<Attraction> Attraction { get; set; }
         public DbSet<AttractionType> AttractionType { get; set; }
         public DbSet<Ticket> Ticket { get; set; }
-        public DbSet<User> User { get; set; } 
+        public DbSet<User> User { get; set; }
+        public DbSet<Promotion> Promotion { get; set; }
     }
       
     // Entity Classes -------------------------------------------------------------
@@ -70,7 +71,7 @@
 
         //FK
         public string AttractionId { get; set; }
-        public string UserId { get; set};
+        public string UserId { get; set; }
 
         //Navigation
         public Attraction Attraction { get; set; }
@@ -134,5 +135,24 @@
         public string ImagePath { get; set; }
     }
 
+    public class Promotion
+    {
+        [Key, MaxLength(10)]
+        public string PromotionId { get; set; }
 
+        [MaxLength(255)]
+        public string Title { get; set; }
+
+        [Range(0, double.MaxValue)]
+        public decimal PriceDeduction { get; set; }
+
+        [DataType(DataType.Date)]
+        public DateTime StartDate { get; set; }
+
+        [DataType(DataType.Date)]
+        public DateTime EndDate { get; set; }
+
+        [MaxLength(20)]
+        public string PromoStatus { get; set; }
+    }
 }
