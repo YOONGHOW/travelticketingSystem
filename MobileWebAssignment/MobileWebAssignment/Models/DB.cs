@@ -5,24 +5,53 @@ using System.ComponentModel.DataAnnotations;
 
 public class DB : DbContext
 {
-    public DB(DbContextOptions<DB> options) : base(options) { }
 
-    // DbSet
-    public DbSet<User> User { get; set; }
-
-    public DbSet<Feedback> Feedbacks { get; set; }
-    public DbSet<Attraction> Attraction { get; set; }
-    public DbSet<AttractionType> AttractionType { get; set; }
-    public DbSet<Ticket> Ticket { get; set; }
-
-    public DbSet<Payment> Payment { get; set; }
-}
 
 // Entity Classes -------------------------------------------------------------
+
+    using Microsoft.EntityFrameworkCore;
+    using System.ComponentModel.DataAnnotations;
+
+    public class DB : DbContext
+    {
+        public DB(DbContextOptions<DB> options) : base(options) { }
+
+        // DbSet
+        public DbSet<Feedback> Feedbacks { get; set; }
+        public DbSet<Attraction> Attraction { get; set; }
+        public DbSet<AttractionType> AttractionType { get; set; }
+        public DbSet<Ticket> Ticket { get; set; }
+        public DbSet<User> User { get; set; }
+        public DbSet<Promotion> Promotion { get; set; }
+          public DbSet<Payment> Payment { get; set; }
+    }
+      
+    // Entity Classes -------------------------------------------------------------
+
 
 #nullable disable warnings
 
 
+    public class Promotion
+    {
+        [Key, MaxLength(10)]
+        public string PromotionId { get; set; }
+
+        [MaxLength(255)]
+        public string Title { get; set; }
+
+        [Range(0, double.MaxValue)]
+        public decimal PriceDeduction { get; set; }
+        
+            [DataType(DataType.Date)]
+        public DateTime StartDate { get; set; }
+
+        [DataType(DataType.Date)]
+        public DateTime EndDate { get; set; }
+
+        [MaxLength(20)]
+        public string PromoStatus { get; set; }
+        }
 
 //User Table
 public class User //U0001
@@ -160,4 +189,6 @@ public class Payment
     [Required]
     [Precision(18, 2)] // Ensures accuracy for monetary values
     public decimal Amount { get; set; } // Changed to decimal for currency values
+
+    }
 }
