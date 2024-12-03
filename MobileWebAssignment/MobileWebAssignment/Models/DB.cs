@@ -75,6 +75,8 @@ public class User //U0001
 
     [MaxLength(50)]
     public string ImagePath { get; set; }
+
+    public List<Purchase> Purchases {get;set;}=[];
 }
 public class Attraction //A0001
 {
