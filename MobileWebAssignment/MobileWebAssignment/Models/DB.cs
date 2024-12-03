@@ -12,6 +12,7 @@ namespace MobileWebAssignment.Models;
         public DbSet<Attraction> Attraction { get; set; }
         public DbSet<AttractionType> AttractionType { get; set; }
         public DbSet<Ticket> Ticket { get; set; }
+        public DbSet<Cart> Cart { get; set; }
         public DbSet<User> User { get; set; }
         public DbSet<Promotion> Promotion { get; set; }
         public DbSet<Purchase> Purchase { get; set; }
@@ -32,10 +33,10 @@ namespace MobileWebAssignment.Models;
         [MaxLength(255)]
         public string Title { get; set; }
 
-    [Precision(2, 2)]
+        [Precision(2, 2)]
         public decimal PriceDeduction { get; set; }
         
-            [DataType(DataType.Date)]
+        [DataType(DataType.Date)]
         public DateTime StartDate { get; set; }
 
         [DataType(DataType.Date)]
@@ -131,6 +132,22 @@ public class Ticket //TK0001
     public List<PurchaseItem> PurchaseItems { get; set; } = [];
 
 }//end of ticket
+
+public class Cart
+{
+    [Key, MaxLength(8)] //CART0001
+    public string CartID { get; set; }
+    //FK USER ID
+    public string UserId { get; set; }
+    //FK ticketID
+    public string ticketID { get; set; }
+    public int quantity { get; set; }
+    //navigation
+    public Ticket Ticket { get; set; }
+    public User User { get; set; }
+    public List<Ticket> Tickets { get; set; } = [];
+}
+//end of cart
 
 
 public class Purchase//P0001
