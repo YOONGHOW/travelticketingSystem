@@ -37,6 +37,10 @@ namespace MobileWebAssignment.Controllers
             return View();
         }
 
+        public IActionResult ClientPayment()
+        {
+            return View();
+        }
 
     }
 }
