@@ -4,6 +4,14 @@ namespace MobileWebAssignment.Controllers
 {
     public class ClientController : Controller
     {
+
+        private readonly DB db;
+
+        public ClientController(DB db)
+        {
+            this.db = db;
+        }
+
         // GET: Home/Index
         public IActionResult Index()
 
