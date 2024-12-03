@@ -48,7 +48,7 @@ public class User //U0001
 {
     // Columns
     [Key, MaxLength(10)]
-    public String Id { get; set; }
+    public string Id { get; set; }
 
     [Required, MaxLength(20)]
     public string Email { get; set; }
@@ -158,21 +158,21 @@ public class Ticket
 
 public class Purchase {
     [Key, MaxLength(6)] //P0001
-    public String Id { get; set; }
+    public string Id { get; set; }
 
     [Required]
     public DateTime PaymentDateTime { get; set; } // Combines Date and Time for better handling
 
     [Required]
     [MaxLength(1)]
-    public String Status { get; set; }
+    public string Status { get; set; }
 
     [Required]
     [Precision(18, 2)] // Ensures accuracy for monetary values
     public decimal Amount { get; set; } // Changed to decimal for currency values
 
     //FK
-    public String UserId { get; set; }
+    public string UserId { get; set; }
     public User User { get; set; }
 }
 
