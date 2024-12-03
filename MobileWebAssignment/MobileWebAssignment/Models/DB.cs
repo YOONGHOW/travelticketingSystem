@@ -1,34 +1,22 @@
-﻿namespace MobileWebAssignment.Models;
-
-using Microsoft.EntityFrameworkCore;
-using System.ComponentModel.DataAnnotations;
-
-public class DB : DbContext
-{
-
-
-// Entity Classes -------------------------------------------------------------
-
-    using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
     using System.ComponentModel.DataAnnotations;
 
     public class DB : DbContext
     {
         public DB(DbContextOptions<DB> options) : base(options) { }
 
-    // DbSet
-    public DbSet<User> User { get; set; }
-
-    public DbSet<Feedback> Feedbacks { get; set; }
-    public DbSet<Attraction> Attraction { get; set; }
-    public DbSet<AttractionType> AttractionType { get; set; }
-    public DbSet<Ticket> Ticket { get; set; }
+        // DbSet
+        public DbSet<Feedback> Feedbacks { get; set; }
+        public DbSet<Attraction> Attraction { get; set; }
+        public DbSet<AttractionType> AttractionType { get; set; }
+        public DbSet<Ticket> Ticket { get; set; }
+        public DbSet<User> User { get; set; }
+        public DbSet<Promotion> Promotion { get; set; }
     public DbSet<Purchase> Purchase { get; set; }
-
     public DbSet<Payment> Payment { get; set; }
-}
-
-// Entity Classes -------------------------------------------------------------
+    }
+      
+    // Entity Classes -------------------------------------------------------------
 
 
 #nullable disable warnings
@@ -211,9 +199,13 @@ public class Payment
     [Precision(18, 2)] // Ensures accuracy for monetary values
     public decimal Amount { get; set; } // Changed to decimal for currency values
 
+
     //fk
     public String PurchaseId { get; set; }
 
     public Purchase Purchase {get; set;}
+
+
+    }
 
 }
