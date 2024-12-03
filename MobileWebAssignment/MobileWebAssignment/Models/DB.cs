@@ -14,6 +14,7 @@ public class DB : DbContext
     public DbSet<Attraction> Attraction { get; set; }
     public DbSet<AttractionType> AttractionType { get; set; }
     public DbSet<Ticket> Ticket { get; set; }
+    public DbSet<Purchase> Purchase { get; set; }
 
     public DbSet<Payment> Payment { get; set; }
 }
@@ -135,6 +136,25 @@ public class Ticket
 
 }
 
+public class Purchase {
+    [Key, MaxLength(6)] //P0001
+    public String Id { get; set; }
+
+    [Required]
+    public DateTime PaymentDateTime { get; set; } // Combines Date and Time for better handling
+
+    [Required]
+    [MaxLength(1)]
+    public String Status { get; set; }
+
+    [Required]
+    [Precision(18, 2)] // Ensures accuracy for monetary values
+    public decimal Amount { get; set; } // Changed to decimal for currency values
+
+    //FK
+    public String UserId { get; set; }
+    public User User { get; set; }
+}
 
 
 public class Payment
@@ -160,4 +180,10 @@ public class Payment
     [Required]
     [Precision(18, 2)] // Ensures accuracy for monetary values
     public decimal Amount { get; set; } // Changed to decimal for currency values
+
+    //fk
+    public String PurchaseId { get; set; }
+
+    public Purchase Purchase {get; set;}
+
 }
