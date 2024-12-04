@@ -177,10 +177,13 @@ public class Purchase//P0001
 
     //FK
     public string? PromotionId {get; set;}
-
+    public string UserId { get; set; }
+    
     //Navigation
     public List<PurchaseItem> PurchaseItems { get; set; } = [];
     public Promotion Promotion {get; set;}
+    public User User { get; set; }
+    
 
 }//end of purchase
 
@@ -195,13 +198,11 @@ public class PurchaseItem // PI0001
 
     //FK
     public string TicketId { get; set; }
-    public string UserId { get; set; }
     public String PurchaseId { get; set; }
 
     //Navigation
     public Purchase Purchase { get; set; }
     public Ticket Ticket { get; set; }
-    public User User { get; set; }
 
 }
 
