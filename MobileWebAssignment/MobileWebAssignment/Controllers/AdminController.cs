@@ -4,7 +4,12 @@ namespace MobileWebAssignment.Controllers
 {
     public class AdminController : Controller
     {
-        //[Route("Admin/AdminFeedBack")]
+        private readonly DB db;
+
+        public AdminController(DB db)
+        {
+            this.db = db;
+        }
         public IActionResult AdminFeedback()
 
         {
@@ -13,6 +18,11 @@ namespace MobileWebAssignment.Controllers
 
         public IActionResult AdminAttraction()
 
+        {
+            return View();
+        }
+
+        public IActionResult AdminDiscount()
         {
             return View();
         }
