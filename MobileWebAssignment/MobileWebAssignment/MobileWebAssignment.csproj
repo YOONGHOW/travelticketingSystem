@@ -7,8 +7,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Views\User\" />
-    <Folder Include="wwwroot\css\UserCss\" />
+    <Compile Remove="Views\User\**" />
+    <Compile Remove="wwwroot\css\UserCss\**" />
+    <Content Remove="Views\User\**" />
+    <Content Remove="wwwroot\css\UserCss\**" />
+    <EmbeddedResource Remove="Views\User\**" />
+    <EmbeddedResource Remove="wwwroot\css\UserCss\**" />
+    <None Remove="Views\User\**" />
+    <None Remove="wwwroot\css\UserCss\**" />
   </ItemGroup>
 
   <ItemGroup>
