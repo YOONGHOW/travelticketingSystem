@@ -28,7 +28,7 @@ namespace MobileWebAssignment.Models;
  public class Promotion //PM0001
     {
         [Key, MaxLength(10)]
-        public string PromotionId { get; set; }
+        public string Id { get; set; }
 
         [MaxLength(255)]
         public string Title { get; set; }
@@ -44,6 +44,9 @@ namespace MobileWebAssignment.Models;
 
         [MaxLength(20)]
         public string PromoStatus { get; set; }
+
+        //Navigation
+         public List<Payment> Payments { get; set; } = [];
  }//end of promotion
 
 public class Attraction //A0001
@@ -219,9 +222,11 @@ public class Payment
 
     //fk
     public String PurchaseId { get; set; }
+    public String? Promotionid { get; set; }
 
     //Navigation
     public Purchase Purchase {get; set;}
+    public Promotion Promotion {get; set;}
 
 }//PA0001
 
