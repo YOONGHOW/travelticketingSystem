@@ -16,6 +16,7 @@ namespace MobileWebAssignment.Models;
         public DbSet<User> User { get; set; }
         public DbSet<Promotion> Promotion { get; set; }
         public DbSet<Purchase> Purchase { get; set; }
+        public DbSet<PurchaseItem> PurchaseItem { get; set; }
         public DbSet<Payment> Payment { get; set; }
     }
       
