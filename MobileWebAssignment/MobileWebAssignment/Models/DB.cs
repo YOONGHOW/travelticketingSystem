@@ -105,6 +105,7 @@ public class Feedback//F0001
     //Navigation
     public Attraction Attraction { get; set; }
     public User User { get; set; }
+    
 
 }// end of feedback
 
@@ -113,7 +114,7 @@ public class Ticket //TK0001
 {
     //Column
     [Key, MaxLength(6)] 
-    public string ticketID { get; set; }
+    public string Id { get; set; }
     [MaxLength(200)]
     public string ticketName { get; set; }
     public int stockQty { get; set; }   
@@ -130,6 +131,7 @@ public class Ticket //TK0001
     //navigation 
     public Attraction Attraction { get; set; }
     public List<PurchaseItem> PurchaseItems { get; set; } = [];
+    public List<Cart> Carts { get; set; } = [];
 
 }//end of ticket
 
@@ -140,12 +142,12 @@ public class Cart
     //FK USER ID
     public string UserId { get; set; }
     //FK ticketID
-    public string ticketID { get; set; }
+    public string TicketId { get; set; }
     public int quantity { get; set; }
+    
     //navigation
     public Ticket Ticket { get; set; }
     public User User { get; set; }
-    public List<Ticket> Tickets { get; set; } = [];
 }
 //end of cart
 
@@ -259,4 +261,5 @@ public class User //U0001
     //Navigation
     public List<Feedback> Feedbacks { get; set; } = [];
     public List<Purchase> Purchases { get; set; } = [];
+    public List<Cart> Carts { get; set; } = [];
 } //end of user
