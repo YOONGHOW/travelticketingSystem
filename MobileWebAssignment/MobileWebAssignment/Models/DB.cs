@@ -33,6 +33,9 @@ namespace MobileWebAssignment.Models;
         [MaxLength(255)]
         public string Title { get; set; }
 
+        [MaxLength(8)]
+        public string Code{ get; set; }
+
         [Precision(2, 2)]
         public decimal PriceDeduction { get; set; }
         
@@ -46,7 +49,7 @@ namespace MobileWebAssignment.Models;
         public string PromoStatus { get; set; }
 
         //Navigation
-         public List<Payment> Payments { get; set; } = [];
+         public List<Purchase> Purchase { get; set; } = [];
  }//end of promotion
 
 public class Attraction //A0001
@@ -173,10 +176,12 @@ public class Purchase//P0001
 
     //FK
     public string UserId { get; set; }
+    public Promotion Promotion {get; set;}
 
     //Navigation
     public User User { get; set; }
     public List<PurchaseItem> PurchaseItems { get; set; } = [];
+    public Promotion Promotion {get; set;}
 
 }//end of purchase
 
@@ -222,11 +227,9 @@ public class Payment
 
     //fk
     public String PurchaseId { get; set; }
-    public String? Promotionid { get; set; }
 
     //Navigation
     public Purchase Purchase {get; set;}
-    public Promotion Promotion {get; set;}
 
 }//PA0001
 
