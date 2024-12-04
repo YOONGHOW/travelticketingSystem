@@ -175,11 +175,9 @@ public class Purchase//P0001
     public decimal Amount { get; set; } // Changed to decimal for currency values
 
     //FK
-    public string UserId { get; set; }
     public string? PromotionId {get; set;}
 
     //Navigation
-    public User User { get; set; }
     public List<PurchaseItem> PurchaseItems { get; set; } = [];
     public Promotion Promotion {get; set;}
 
@@ -196,11 +194,13 @@ public class PurchaseItem // PI0001
 
     //FK
     public string TicketId { get; set; }
+    public string UserId { get; set; }
     public String PurchaseId { get; set; }
 
     //Navigation
     public Purchase Purchase { get; set; }
     public Ticket Ticket { get; set; }
+    public User User { get; set; }
 
 }
 
