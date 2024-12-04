@@ -49,7 +49,7 @@ namespace MobileWebAssignment.Models;
         public string PromoStatus { get; set; }
 
         //Navigation
-         public List<Purchase> Purchase { get; set; } = [];
+         public List<Purchase> Purchases { get; set; } = [];
  }//end of promotion
 
 public class Attraction //A0001
@@ -176,7 +176,7 @@ public class Purchase//P0001
 
     //FK
     public string UserId { get; set; }
-    public Promotion Promotion {get; set;}
+    public string? PromotionId {get; set;}
 
     //Navigation
     public User User { get; set; }
