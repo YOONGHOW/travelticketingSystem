@@ -12,6 +12,7 @@ namespace MobileWebAssignment.Models;
         public DbSet<Attraction> Attraction { get; set; }
         public DbSet<AttractionType> AttractionType { get; set; }
         public DbSet<Ticket> Ticket { get; set; }
+        public DbSet<Cart> Cart { get; set; }
         public DbSet<User> User { get; set; }
         public DbSet<Promotion> Promotion { get; set; }
         public DbSet<Purchase> Purchase { get; set; }
@@ -27,15 +28,18 @@ namespace MobileWebAssignment.Models;
  public class Promotion //PM0001
     {
         [Key, MaxLength(10)]
-        public string PromotionId { get; set; }
+        public string Id { get; set; }
 
         [MaxLength(255)]
         public string Title { get; set; }
 
-    [Precision(2, 2)]
+        [MaxLength(8)]
+        public string Code{ get; set; }
+
+        [Precision(2, 2)]
         public decimal PriceDeduction { get; set; }
         
-            [DataType(DataType.Date)]
+        [DataType(DataType.Date)]
         public DateTime StartDate { get; set; }
 
         [DataType(DataType.Date)]
@@ -43,6 +47,9 @@ namespace MobileWebAssignment.Models;
 
         [MaxLength(20)]
         public string PromoStatus { get; set; }
+
+        //Navigation
+         public List<Purchase> Purchases { get; set; } = [];
  }//end of promotion
 
 public class Attraction //A0001
@@ -104,6 +111,7 @@ public class Feedback//F0001
     //Navigation
     public Attraction Attraction { get; set; }
     public User User { get; set; }
+    
 
 }// end of feedback
 
@@ -112,7 +120,7 @@ public class Ticket //TK0001
 {
     //Column
     [Key, MaxLength(6)] 
-    public string ticketID { get; set; }
+    public string Id { get; set; }
     [MaxLength(200)]
     public string ticketName { get; set; }
     public int stockQty { get; set; }   
@@ -129,8 +137,25 @@ public class Ticket //TK0001
     //navigation 
     public Attraction Attraction { get; set; }
     public List<PurchaseItem> PurchaseItems { get; set; } = [];
+    public List<Cart> Carts { get; set; } = [];
 
 }//end of ticket
+
+public class Cart
+{
+    [Key, MaxLength(8)] //CART0001
+    public string CartID { get; set; }
+    //FK USER ID
+    public string UserId { get; set; }
+    //FK ticketID
+    public string TicketId { get; set; }
+    public int quantity { get; set; }
+    
+    //navigation
+    public Ticket Ticket { get; set; }
+    public User User { get; set; }
+}
+//end of cart
 
 
 public class Purchase//P0001
@@ -150,11 +175,11 @@ public class Purchase//P0001
     public decimal Amount { get; set; } // Changed to decimal for currency values
 
     //FK
-    public string UserId { get; set; }
+    public string? PromotionId {get; set;}
 
     //Navigation
-    public User User { get; set; }
     public List<PurchaseItem> PurchaseItems { get; set; } = [];
+    public Promotion Promotion {get; set;}
 
 }//end of purchase
 
@@ -169,11 +194,13 @@ public class PurchaseItem // PI0001
 
     //FK
     public string TicketId { get; set; }
+    public string UserId { get; set; }
     public String PurchaseId { get; set; }
 
     //Navigation
     public Purchase Purchase { get; set; }
     public Ticket Ticket { get; set; }
+    public User User { get; set; }
 
 }
 
@@ -242,4 +269,5 @@ public class User //U0001
     //Navigation
     public List<Feedback> Feedbacks { get; set; } = [];
     public List<Purchase> Purchases { get; set; } = [];
+    public List<Cart> Carts { get; set; } = [];
 } //end of user
