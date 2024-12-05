@@ -31,8 +31,13 @@ namespace MobileWebAssignment.Controllers
             return View();
         }
 
+        public IActionResult AdminAttractionTypeCreate()
+        {
+            return View();
+        }
+
         // Manually generate next id for attraction type
-    private string NextAttractionTypeId()
+        private string NextAttractionTypeId()
     {
         string max = db.AttractionType.Max(s => s.Id) ?? "AT0000";
         int n = int.Parse(max[1..]);
