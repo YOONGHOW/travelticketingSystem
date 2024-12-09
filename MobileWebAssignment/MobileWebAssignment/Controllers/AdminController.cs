@@ -1,5 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Azure;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using X.PagedList.Extensions;
 
 namespace MobileWebAssignment.Controllers;
 
@@ -19,13 +22,37 @@ public class AdminController : Controller
         return View();
     }
 
-    public IActionResult AdminAttraction()
-
+    public IActionResult AdminAttraction(int ATpage = 1, int Apage = 1)
     {
-        ViewBag.AttractionTypes = db.AttractionType.ToList();
-        ViewBag.Attractions = db.Attraction.Include(a => a.AttractionType);
+        //page list for Attraction Types
+        if (ATpage < 1)
+        {
+            return RedirectToAction(null, new { ATpage = 1 });
+        }
 
-        return View();
+        ViewBag.AttractionTypes = db.AttractionType.ToPagedList(ATpage, 5);
+
+        if (ATpage > ViewBag.AttractionTypes.PageCount && ViewBag.AttractionTypes.PageCount > 0)
+        {
+            return RedirectToAction(null, new { ATpage = ViewBag.AttractionTypes.PageCount });
+        }
+
+
+        //page list for Attractions
+        if (Apage < 1)
+        {
+            return RedirectToAction(null, new { Apage = 1 });
+        }
+
+        var attractions = db.Attraction.Include(a => a.AttractionType).ToPagedList(Apage, 5);
+
+        if (Apage > attractions.PageCount && attractions.PageCount > 0)
+        {
+            return RedirectToAction(null, new { Apage = attractions.PageCount });
+        }
+
+        
+        return View(attractions);
     }
 
     public IActionResult AdminDiscount()
@@ -62,18 +89,65 @@ public class AdminController : Controller
             db.AttractionType.Add(new()
             {
                 Id = vm.Id,
-                Name = vm.Name,
+                Name = vm.Name.Trim(),
             });
             db.SaveChanges();
 
             TempData["Info"] = "Attraction Type inserted.";
-            return RedirectToAction("/Admin/AdminAttraction");
+            return RedirectToAction("AdminAttraction");
         }
 
         return View();
     }
 
+    // GET: AttractionType/Update
+    public IActionResult AdminAttractionTypeUpdate(string? Id)
+    {
+        var at = db.AttractionType.Find(Id);
 
-    
+        if (at == null)
+        {
+            return RedirectToAction("AdminAttraction");
+        }
+
+        var vm = new AttractionTypeInsertVM
+        {
+            Id = at.Id,
+            Name= at.Name,
+        };
+
+        return View(vm);
+    }
+
+    // POST: AttractionType/Update
+    [HttpPost]
+    public IActionResult AdminAttractionTypeUpdate(AttractionTypeInsertVM vm)
+    {
+        var at = db.AttractionType.Find(vm.Id);
+
+        if (at == null)
+        {
+            return RedirectToAction("AdminAttraction");
+        }
+
+       
+
+        if (ModelState.IsValid)
+        {
+
+            at.Id = vm.Id;
+            at.Name = vm.Name.Trim();
+            db.SaveChanges();
+
+            TempData["Info"] = "Record Updated.";
+            return RedirectToAction("AdminAttraction");
+
+        }
+
+        return View(vm);
+    }
+
+
+
 
 }

@@ -7,25 +7,17 @@
     ViewBag.Title = "Admin | Feedback";
 }
 
+@using X.PagedList
+@using X.PagedList.Mvc.Core
+@model IPagedList<Attraction>
+
+
 
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <link rel="stylesheet" href="/css/AdminCss/AdminAttraction.css" asp-append-version="true">
-    <script>
-        // JavaScript to toggle visibility of sections
-        function toggleSection(sectionId, toggleButtonId) {
-            const section = document.getElementById(sectionId);
-            const toggleButton = document.getElementById(toggleButtonId);
-            if (section.style.display === "none") {
-                section.style.display = "block";
-                toggleButton.textContent = "-"; // Expanded state
-            } else {
-                section.style.display = "none";
-                toggleButton.textContent = "+"; // Collapsed state
-            }
-        }
-    </script>
+    
 </head>
 <body>
     <div class="content">
@@ -33,15 +25,17 @@
         <div class="attractionTypeData">
             <h3 class="attractionTypeTitle">
                 Attraction Type List
-                <span>
-                    <input type="text"  />
-                </span>
-                <span style="justify-content: flex-end;">
+                <span></span>
+                <span class="tableNav">
+                    @{
+                        var attractionTypes = (IPagedList<AttractionType>)ViewBag.AttractionTypes;
+                    }
+                    @attractionTypes.Count of @attractionTypes.TotalItemCount record(s) |
+                    Page @attractionTypes.PageNumber of @attractionTypes.PageCount
                     <button class="create" data-get="/Admin/AdminAttractionTypeCreate">Create New</button>
-                    <button id="toggleTypeButton" onclick="toggleSection('attractionTypeSection', 'toggleTypeButton')">+</button>
                 </span>
             </h3>
-            <div class="attractionTypeTable" id="attractionTypeSection" style="display: none;">
+            <div class="attractionTypeTable">
                     <table>
                         <thead>
                             <tr>
@@ -62,18 +56,37 @@
                             }       
                         </tbody>
                     </table>
+                @{
+                    var AToptions = PagedListRenderOptions.ClassicPlusFirstAndLast;
+                    AToptions.LinkToFirstPageFormat = "First";
+                    AToptions.LinkToLastPageFormat = "Last";
+                    AToptions.LinkToPreviousPageFormat = "Previous";
+                    AToptions.LinkToNextPageFormat = "Next";
+                }
+
+                @Html.PagedListPager(
+                         (IPagedList)ViewBag.AttractionTypes,
+                         page => $"?ATpage={page}",
+                         AToptions
+                         )
                 </div>
         </div>
+        <br />
+        <br />
 
         <div class="attractionTable">
             <h3 class="attractionTitle">
                 Attraction List
-                <span style="justify-content: flex-end;">
+                <span class="tableNav">
+					
+						@Model.Count() of @Model.TotalItemCount record(s) |
+						Page @Model.PageNumber of @Model.PageCount
+					
                     <button class="create" data-get="/Admin/AdminAttractionTypeCreate">Create New</button>
-                    <button id="toggleAttractionButton" onclick="toggleSection('attractionSection', 'toggleAttractionButton')">+</button>
                 </span>
             </h3>
-				<div class="attractionTypeTable" id="attractionSection" style="display: none;">
+          
+				<div class="attractionTypeTable">
                     <table>
                         <thead>
                             <tr>
@@ -85,7 +98,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                        @foreach (var a in ViewBag.Attractions)
+                        @foreach (var a in Model)
                         {
                             <tr>
                                 <td>@a.Id</td>
@@ -99,6 +112,20 @@
                        
                         </tbody>
                     </table>
+                @{
+                    var options = PagedListRenderOptions.ClassicPlusFirstAndLast;
+                    options.LinkToFirstPageFormat = "First";
+                    options.LinkToLastPageFormat = "Last";
+                    options.LinkToPreviousPageFormat = "Previous";
+                    options.LinkToNextPageFormat = "Next";
+                }
+
+                @Html.PagedListPager(
+                         Model,
+                         page => $"?Apage={page}",
+                         options
+                         )
+
                 </div>
         </div>
     </div>
