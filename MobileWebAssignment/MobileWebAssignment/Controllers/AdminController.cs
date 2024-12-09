@@ -8,9 +8,10 @@ public class AdminController : Controller
     private readonly DB db;
     private readonly IWebHostEnvironment en;
 
-    public AdminController(DB db)
+    public AdminController(DB db, IWebHostEnvironment en)
     {
         this.db = db;
+        this.en = en;
     }
     public IActionResult AdminFeedback()
 
