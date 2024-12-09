@@ -1,6 +1,7 @@
 ﻿@*
     For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 *@
+
 @{
     Layout = "_AdminLayout";
     ViewBag.Title = "Admin | Feedback";
@@ -33,12 +34,14 @@
             <h3 class="attractionTypeTitle">
                 Attraction Type List
                 <span>
-                    <button class="create">Create New</button>
+                    <input type="text"  />
+                </span>
+                <span style="justify-content: flex-end;">
+                    <button class="create" data-get="/Admin/AdminAttractionTypeCreate">Create New</button>
                     <button id="toggleTypeButton" onclick="toggleSection('attractionTypeSection', 'toggleTypeButton')">+</button>
                 </span>
             </h3>
-            <div id="attractionTypeSection" style="display: none;">
-                <div class="attractionTypeTable">
+            <div class="attractionTypeTable" id="attractionTypeSection" style="display: none;">
                     <table>
                         <thead>
                             <tr>
@@ -48,34 +51,29 @@
                             </tr>
                         </thead>
                         <tbody>
+                            @foreach(var at in ViewBag.AttractionTypes)
+                            {
                             <tr>
-                                <td>AT0001</td>
-                                <td>Water Park</td>
-                                <td style="text-align:center;"><button class="update">Update</button></td>
+                                <td>@at.Id</td>
+                                <td>@at.Name</td>
+                                <td style="text-align:center;"><button class="update" data-get="/Admin/AdminAttractionTypeUpdate/@at.Id">Update</button></td>
                                 <td style="text-align:center;"><button class="delete">Delete</button></td>
                             </tr>
-                            <tr>
-                                <td>AT0002</td>
-                                <td>Bird Park</td>
-                                <td style="text-align:center;"><button class="update">Update</button></td>
-                                <td style="text-align:center;"><button class="delete">Delete</button></td>
-                            </tr>
+                            }       
                         </tbody>
                     </table>
                 </div>
-            </div>
         </div>
 
         <div class="attractionTable">
             <h3 class="attractionTitle">
                 Attraction List
-                <span>
-                    <button class="create">Create New</button>
+                <span style="justify-content: flex-end;">
+                    <button class="create" data-get="/Admin/AdminAttractionTypeCreate">Create New</button>
                     <button id="toggleAttractionButton" onclick="toggleSection('attractionSection', 'toggleAttractionButton')">+</button>
                 </span>
             </h3>
-            <div id="attractionSection" style="display: none;">
-                <div class="attractionTypeTable">
+				<div class="attractionTypeTable" id="attractionSection" style="display: none;">
                     <table>
                         <thead>
                             <tr>
@@ -87,30 +85,22 @@
                             </tr>
                         </thead>
                         <tbody>
+                        @foreach (var a in ViewBag.Attractions)
+                        {
                             <tr>
-                                <td>A0001</td>
-                                <td>Sunway Lagoon</td>
-                                <td>Water Park</td>
-                                <td>Kuala Lumpur</td>
-                                <td style="text-align:center;"><button class="detail">Detail</button></td>
-                                <td style="text-align:center;"><button class="update">Update</button></td>
-                                <td style="text-align:center;"><button class="delete">Delete</button></td>
+                                <td>@a.Id</td>
+                                <td>@a.Name</td>
+                                <td>@a.AttractionType?.Name</td>
+                                <td>@a.Location</td>
+                                <td style="text-align:center;"><button class="update" data-get="/Admin/AdminAttractionTypeUpdate/@a.Id">Update</button></td>
+                                <td style="text-align:center;"><button class="delete" data-get="/Admin/AdminAttractionTypeDelete/@a.Id">Delete</button></td>
                             </tr>
-                            <tr>
-                                <td>A0002</td>
-                                <td>A Famosa</td>
-                                <td>Water Park</td>
-                                <td>Melaka</td>
-                                <td style="text-align:center;"><button class="detail">Detail</button></td>
-                                <td style="text-align:center;"><button class="update">Update</button></td>
-                                <td style="text-align:center;"><button class="delete">Delete</button></td>
-                            </tr>
+                        }
+                       
                         </tbody>
                     </table>
                 </div>
-            </div>
         </div>
-
     </div>
 </body>
 </html>

@@ -12,7 +12,7 @@ using MobileWebAssignment.Models;
 namespace MobileWebAssignment.Migrations
 {
     [DbContext(typeof(DB))]
-    [Migration("20241203133628_WebDB")]
+    [Migration("20241204083515_WebDB")]
     partial class WebDB
     {
         /// <inheritdoc />
@@ -81,6 +81,32 @@ namespace MobileWebAssignment.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("AttractionType");
+                });
+
+            modelBuilder.Entity("MobileWebAssignment.Models.Cart", b =>
+                {
+                    b.Property<string>("CartID")
+                        .HasMaxLength(8)
+                        .HasColumnType("nvarchar(8)");
+
+                    b.Property<string>("TicketId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(6)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<int>("quantity")
+                        .HasColumnType("int");
+
+                    b.HasKey("CartID");
+
+                    b.HasIndex("TicketId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Cart");
                 });
 
             modelBuilder.Entity("MobileWebAssignment.Models.Feedback", b =>
@@ -159,9 +185,14 @@ namespace MobileWebAssignment.Migrations
 
             modelBuilder.Entity("MobileWebAssignment.Models.Promotion", b =>
                 {
-                    b.Property<string>("PromotionId")
+                    b.Property<string>("Id")
                         .HasMaxLength(10)
                         .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(8)
+                        .HasColumnType("nvarchar(8)");
 
                     b.Property<DateTime>("EndDate")
                         .HasColumnType("datetime2");
@@ -183,7 +214,7 @@ namespace MobileWebAssignment.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
-                    b.HasKey("PromotionId");
+                    b.HasKey("Id");
 
                     b.ToTable("Promotion");
                 });
@@ -201,6 +232,9 @@ namespace MobileWebAssignment.Migrations
                     b.Property<DateTime>("PaymentDateTime")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("PromotionId")
+                        .HasColumnType("nvarchar(10)");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(1)
@@ -211,6 +245,8 @@ namespace MobileWebAssignment.Migrations
                         .HasColumnType("nvarchar(10)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("PromotionId");
 
                     b.HasIndex("UserId");
 
@@ -248,7 +284,7 @@ namespace MobileWebAssignment.Migrations
 
             modelBuilder.Entity("MobileWebAssignment.Models.Ticket", b =>
                 {
-                    b.Property<string>("ticketID")
+                    b.Property<string>("Id")
                         .HasMaxLength(6)
                         .HasColumnType("nvarchar(6)");
 
@@ -281,7 +317,7 @@ namespace MobileWebAssignment.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("ticketID");
+                    b.HasKey("Id");
 
                     b.HasIndex("AttractionId");
 
@@ -353,6 +389,25 @@ namespace MobileWebAssignment.Migrations
                     b.Navigation("AttractionType");
                 });
 
+            modelBuilder.Entity("MobileWebAssignment.Models.Cart", b =>
+                {
+                    b.HasOne("MobileWebAssignment.Models.Ticket", "Ticket")
+                        .WithMany("Carts")
+                        .HasForeignKey("TicketId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MobileWebAssignment.Models.User", "User")
+                        .WithMany("Carts")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Ticket");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("MobileWebAssignment.Models.Feedback", b =>
                 {
                     b.HasOne("MobileWebAssignment.Models.Attraction", "Attraction")
@@ -385,11 +440,17 @@ namespace MobileWebAssignment.Migrations
 
             modelBuilder.Entity("MobileWebAssignment.Models.Purchase", b =>
                 {
+                    b.HasOne("MobileWebAssignment.Models.Promotion", "Promotion")
+                        .WithMany("Purchases")
+                        .HasForeignKey("PromotionId");
+
                     b.HasOne("MobileWebAssignment.Models.User", "User")
                         .WithMany("Purchases")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Promotion");
 
                     b.Navigation("User");
                 });
@@ -436,6 +497,11 @@ namespace MobileWebAssignment.Migrations
                     b.Navigation("Attractions");
                 });
 
+            modelBuilder.Entity("MobileWebAssignment.Models.Promotion", b =>
+                {
+                    b.Navigation("Purchases");
+                });
+
             modelBuilder.Entity("MobileWebAssignment.Models.Purchase", b =>
                 {
                     b.Navigation("PurchaseItems");
@@ -443,11 +509,15 @@ namespace MobileWebAssignment.Migrations
 
             modelBuilder.Entity("MobileWebAssignment.Models.Ticket", b =>
                 {
+                    b.Navigation("Carts");
+
                     b.Navigation("PurchaseItems");
                 });
 
             modelBuilder.Entity("MobileWebAssignment.Models.User", b =>
                 {
+                    b.Navigation("Carts");
+
                     b.Navigation("Feedbacks");
 
                     b.Navigation("Purchases");
