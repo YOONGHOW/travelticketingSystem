@@ -1,4 +1,7 @@
-﻿<!DOCTYPE html>
+﻿@model AttractionTypeInsertVM 
+
+
+<!DOCTYPE html>
 <html lang="en">
 
 
@@ -17,27 +20,30 @@
         </div>
 
         <div class="content">
-            <form method="post" action="">
+            <form method="post">
+                <div asp-validation-summary="ModelOnly"></div>
+
                 <div class="product-details">
-
-                    <div class="input-box">
-                        <label class="details" for="name">Category Name</label>
-                        <input type='text' id='name' name='name' value='' minlength="5" maxlength="100" required>                        <span></span>
+					<div class="input-box">
+                        <label class="details" asp-for="Id">Attraction Id</label>
+                        <input disabled asp-for="Id" autofocus data-upper>
+                    <span asp-validation-for="Id"></span>
+                  
                     </div>
 
                     <div class="input-box">
-                        <label class="details" for="description">Category Description</label>
-                        <textarea id='description' name='description' rows="5" cols="45" required></textarea>                        <span></span>
+						<label class="details" asp-for="Name">Attraction Type Name</label>
+                        <input id='name' asp-for="Name">
+                        <span asp-validation-for="Name"></span>
                     </div>
-
                 </div>
 
                 <div>
                     <!-- Buttons -->
                     <div class="button">
-                        <input type="submit" id="addCategoryButton" name="submit" value="Add Category">
+                        <input type="submit" id="addCategoryButton" name="submit" value="Add Attraction Type">
                     </div>
-
+                </div>
             </form>
         </div>
     </div>

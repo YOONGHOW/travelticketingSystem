@@ -11,6 +11,8 @@
     @RenderSection("head", false)
 </head>
 <body>
+    <div class="info">@Html.Raw(TempData["Info"])</div>
+
     <div class="navbar">
         <div class="main">
             <div class="selected">

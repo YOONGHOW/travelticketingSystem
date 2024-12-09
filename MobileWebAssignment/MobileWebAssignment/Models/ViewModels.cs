@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿
+using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
 
 namespace MobileWebAssignment.Models;
 
@@ -6,9 +8,18 @@ namespace MobileWebAssignment.Models;
 
 #nullable disable warnings
 
-public class AttractionTypeVM
+public class AttractionTypeInsertVM
 {
-    [StringLength(6)]
+    public string Id { get; set; }
+
+    [StringLength(100)]
+    [RegularExpression(@"^[A-Z]+$", ErrorMessage = "Invalid {0}.")]
+    public string Name { get; set; }
+
+}
+
+public class AttractionInsertVM
+{
     public string Id { get; set; }
 
     [StringLength(100)]
