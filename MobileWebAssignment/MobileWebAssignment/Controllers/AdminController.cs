@@ -148,6 +148,41 @@ public class AdminController : Controller
     }
 
 
+    // GET: AttractionType/Update
+    public IActionResult AdminAttractionTypeDelete(string? Id)
+    {
+        var at = db.AttractionType.Find(Id);
+
+        if (at == null)
+        {
+            return RedirectToAction("AdminAttraction");
+        }
+
+        var vm = new AttractionTypeInsertVM
+        {
+            Id = at.Id,
+            Name = at.Name,
+        };
+
+        return View(vm);
+    }
+
+    // POST: AttractionType/Update
+    [HttpPost]
+    public IActionResult AdminAttractionTypeDelete(AttractionTypeInsertVM vm)
+    {
+        var at = db.AttractionType.Find(vm.Id);
+
+        if (at != null) 
+        {
+            db.AttractionType.Remove(at);
+            db.SaveChanges();
+            TempData["Info"] = "Record Deleted.";
+        }
+
+        return RedirectToAction("AdminAttraction");
+    }
+
 
 
 }
