@@ -1,0 +1,52 @@
+﻿@model AttractionTypeInsertVM 
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/AdminCss/AdminAttractionTypeLayout.css">
+    <title>Add New Category Information</title>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="/Admin/AdminAttraction" class="back-arrow"><img src="/images/back-arrow.png" alt="Back"></a>
+            <div class="title">Add New Attraction Type</div>
+        </div>
+
+        <div class="content">
+            <form method="post">
+                <div asp-validation-summary="ModelOnly"></div>
+
+                <div class="product-details">
+					<div class="input-box">
+                        <label class="details" asp-for="Id">Attraction Id</label>
+                        <input asp-for="Id" readonly style="caret-color: transparent;color:#797777">
+                        <span asp-validation-for="Id"></span>
+                    </div>
+
+                    <div class="input-box">
+						<label class="details" asp-for="Name">Attraction Type Name</label>
+                        <input id='name' asp-for="Name" autofocus data-upper>
+                        <span asp-validation-for="Name"></span>
+                    </div>
+                </div>
+
+                <div>
+                    <!-- Buttons -->
+                    <div class="button">
+						<button id="addCategoryButton">Add Attraction Type</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</body>
+
+</html>

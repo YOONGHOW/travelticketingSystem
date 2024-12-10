@@ -27,8 +27,9 @@ namespace MobileWebAssignment.Migrations
                 name: "Promotion",
                 columns: table => new
                 {
-                    PromotionId = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
+                    Id = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
                     Title = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    Code = table.Column<string>(type: "nvarchar(8)", maxLength: 8, nullable: false),
                     PriceDeduction = table.Column<decimal>(type: "decimal(2,2)", precision: 2, scale: 2, nullable: false),
                     StartDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     EndDate = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -36,7 +37,7 @@ namespace MobileWebAssignment.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Promotion", x => x.PromotionId);
+                    table.PrimaryKey("PK_Promotion", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -90,11 +91,17 @@ namespace MobileWebAssignment.Migrations
                     PaymentDateTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Status = table.Column<string>(type: "nvarchar(1)", maxLength: 1, nullable: false),
                     Amount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    PromotionId = table.Column<string>(type: "nvarchar(10)", nullable: true),
                     UserId = table.Column<string>(type: "nvarchar(10)", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Purchase", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Purchase_Promotion_PromotionId",
+                        column: x => x.PromotionId,
+                        principalTable: "Promotion",
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_Purchase_User_UserId",
                         column: x => x.UserId,
@@ -135,7 +142,7 @@ namespace MobileWebAssignment.Migrations
                 name: "Ticket",
                 columns: table => new
                 {
-                    ticketID = table.Column<string>(type: "nvarchar(6)", maxLength: 6, nullable: false),
+                    Id = table.Column<string>(type: "nvarchar(6)", maxLength: 6, nullable: false),
                     ticketName = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
                     stockQty = table.Column<int>(type: "int", nullable: false),
                     ticketPrice = table.Column<decimal>(type: "decimal(4,2)", precision: 4, scale: 2, nullable: false),
@@ -146,7 +153,7 @@ namespace MobileWebAssignment.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Ticket", x => x.ticketID);
+                    table.PrimaryKey("PK_Ticket", x => x.Id);
                     table.ForeignKey(
                         name: "FK_Ticket_Attraction_AttractionId",
                         column: x => x.AttractionId,
@@ -179,6 +186,32 @@ namespace MobileWebAssignment.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Cart",
+                columns: table => new
+                {
+                    CartID = table.Column<string>(type: "nvarchar(8)", maxLength: 8, nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(10)", nullable: false),
+                    TicketId = table.Column<string>(type: "nvarchar(6)", nullable: false),
+                    quantity = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Cart", x => x.CartID);
+                    table.ForeignKey(
+                        name: "FK_Cart_Ticket_TicketId",
+                        column: x => x.TicketId,
+                        principalTable: "Ticket",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Cart_User_UserId",
+                        column: x => x.UserId,
+                        principalTable: "User",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "PurchaseItem",
                 columns: table => new
                 {
@@ -201,7 +234,7 @@ namespace MobileWebAssignment.Migrations
                         name: "FK_PurchaseItem_Ticket_TicketId",
                         column: x => x.TicketId,
                         principalTable: "Ticket",
-                        principalColumn: "ticketID",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -209,6 +242,16 @@ namespace MobileWebAssignment.Migrations
                 name: "IX_Attraction_AttractionTypeId",
                 table: "Attraction",
                 column: "AttractionTypeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Cart_TicketId",
+                table: "Cart",
+                column: "TicketId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Cart_UserId",
+                table: "Cart",
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Feedback_AttractionId",
@@ -224,6 +267,11 @@ namespace MobileWebAssignment.Migrations
                 name: "IX_Payment_PurchaseId",
                 table: "Payment",
                 column: "PurchaseId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Purchase_PromotionId",
+                table: "Purchase",
+                column: "PromotionId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Purchase_UserId",
@@ -250,13 +298,13 @@ namespace MobileWebAssignment.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
+                name: "Cart");
+
+            migrationBuilder.DropTable(
                 name: "Feedback");
 
             migrationBuilder.DropTable(
                 name: "Payment");
-
-            migrationBuilder.DropTable(
-                name: "Promotion");
 
             migrationBuilder.DropTable(
                 name: "PurchaseItem");
@@ -266,6 +314,9 @@ namespace MobileWebAssignment.Migrations
 
             migrationBuilder.DropTable(
                 name: "Ticket");
+
+            migrationBuilder.DropTable(
+                name: "Promotion");
 
             migrationBuilder.DropTable(
                 name: "User");

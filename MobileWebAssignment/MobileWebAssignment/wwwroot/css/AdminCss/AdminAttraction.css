@@ -4,11 +4,12 @@ body {
     margin: 0;
     padding: 0;
     background-color: #f9f9f9;
+    overflow:initial;
 }
 
 .content {
     max-width: 1200px;
-    margin: 0 auto;
+    margin: 0 1% 0 6%;
     padding: 20px;
     background: #ffffff;
     border-radius: 8px;
@@ -20,6 +21,13 @@ h3 {
     color: #333;
     margin-bottom: 20px;
 }
+
+    h3 span {
+        display: flex; 
+        justify-content: flex-end; 
+        gap: 10px; 
+        width: 100%;
+    }
 
 button {
     font-size: 0.9rem;
@@ -96,4 +104,12 @@ td, th {
         font-size: 0.8rem;
         padding: 8px 15px;
     }
+}
+
+span.tableNav {
+    justify-content: space-between;
+    margin-top:12px;
+    font-family:Arial, sans-serif; 
+    font-size:20px;
+    vertical-align:middle;
 }
