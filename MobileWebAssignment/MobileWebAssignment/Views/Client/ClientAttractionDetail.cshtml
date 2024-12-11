@@ -1,0 +1,50 @@
+﻿@{
+    Layout = "_ClientLayout";
+    ViewBag.Title = "Client | Attraction";
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+</body>
+</html>
+
+<main style="min-height: 500px;">
+   <section>
+    <nav class="image_side">
+        <img src="/images/afamosa.jpeg" alt="afamosa">
+    </nav>
+    <div class="details_side">
+       <h1>A-Famosa</h1>
+        <p style="font-size:22px;">
+            <b>
+                RM120.00 | <span style="font-size:17px;">Remaining Ticket: 100</span>
+            </b>
+        </p>
+        <br />
+        <article>
+            <ul>
+                <li>If water fun is on your mind, splash over to Water Theme Park, just 1.5 hours from Kuala Lumpur, with an optional meal or Safari Wonderland access.</li>
+                <li>Rides: Discover Kids, Family, and Adventure Zones, with attractions like Arabian Village, Wave Pool, Lazy River, High Speed, Big Ice Cream, and more.</li>
+                <li>Options: Upgrade for a hearty meal with veg and non-veg choices or access Safari Wonderland for wildlife fun and up-close encounters with animals.</li>
+                <li>Facilities: Enjoy hassle-free fun with rental lockers, changing rooms, wheelchair accessibility, and cabanas for rent - convenient for everyone.</li>
+            </ul>
+        </article>
+        
+
+        <form method="POST" action="ClientAttractionDetail">
+            <br>
+            <label for="quantity" class="qty">Quantity :</label>
+            <input type="number" id="quantity" name="quantity" value="1" min="1" max="<?= $product->product_stock ?>"><br>
+            @* <input type="hidden" name="product_id" value="<?= $product->product_id ?>"> *@
+            @* <input type="hidden" name="product_name" value="<?= $product->product_name ?>"> *@
+            @* <input type="hidden" name="product_price" value="<?= $product->product_price ?>"> *@
+            <input type="submit" id="addCartBtn" name="addCart" value="Add to Cart" /><br>    
+        </form>
+    </div>
+    </section>
+</main>

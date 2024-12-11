@@ -1,0 +1,133 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+
+@{
+    Layout = "_AdminLayout";
+    ViewBag.Title = "Admin | Feedback";
+}
+
+@using X.PagedList
+@using X.PagedList.Mvc.Core
+@model IPagedList<Attraction>
+
+
+
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <link rel="stylesheet" href="/css/AdminCss/AdminAttraction.css" asp-append-version="true">
+    
+</head>
+<body>
+    <div class="content">
+
+        <div class="attractionTypeData">
+            <h3 class="attractionTypeTitle">
+                Attraction Type List
+                <span></span>
+                <span class="tableNav">
+                    @{
+                        var attractionTypes = (IPagedList<AttractionType>)ViewBag.AttractionTypes;
+                    }
+                    @attractionTypes.Count of @attractionTypes.TotalItemCount record(s) |
+                    Page @attractionTypes.PageNumber of @attractionTypes.PageCount
+                    <button class="create" data-get="/Admin/AdminAttractionTypeCreate">Create New</button>
+                </span>
+            </h3>
+            <div class="attractionTypeTable">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Attraction Type ID</th>
+                                <th>Name</th>
+                                <th colspan="2" style="text-align:center;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach(var at in ViewBag.AttractionTypes)
+                            {
+                            <tr>
+                                <td>@at.Id</td>
+                                <td>@at.Name</td>
+                                <td style="text-align:center;"><button class="update" data-get="/Admin/AdminAttractionTypeUpdate/@at.Id">Update</button></td>
+                                <td style="text-align:center;"><button class="delete" data-get="/Admin/AdminAttractionTypeDelete/@at.Id">Delete</button></td>
+                            </tr>
+                            }       
+                        </tbody>
+                    </table>
+                @{
+                    var AToptions = PagedListRenderOptions.ClassicPlusFirstAndLast;
+                    AToptions.LinkToFirstPageFormat = "First";
+                    AToptions.LinkToLastPageFormat = "Last";
+                    AToptions.LinkToPreviousPageFormat = "Previous";
+                    AToptions.LinkToNextPageFormat = "Next";
+                }
+
+                @Html.PagedListPager(
+                         (IPagedList)ViewBag.AttractionTypes,
+                         page => $"?ATpage={page}",
+                         AToptions
+                         )
+                </div>
+        </div>
+        <br />
+        <br />
+
+        <div class="attractionTable">
+            <h3 class="attractionTitle">
+                Attraction List
+                <span class="tableNav">
+					
+						@Model.Count() of @Model.TotalItemCount record(s) |
+						Page @Model.PageNumber of @Model.PageCount
+					
+                    <button class="create" data-get="/Admin/AdminAttractionTypeCreate">Create New</button>
+                </span>
+            </h3>
+          
+				<div class="attractionTypeTable">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Attraction ID</th>
+                                <th>Attraction Name</th>
+                                <th>Attraction Type</th>
+                                <th>Location(Region)</th>
+                                <th colspan="3" style="text-align:center;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        @foreach (var a in Model)
+                        {
+                            <tr>
+                                <td>@a.Id</td>
+                                <td>@a.Name</td>
+                                <td>@a.AttractionType?.Name</td>
+                                <td>@a.Location</td>
+                                <td style="text-align:center;"><button class="update" data-get="/Admin/AdminAttractionTypeUpdate/@a.Id">Update</button></td>
+                                <td style="text-align:center;"><button class="delete" data-get="/Admin/AdminAttractionTypeDelete/@a.Id">Delete</button></td>
+                            </tr>
+                        }
+                       
+                        </tbody>
+                    </table>
+                @{
+                    var options = PagedListRenderOptions.ClassicPlusFirstAndLast;
+                    options.LinkToFirstPageFormat = "First";
+                    options.LinkToLastPageFormat = "Last";
+                    options.LinkToPreviousPageFormat = "Previous";
+                    options.LinkToNextPageFormat = "Next";
+                }
+
+                @Html.PagedListPager(
+                         Model,
+                         page => $"?Apage={page}",
+                         options
+                         )
+
+                </div>
+        </div>
+    </div>
+</body>
+</html>
