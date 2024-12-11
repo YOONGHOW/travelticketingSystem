@@ -23,7 +23,7 @@ public class AttractionInsertVM
     public string Id { get; set; }
 
     [StringLength(100)]
-    [RegularExpression(@"^[A-Z]+$", ErrorMessage = "Invalid {0}.")]
+    [RegularExpression(@"^[a-z A-Z]+$", ErrorMessage = "Invalid {0}.")]
     public string Name { get; set; }
 
     [StringLength(1000)]
