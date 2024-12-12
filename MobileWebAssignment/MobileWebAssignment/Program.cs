@@ -1,5 +1,5 @@
 global using MobileWebAssignment.Models;
-global using Demo;
+global using MobileWebAssignment;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();

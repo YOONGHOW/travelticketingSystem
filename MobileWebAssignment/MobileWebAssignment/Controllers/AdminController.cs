@@ -1,6 +1,4 @@
-﻿using Azure;
-using Demo;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using X.PagedList.Extensions;
@@ -206,6 +204,8 @@ public class AdminController : Controller
     // GET: AttractionType/Insert
     public IActionResult AdminAttractionCreate()
     {
+        ViewBag.AttractionTypes = db.AttractionType.ToList();
+
         var vm = new AttractionInsertVM
         {
             Id = NextAttractionId(),
@@ -216,38 +216,78 @@ public class AdminController : Controller
 
     // POST: AttractionType/Insert
     [HttpPost]
-    public IActionResult AdminAttractionCreate(AttractionInsertVM vm, IFormFile photo)
+    public IActionResult AdminAttractionCreate(AttractionInsertVM vm)
     {
+
+        ViewBag.AttractionTypes = db.AttractionType.ToList();
+
         //check name
         if (ModelState.IsValid("Name") && db.Attraction.Any(a => a.Name == vm.Name))
         {
             ModelState.AddModelError("Name", "This attraction already added before, please change other name");
         }
 
-        //check photo
-        if (ModelState.IsValid("photo"))
+        if (ModelState.IsValid("AttractionTypeId") && vm.AttractionTypeId.Equals("none"))
         {
-            var e = hp.ValidatePhoto(photo);
-            if (e != "") ModelState.AddModelError("photo", e);
+            ModelState.AddModelError("AttractionTypeId", "Please select an attraction type");
         }
+
+        var operatingHours = vm.OperatingHoursArray;
         
+        //for(int i = 0;i == 7; i++)
+        //{
+        //    if (operatingHours[i].Status.Equals("open"))
+        //    {
+        //        if(operatingHours[i].StartTime.HasValue)
+        //        {
+        //            string startTime= "OperatingHours[" + i + "].StartTime";
+        //            ModelState.AddModelError(startTime, "Please select a start time");
+        //        }
+        //        else if (operatingHours[i].EndTime.HasValue)
+        //        {
+        //            string endTime = "OperatingHours[" + i + "].EndTime";
+        //            ModelState.AddModelError(endTime, "Please select a end time");
+        //        }
+        //    }
+        //}
+
+        //check photo
+        if (ModelState.IsValid("Photo"))
+        {
+            var e = hp.ValidatePhoto(vm.Photo);
+            if (e != "") ModelState.AddModelError("Photo", e);
+        }
+            string operateHours = "";
+            //get the complete operating hours
+            for (int i = 0; i == 7; i++)
+            {
+                operateHours += operatingHours[i].ToString() + "|";
+            }
+        vm.OperatingHours = operateHours;
 
         if (ModelState.IsValid)
         {
             
-            db.AttractionType.Add(new()
+
+            db.Attraction.Add(new()
             {
                 
                 Id = vm.Id,
                 Name = vm.Name.Trim(),
-            });
+                Description = vm.Description,
+                Location = vm.Location,
+                OperatingHours = vm.OperatingHours,
+                ImagePath = hp.SavePhoto(vm.Photo, "attractionImages"),
+                AttractionTypeId = "AT001",
+                
+        });
             db.SaveChanges();
 
             TempData["Info"] = "Attraction inserted.";
             return RedirectToAction("AdminAttraction");
         }
 
-        return View();
+        return View(vm);
     }
 
 

@@ -42,7 +42,7 @@
                 @foreach (var a in ViewBag.Attractions)
                 {
                      <div class="product-item" onclick="window.location.href='ClientAttractionDetail?AttractionId=@a.Id'">
-                    <img src="/images/@a.ImagePath" alt="" class="product-image">
+                    <img src="/attractionImages/@a.ImagePath" alt="" class="product-image">
                     <h3 class="product-name">@a.Name</h3>
                     <p>★ 4.0(12)</p>
                     <p class="product-cost">start with RM120 per ticket</p>

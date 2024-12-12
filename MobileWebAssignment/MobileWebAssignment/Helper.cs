@@ -2,7 +2,7 @@
 using SixLabors.ImageSharp.Processing;
 using System.Text.RegularExpressions;
 
-namespace Demo;
+namespace MobileWebAssignment;
 
 public class Helper
 {
