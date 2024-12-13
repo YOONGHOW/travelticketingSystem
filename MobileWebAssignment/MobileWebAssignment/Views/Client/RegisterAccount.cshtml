@@ -1,6 +1,8 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
 
+@model RegisterVM
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,126 +10,81 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <script src="../js/photo.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/3.2.13/jquery.validate.unobtrusive.min.js"></script>
     <title>Member Registration</title>
 
-    <script>
-        function validatePassword() {
-            // Dummy JavaScript to mimic validation
-            console.log("Validating password...");
+    <style>
+        html {
+            background-image: url('/images/login_background.jpg');
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            background-size: cover;
         }
-    </script>
+    </style>
 </head>
 
-<style>
-    html {
-        background-image: url('/images/login_background.jpg');
-        background-repeat: no-repeat;
-        background-attachment: fixed;
-        background-size: cover; /* Ensures full coverage of the screen */
-    }
-</style>
-
 <body>
-
-    <!-- Flash message -->
-    <div id="info">Flash message placeholder</div>
 
     <div class="container">
         <div class="title">Registration</div>
         <div class="content">
-            <form action="" method="POST" id="state" enctype="multipart/form-data">
+            <form asp-action="Register" method="POST" id="state" enctype="multipart/form-data">
                 <div class="user-details">
 
                     <div class="input-address">
-                        <label class="details" for="photo">Profile Photo</label>
+                        <label class="details" asp-for="Photo">Profile Photo</label>
                         <label class="upload" tabindex="0">
-                            <input type="file" id="photo" name="photo" accept="image/*" hidden>
+                            <input asp-for="Photo" class="form-control" type="file" accept="image/*" hidden>
                             <img src="/image/photo.jpg" id="drag">
                         </label>
+                        <span asp-validation-for="Photo" class="text-danger"></span>
                     </div>
 
                     <div class="input-box">
-                        <label class="details" for="name">Full Name</label>
-                        <input id="name" name="name" type="text" placeholder="Enter your name" required>
+                        <label class="details" asp-for="Name">Full Name</label>
+                        <input asp-for="Name" class="form-control" placeholder="Enter your name" />
+                        <span asp-validation-for="Name" class="text-danger"></span>
                     </div>
 
                     <div class="input-box">
-                        <label class="details" for="email">Email</label>
-                        <input id="email" name="email" type="email" placeholder="e.g. xxx@gmail.com" required>
+                        <label class="details" asp-for="Email">Email</label>
+                        <input asp-for="Email" class="form-control" placeholder="e.g. xxx@gmail.com" />
+                        <span asp-validation-for="Email" class="text-danger"></span>
                     </div>
 
                     <div class="input-box">
-                        <label class="details" for="ic">IC Number</label>
-                        <input id="ic" name="ic" type="text" placeholder="010203020321" required>
+                        <label class="details" asp-for="IC">IC Number</label>
+                        <input asp-for="IC" class="form-control" placeholder="010203020321" />
+                        <span asp-validation-for="IC" class="text-danger"></span>
                     </div>
 
                     <div class="input-box">
-                        <label class="details" for="contact">Phone Number</label>
-                        <input id="contact" name="contact" type="text" placeholder="e.g. 0121234567" required>
+                        <label class="details" asp-for="PhoneNumber">Phone Number</label>
+                        <input asp-for="PhoneNumber" class="form-control" placeholder="e.g. 0121234567" />
+                        <span asp-validation-for="PhoneNumber" class="text-danger"></span>
                     </div>
 
                     <div class="input-box">
-                        <label class="details" for="date">Birthday</label>
-                        <input id="date" name="date" type="date" required>
-                    </div>
-
-                    <div class="input-box">
-                        <label class="details" for="gender">Gender</label>
-                        <select id="gender" name="gender">
+                        <label class="details" asp-for="Gender">Gender</label>
+                        <select asp-for="Gender" class="form-control">
                             <option value="none">Select Gender</option>
                             <option value="male">Male</option>
                             <option value="female">Female</option>
                         </select>
-                    </div>
-
-                    @* <div class="input-box"> *@
-                    @*     <label class="details" for="password">Password</label> *@
-                    @*     <input id="password" name="password" type="password" placeholder="Enter your password" oninput="validatePassword()" required> *@
-                    @*     <ul style="font-size:13px;width:27em;list-style-type: none;padding-left:0;"> *@
-                    @*         <li id="uppercase" class="invalid">❌ At least one uppercase letter (A-Z)</li> *@
-                    @*         <li id="lowercase" class="invalid"> At least one lowercase letter (a-z)</li> *@
-                    @*         <li id="number" class="invalid">❌ At least one number (0-9)</li> *@
-                    @*         <li id="special" class="invalid">❌ At least one special character (!@#$%^&*)</li> *@
-                    @*         <li id="length" class="invalid">❌ At least 8 characters long</li> *@
-                    @*     </ul> *@
-                    @* </div> *@
-
-                    <div class="input-box">
-                        <label class="details" for="confirm">Confirm Password</label>
-                        <input id="confirm" name="confirm" type="password" placeholder="Enter your password again" required>
-                    </div>
-
-                    <div class="input-address">
-                        <label class="details" for="address1">Address Line 1</label>
-                        <input id="address1" name="address1" type="text" placeholder="Enter your address" required>
-                    </div>
-
-                    <div class="input-address">
-                        <label class="details" for="address2">Address Line 2</label>
-                        <input id="address2" name="address2" type="text" placeholder="Enter additional address info">
+                        <span asp-validation-for="Gender" class="text-danger"></span>
                     </div>
 
                     <div class="input-box">
-                        <label class="details" for="postal">Postal Code</label>
-                        <input id="postal" name="postal" type="text" placeholder="Enter your postal code" required>
+                        <label class="details" asp-for="Password">Password</label>
+                        <input asp-for="Password" class="form-control" type="password" placeholder="Enter your password" />
+                        <span asp-validation-for="Password" class="text-danger"></span>
                     </div>
 
                     <div class="input-box">
-                        <label class="details" for="state">State</label>
-                        <select id="state" name="state">
-                            <option value="none">Select State</option>
-                            <option value="state1">State 1</option>
-                            <option value="state2">State 2</option>
-                        </select>
-                    </div>
-
-                    <div class="input-box">
-                        <label class="details" for="city">City</label>
-                        <select id="city" name="city">
-                            <option value="none">Select City</option>
-                            <option value="city1">City 1</option>
-                            <option value="city2">City 2</option>
-                        </select>
+                        <label class="details" asp-for="ConfirmPassword">Confirm Password</label>
+                        <input asp-for="ConfirmPassword" class="form-control" type="password" placeholder="Enter your password again" />
+                        <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
                     </div>
 
                     <div class="button">
@@ -136,7 +93,6 @@
                     <div class="button">
                         <a href="Login">Cancel</a>
                     </div>
-
                 </div>
             </form>
         </div>

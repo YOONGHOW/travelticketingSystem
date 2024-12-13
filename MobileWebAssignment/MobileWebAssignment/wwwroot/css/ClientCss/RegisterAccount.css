@@ -39,14 +39,13 @@ body {
 
 .content form .user-details {
     display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    margin: 20px 0 12px 0;
+    flex-direction: column;
+    gap:15px;
 }
 
 form .user-details .input-box {
     margin-bottom: 15px;
-    width: calc(100% / 3 - 20px);
+    width: 100%;
 }
 
 form .user-details .input-address {
