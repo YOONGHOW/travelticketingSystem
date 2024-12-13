@@ -1,0 +1,224 @@
+﻿@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+body {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+    background-color: gray;
+    overflow: hidden; /* Prevent horizontal overflow */
+}
+
+.container {
+    max-width: 700px;
+    width: 100%;
+    background-color: #fff;
+    padding: 25px 30px;
+    border-radius: 5px;
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.15);
+    max-height: 90vh; /* Restrict the height to fit the viewport */
+    overflow-y: auto; /* Allow vertical scrolling if content exceeds height */
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+    position: sticky; /* Keep header visible while scrolling */
+    top: 0;
+    background-color: #fff; /* Match container background */
+    z-index: 10;
+    padding: 10px 0;
+}
+
+.err {
+    color: red;
+    font-size: 12px;
+}
+
+
+.back-arrow img {
+    width: 30px;
+    height: auto;
+    margin-right: 10px;
+    margin-top: 7px;
+}
+
+.title {
+    font-size: 25px;
+    font-weight: 500;
+    position: relative;
+}
+
+.content form .product-details {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    margin: 20px 0 12px 0;
+}
+
+form .product-details .input-box {
+    margin-bottom: 15px;
+    width: calc(100% / 2 - 20px);
+}
+
+.input-box span {
+    color: red;
+}
+
+form .input-box span.details {
+    display: block;
+    font-weight: 500;
+    margin-bottom: 5px;
+    
+}
+
+.product-details .input-box input,
+.product-details .input-box textarea {
+    width: 100%;
+    outline: none;
+    font-size: 16px;
+    border-radius: 5px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-bottom-width: 2px;
+    transition: all 0.3s ease;
+    resize: none;
+}
+
+textarea {
+    height: 100px;
+}
+
+.product-details .input-box input:focus,
+.product-details .input-box textarea:focus {
+    border-color: #9b59b6;
+}
+
+form .button {
+    height: 45px;
+    margin: 35px 0;
+}
+
+    form .button button {
+        height: 100%;
+        width: 100%;
+        border-radius: 5px;
+        border: none;
+        color: #fff;
+        font-size: 18px;
+        font-weight: 500;
+        letter-spacing: 1px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: linear-gradient(135deg, #71b7e6, #9b59b6);
+    }
+
+        form .button button:hover {
+            background: linear-gradient(-135deg, #71b7e6, #9b59b6);
+        }
+
+/* Centered Image Upload */
+.image-upload {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+    .image-upload label {
+        margin-bottom: 10px;
+        font-weight: 500;
+    }
+
+    .image-upload .upload img {
+        display: block;
+        border: 2px dashed #9b59b6;
+        width: 200px;
+        height: 200px;
+        object-fit: cover;
+        cursor: pointer;
+        border-radius: 10px;
+        transition: transform 0.3s ease;
+    }
+
+        .image-upload .upload img:hover {
+            transform: scale(1.05);
+        }
+
+/* Operating Hours Section */
+.operating-hours {
+    margin: 20px 0;
+}
+
+    .operating-hours h3 {
+        margin-bottom: 15px;
+        font-size: 18px;
+        font-weight: 600;
+    }
+
+.day-hours {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.day-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+    .day-row span {
+        flex: 1;
+        font-weight: 500;
+    }
+
+    .day-row select,
+    .day-row input {
+        padding: 8px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        flex: 1;
+    }
+
+    .day-row select {
+        flex: 0.7;
+    }
+
+
+/* Ensure the image uploader adapts */
+.upload img {
+    display: block;
+    margin: 0 auto;
+    border: 1px dashed #ccc;
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: #f9f9f9;
+}
+
+select {
+    width: 100%;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    border-bottom-width: 2px;
+    background: #fff;
+    font-size: 16px;
+    transition: all 0.3s ease;
+}
+
+    select:focus {
+        border-color: #9b59b6;
+    }

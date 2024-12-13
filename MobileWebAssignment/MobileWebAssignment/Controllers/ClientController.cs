@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace MobileWebAssignment.Controllers
 {
@@ -65,6 +66,9 @@ namespace MobileWebAssignment.Controllers
 
         public IActionResult ClientAttraction()
         {
+            ViewBag.AttractionTypes = db.AttractionType.ToList();
+            ViewBag.Attractions = db.Attraction.Include(a => a.AttractionType);
+
             return View();
         }
 

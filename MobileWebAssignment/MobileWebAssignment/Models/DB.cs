@@ -7,22 +7,20 @@ public class DB : DbContext
 {
     public DB(DbContextOptions<DB> options) : base(options) { }
 
-    // DbSet
-    public DbSet<Feedback> Feedback { get; set; }
-    public DbSet<Attraction> Attraction { get; set; }
-    public DbSet<AttractionType> AttractionType { get; set; }
-    public DbSet<Ticket> Ticket { get; set; }
-    public DbSet<Cart> Cart { get; set; }
-    public DbSet<User> User { get; set; }
-    public DbSet<Promotion> Promotion { get; set; }
-    public DbSet<Purchase> Purchase { get; set; }
-    public DbSet<PurchaseItem> PurchaseItem { get; set; }
-    public DbSet<Payment> Payment { get; set; }
-        public DbSet<Admin> Admins { get; set; }
-        public DbSet<Member> Members { get; set; }
-}
-
-// Entity Classes -------------------------------------------------------------
+        // DbSet
+        public DbSet<Feedback> Feedback { get; set; }
+        public DbSet<Attraction> Attraction { get; set; }
+        public DbSet<AttractionType> AttractionType { get; set; }
+        public DbSet<Ticket> Ticket { get; set; }
+        public DbSet<Cart> Cart { get; set; }
+        public DbSet<User> User { get; set; }
+        public DbSet<Promotion> Promotion { get; set; }
+        public DbSet<Purchase> Purchase { get; set; }
+        public DbSet<PurchaseItem> PurchaseItem { get; set; }
+        public DbSet<Payment> Payment { get; set; }
+    }
+      
+    // Entity Classes -------------------------------------------------------------
 
 
 
@@ -178,14 +176,11 @@ public class Purchase//P0001
     public decimal Amount { get; set; } // Changed to decimal for currency values
 
     //FK
-    public string? PromotionId { get; set; }
-    public string UserId { get; set; }
+    public string? PromotionId {get; set;}
 
     //Navigation
     public List<PurchaseItem> PurchaseItems { get; set; } = [];
-    public Promotion Promotion { get; set; }
-    public User User { get; set; }
-
+    public Promotion Promotion {get; set;}
 
 }//end of purchase
 
@@ -271,14 +266,3 @@ public class User //U0001
     public List<Purchase> Purchases { get; set; } = [];
     public List<Cart> Carts { get; set; } = [];
 } //end of user
-
-public class Admin : User
-{
-
-}//end of Admin
-
-public class Member : User
-{
-    [MaxLength(100)]
-    public string PhotoURL { get; set; }
-}//end of Member

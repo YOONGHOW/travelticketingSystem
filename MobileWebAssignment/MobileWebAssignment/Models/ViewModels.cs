@@ -46,9 +46,9 @@ public class AttractionInsertVM
 public class OperatingHour
 {
     public string Day { get; set; }
-    public string Status { get; set; }
-    public TimeSpan? StartTime { get; set; }
-    public TimeSpan? EndTime { get; set; }
+    public string Status { get; set; } 
+    public TimeSpan? StartTime { get; set; } 
+    public TimeSpan? EndTime { get; set; }   
 }
 
 public class RegisterVM
