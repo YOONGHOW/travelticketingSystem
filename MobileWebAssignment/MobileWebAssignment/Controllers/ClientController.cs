@@ -19,10 +19,38 @@ namespace MobileWebAssignment.Controllers
             return View();
         }
 
-        //register for a account
+        //register for a account //GET
         public IActionResult RegisterAccount()
         {
             return View();
+        }
+
+        //register for a account //POST //I DO UNTIL HERE!!!!
+        [HttpPost]
+        public IActionResult RegisterAccount(RegisterVM vm)
+        {
+
+            if (ModelState.IsValid)
+            {
+                db.Members.Add(new() 
+                {
+                    Id = "U001",
+                    Name = vm.Name,
+                    Email = vm.Email,
+                    Password = vm.Password,
+                    IC = vm.IC,
+                    PhoneNumber = vm.PhoneNumber, 
+                    Gender = vm.Gender,
+                    Freeze = false, 
+                    PhotoURL = "/images/default_profile.png" //testing
+
+                });
+                db.SaveChanges();
+                TempData["Info"] = "Register successfully. Please login.";
+                return RedirectToAction("Login");
+            }
+
+            return View(vm);
         }
 
         public IActionResult login()
