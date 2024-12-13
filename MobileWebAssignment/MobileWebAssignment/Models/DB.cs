@@ -1,11 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
-using System.ComponentModel.DataAnnotations;
+    using System.ComponentModel.DataAnnotations;
 
 namespace MobileWebAssignment.Models;
-public class DB : DbContext
-{
-    public DB(DbContextOptions<DB> options) : base(options) { }
+    public class DB : DbContext
+    {
+        public DB(DbContextOptions<DB> options) : base(options) { }
 
         // DbSet
         public DbSet<Feedback> Feedback { get; set; }
@@ -18,6 +18,8 @@ public class DB : DbContext
         public DbSet<Purchase> Purchase { get; set; }
         public DbSet<PurchaseItem> PurchaseItem { get; set; }
         public DbSet<Payment> Payment { get; set; }
+        public DbSet<Admin> Admins { get; set; }
+        public DbSet<Member> Members { get; set; }
     }
       
     // Entity Classes -------------------------------------------------------------
@@ -26,32 +28,32 @@ public class DB : DbContext
 
 #nullable disable warnings
 
-public class Promotion //PM0001
-{
-    [Key, MaxLength(10)]
-    public string Id { get; set; }
+ public class Promotion //PM0001
+    {
+        [Key, MaxLength(10)]
+        public string Id { get; set; }
 
-    [MaxLength(255)]
-    public string Title { get; set; }
+        [MaxLength(255)]
+        public string Title { get; set; }
 
-    [MaxLength(8)]
-    public string Code { get; set; }
+        [MaxLength(8)]
+        public string Code{ get; set; }
 
-    [Precision(2, 2)]
-    public decimal PriceDeduction { get; set; }
+        [Precision(2, 2)]
+        public decimal PriceDeduction { get; set; }
+        
+        [DataType(DataType.Date)]
+        public DateTime StartDate { get; set; }
 
-    [DataType(DataType.Date)]
-    public DateTime StartDate { get; set; }
+        [DataType(DataType.Date)]
+        public DateTime EndDate { get; set; }
 
-    [DataType(DataType.Date)]
-    public DateTime EndDate { get; set; }
+        [MaxLength(20)]
+        public string PromoStatus { get; set; }
 
-    [MaxLength(20)]
-    public string PromoStatus { get; set; }
-
-    //Navigation
-    public List<Purchase> Purchases { get; set; } = [];
-}//end of promotion
+        //Navigation
+         public List<Purchase> Purchases { get; set; } = [];
+ }//end of promotion
 
 public class Attraction //A0001
 {
@@ -112,7 +114,7 @@ public class Feedback//F0001
     //Navigation
     public Attraction Attraction { get; set; }
     public User User { get; set; }
-
+    
 
 }// end of feedback
 
@@ -120,12 +122,12 @@ public class Feedback//F0001
 public class Ticket //TK0001
 {
     //Column
-    [Key, MaxLength(6)]
+    [Key, MaxLength(6)] 
     public string Id { get; set; }
     [MaxLength(200)]
     public string ticketName { get; set; }
-    public int stockQty { get; set; }
-    [Precision(4, 2)]
+    public int stockQty { get; set; }   
+    [Precision(4,2)]
     public decimal ticketPrice { get; set; }
     public string ticketStatus { get; set; }
     [MaxLength(1000)]
@@ -134,7 +136,7 @@ public class Ticket //TK0001
 
     //FK
     public string AttractionId { get; set; }
-
+    
     //navigation 
     public Attraction Attraction { get; set; }
     public List<PurchaseItem> PurchaseItems { get; set; } = [];
@@ -151,7 +153,7 @@ public class Cart
     //FK ticketID
     public string TicketId { get; set; }
     public int quantity { get; set; }
-
+    
     //navigation
     public Ticket Ticket { get; set; }
     public User User { get; set; }
@@ -160,8 +162,8 @@ public class Cart
 
 
 public class Purchase//P0001
-{
-    [Key, MaxLength(6)]
+{ 
+    [Key, MaxLength(6)] 
     public string Id { get; set; }
 
     [Required]
@@ -177,10 +179,13 @@ public class Purchase//P0001
 
     //FK
     public string? PromotionId {get; set;}
-
+    public string UserId { get; set; }
+    
     //Navigation
     public List<PurchaseItem> PurchaseItems { get; set; } = [];
     public Promotion Promotion {get; set;}
+    public User User { get; set; }
+    
 
 }//end of purchase
 
@@ -188,9 +193,9 @@ public class Purchase//P0001
 public class PurchaseItem // PI0001
 {
     //Column
-    [Key, MaxLength(6)]
+    [Key,MaxLength(6)] 
     public string Id { get; set; }
-    public int Quantity { get; set; }
+    public int Quantity {  get; set; }
     public DateTime validDate { get; set; }
 
     //FK
@@ -228,7 +233,7 @@ public class Payment
     public String PurchaseId { get; set; }
 
     //Navigation
-    public Purchase Purchase { get; set; }
+    public Purchase Purchase {get; set;}
 
 }//PA0001
 
@@ -266,3 +271,14 @@ public class User //U0001
     public List<Purchase> Purchases { get; set; } = [];
     public List<Cart> Carts { get; set; } = [];
 } //end of user
+
+public class Admin : User
+{
+
+}//end of Admin
+
+public class Member : User
+{
+    [MaxLength(100)]
+    public string PhotoURL { get; set; }
+}//end of Member
