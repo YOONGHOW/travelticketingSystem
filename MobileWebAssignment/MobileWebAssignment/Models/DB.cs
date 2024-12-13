@@ -18,6 +18,8 @@ namespace MobileWebAssignment.Models;
         public DbSet<Purchase> Purchase { get; set; }
         public DbSet<PurchaseItem> PurchaseItem { get; set; }
         public DbSet<Payment> Payment { get; set; }
+        public DbSet<Admin> Admins { get; set; }
+        public DbSet<Member> Members { get; set; }
     }
       
     // Entity Classes -------------------------------------------------------------
@@ -177,10 +179,13 @@ public class Purchase//P0001
 
     //FK
     public string? PromotionId {get; set;}
-
+    public string UserId { get; set; }
+    
     //Navigation
     public List<PurchaseItem> PurchaseItems { get; set; } = [];
     public Promotion Promotion {get; set;}
+    public User User { get; set; }
+    
 
 }//end of purchase
 
@@ -195,13 +200,11 @@ public class PurchaseItem // PI0001
 
     //FK
     public string TicketId { get; set; }
-    public string UserId { get; set; }
     public String PurchaseId { get; set; }
 
     //Navigation
     public Purchase Purchase { get; set; }
     public Ticket Ticket { get; set; }
-    public User User { get; set; }
 
 }
 
@@ -261,14 +264,21 @@ public class User //U0001
 
     public bool Freeze { get; set; }
 
-    [MaxLength(10)]
-    public string Role { get; set; }
-
-    [MaxLength(50)]
-    public string ImagePath { get; set; }
+    public string Role => GetType().Name;
 
     //Navigation
     public List<Feedback> Feedbacks { get; set; } = [];
     public List<Purchase> Purchases { get; set; } = [];
     public List<Cart> Carts { get; set; } = [];
 } //end of user
+
+public class Admin : User
+{
+
+}//end of Admin
+
+public class Member : User
+{
+    [MaxLength(100)]
+    public string PhotoURL { get; set; }
+}//end of Member
