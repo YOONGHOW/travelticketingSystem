@@ -8,14 +8,13 @@
     <link rel="shortcut icon" href="/images/miyabi.jpeg">
     <title>Phaethon ELECTRONIC</title>
     <link rel="stylesheet" href="/css/ClientCss/ClientLayout.css" asp-append-version="true">
-    <link rel="stylesheet" href="/css/ClientCss/ClientAttraction.css" asp-append-version="true">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     @RenderSection("head", false)
 </head>
 
 <body>
     <!-- Flash message -->
-    <div id="info">hello</div>
+    <div id="info">@Html.Raw(TempData["Info"])</div>
     <header>
         <div class="header-content">
             <div class="logo-title">

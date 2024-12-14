@@ -47,10 +47,118 @@ namespace MobileWebAssignment.Controllers
             return View();
         }
 
-        public IActionResult ClientAttractionDetail()
+        //GET: AttractionDetail
+        public IActionResult ClientAttractionDetail(string? AttractionId)
         {
-            return View();
+
+            var a = db.Attraction.Find(AttractionId);
+            ViewBag.Feedbacks = db.Feedback.Where(f => f.AttractionId == AttractionId).ToList();
+
+            if (a == null)
+            {
+                return RedirectToAction("ClientAttractionDetail");
+            }
+
+            var vm = new AttractionUpdateVM
+            {
+                Id = a.Id,
+                Name = a.Name,
+                Description = a.Description,
+                Location = a.Location,
+                OperatingHours = a.OperatingHours,
+                ImagePath = a.ImagePath,
+                AttractionTypeId = a.AttractionTypeId,
+                operatingTimes = hp.ConvertOperatingTimes(a.OperatingHours),
+            };
+
+            return View(vm);
         }
+
+        //------------------------------------------ FeedBack start ----------------------------------------------
+
+        // Manually generate next id for feedback
+        private string NextFeedbackId()
+        {
+            string max = db.Feedback.Max(s => s.Id) ?? "F000";
+            int n = int.Parse(max[1..]);
+            return (n + 1).ToString("'F'000");
+        }
+
+        //GET: Feedback/Insert
+        public IActionResult ClientFeedbackForm(string attractionId)
+        {
+            ViewBag.Attraction = db.Attraction.Find(attractionId);
+
+            if (ViewBag.Attraction == null)
+            {
+                return RedirectToAction("ClientAttractionDetail");
+            }
+
+            var vm = new FeedbackInsertVM
+            {
+                Id = NextFeedbackId(),
+                AttractionId = attractionId,
+                UserId = "U001",
+            };
+
+            return View(vm);
+        }
+
+        //POST: Feedback/Insert
+        [HttpPost]
+        public IActionResult ClientFeedbackForm(FeedbackInsertVM vm)
+        {
+            ViewBag.Attraction = db.Attraction.Find(vm.AttractionId);
+
+            if (ViewBag.Attraction == null)
+            {
+                return RedirectToAction("ClientAttractionDetail");
+            }
+
+            if (ModelState.IsValid("Title") && vm.Title == null) 
+            {
+                ModelState.AddModelError("Title", "Please enter your title.");
+            }
+
+            if (ModelState.IsValid("Partner") && vm.Partner == null)
+            {
+                ModelState.AddModelError("Partner", "Please choose your partner.");
+            }
+
+            if (ModelState.IsValid("Reason") && vm.Reason.Equals("none"))
+            {
+                ModelState.AddModelError("Reason", "Please enter your comment." + vm.Rating);
+            }
+
+            if (ModelState.IsValid("Review") && vm.Review == null)
+            {
+                ModelState.AddModelError("Review", "Please enter your review.");
+            }
+
+
+            if (ModelState.IsValid)
+            {
+                string comment = vm.Title + " | " + vm.Reason + " | " + vm.Partner + " | " + vm.Review;
+                db.Feedback.Add(new()
+                {
+                    Id= vm.Id,
+                    Rating= vm.Rating,
+                    Comment= comment,
+                    SubmitDate= DateTime.Now,
+                    AttractionId= vm.AttractionId,
+                    UserId= vm.UserId,
+                });
+                db.SaveChanges();
+
+                TempData["Info"] = "Your feedback is submitted.";
+                return RedirectToAction("ClientAttractionDetail", new { AttractionId = vm.AttractionId });
+            }
+
+            return View(vm);
+        }
+
+//------------------------------------------ FeedBack end ----------------------------------------------
+
 
         public IActionResult ClientPayment()
         {

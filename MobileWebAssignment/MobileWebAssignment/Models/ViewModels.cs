@@ -59,6 +59,7 @@ public class AttractionUpdateVM
     public string Location { get; set; }
     [StringLength(500)]
     public string? OperatingHours { get; set; }
+
     [StringLength(200)]
     public string? ImagePath { get; set; }
 
@@ -67,6 +68,7 @@ public class AttractionUpdateVM
     public IFormFile? Photo { get; set; }
 
     public List<OperatingHour>? operatingHours { get; set; }
+    public List<OperatingTime>? operatingTimes { get; set; }
 
 }
 
@@ -77,5 +79,43 @@ public class OperatingHour
     public TimeSpan? StartTime { get; set; } 
     public TimeSpan? EndTime { get; set; }   
 }
+
+public class OperatingTime
+{
+    public string Day { get; set; }
+    public string Status { get; set; }
+    public string StartTime { get; set; }
+    public string EndTime { get; set; }
+}
+
+
+//Feedback
+public class FeedbackInsertVM
+{
+    public string Id { get; set; }
+
+    [MaxLength(1000)]
+    public string? Comment { get; set; }
+
+    [Range(1,5,ErrorMessage = "Please select your rating.")]
+    public int Rating { get; set; }
+    public DateTime SubmitDate { get; set; }
+
+    
+    public string AttractionId { get; set; }
+    public string UserId { get; set; }
+    [Required]
+    public string? Title { get; set; }
+    [Required]
+    public string? Partner { get; set; }
+    [Required]
+    public string? Reason { get; set; }
+    [Required]
+    public string? Review { get; set; }
+}
+
+
+
+
 
 
