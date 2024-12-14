@@ -12,8 +12,8 @@ using MobileWebAssignment.Models;
 namespace MobileWebAssignment.Migrations
 {
     [DbContext(typeof(DB))]
-    [Migration("20241204083515_WebDB")]
-    partial class WebDB
+    [Migration("20241213110100_WebMobileDB")]
+    partial class WebMobileDB
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -330,6 +330,11 @@ namespace MobileWebAssignment.Migrations
                         .HasMaxLength(10)
                         .HasColumnType("nvarchar(10)");
 
+                    b.Property<string>("Discriminator")
+                        .IsRequired()
+                        .HasMaxLength(8)
+                        .HasColumnType("nvarchar(8)");
+
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -348,11 +353,6 @@ namespace MobileWebAssignment.Migrations
                         .HasMaxLength(15)
                         .HasColumnType("nvarchar(15)");
 
-                    b.Property<string>("ImagePath")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(30)
@@ -368,14 +368,32 @@ namespace MobileWebAssignment.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
-                    b.Property<string>("Role")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
-
                     b.HasKey("Id");
 
                     b.ToTable("User");
+
+                    b.HasDiscriminator().HasValue("User");
+
+                    b.UseTphMappingStrategy();
+                });
+
+            modelBuilder.Entity("MobileWebAssignment.Models.Admin", b =>
+                {
+                    b.HasBaseType("MobileWebAssignment.Models.User");
+
+                    b.HasDiscriminator().HasValue("Admin");
+                });
+
+            modelBuilder.Entity("MobileWebAssignment.Models.Member", b =>
+                {
+                    b.HasBaseType("MobileWebAssignment.Models.User");
+
+                    b.Property<string>("PhotoURL")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasDiscriminator().HasValue("Member");
                 });
 
             modelBuilder.Entity("MobileWebAssignment.Models.Attraction", b =>

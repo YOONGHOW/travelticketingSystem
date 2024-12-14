@@ -1,4 +1,4 @@
-﻿@model AttractionInsertVM
+﻿@model AttractionUpdateVM
 
 <!DOCTYPE html>
 <html lang="en">
@@ -7,25 +7,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/css/AdminCss/AdminAttractionTypeLayout.css">
-    <title>Add New Attraction Information</title>
-   
+    <title>Update Attraction Information</title>
+
 </head>
 
 <body>
     <div class="container">
         <div class="header">
             <a href="/Admin/AdminAttraction" class="back-arrow"><img src="/images/back-arrow.png" alt="Back"></a>
-            <div class="title">Add New Attraction</div>
+            <div class="title">Update Attraction</div>
         </div>
 
         <div class="content">
             <form method="post" enctype="multipart/form-data">
-                <div asp-validation-summary="ModelOnly"></div>
+                <div asp-validation-summary="All"></div>
 
                 <label asp-for="Photo">Attraction Image</label>
                 <label class="upload">
                     <input asp-for="Photo" accept="image/jpeg,image/png" hidden>
-                    <img src="/images/photo.jpg">
+                    <img src="/attractionImages/@Model.ImagePath">
                 </label>
                 <span asp-validation-for="Photo" class="err" style="text-align:center;"></span>
 
@@ -46,8 +46,8 @@
                         <label class="details" asp-for="AttractionTypeId">Attraction Type Name</label>
                         <select id="attraction-type" asp-for="AttractionTypeId">
                             <option value="none">-- Select Attraction Type --</option>
-                            @foreach (var at in ViewBag.AttractionTypes) 
-                            { 
+                            @foreach (var at in ViewBag.AttractionTypes)
+                            {
                                 <option value="@at.Id">@at.Name</option>
                             }
                         </select>
@@ -73,18 +73,18 @@
                         @{
                             var days = new[] { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" };
                         }
-                        
+
                         @for (int i = 0; i < days.Length; i++)
                         {
                             <div class="day-row">
                                 <span>@days[i]</span>
-                                <input type="hidden" name="operatingHours[@i].Day" value="@days[i]" class="day-status"/>
+                                <input type="hidden" asp-for="operatingHours[@i].Day" value="@days[i]" class="day-status" />
                                 <select asp-for="operatingHours[@i].Status" class="day-status">
                                     <option value="open">Open</option>
                                     <option value="closed">Closed</option>
                                 </select>
-                                <input type="time" name="operatingHours[@i].StartTime" class="time-input start-time" value="operatingHours[@i].StartTime">
-                                <input type="time" name="operatingHours[@i].EndTime" class="time-input end-time" value="operatingHours[@i].EndTime">
+                                <input type="time" asp-for="operatingHours[@i].StartTime" class="time-input start-time" placeholder="Start Time">
+                                <input type="time" asp-for="operatingHours[@i].EndTime" class="time-input end-time" placeholder="End Time">
                             </div>
                             <span class="err" asp-validation-for="operatingHours[@i]"></span>
                         }
@@ -92,7 +92,7 @@
                 </div>
 
                 <div class="button">
-                    <button id="addCategoryButton">Add Attraction</button>
+                    <button id="addCategoryButton">Update Attraction</button>
                 </div>
             </form>
         </div>
@@ -106,15 +106,15 @@
     <script>
                     $(document).ready(function () {
             $(".day-status").on("change", function () {
-                const isClosed = $(this).val() === "closed"; 
-                const row = $(this).closest(".day-row"); 
-                row.find(".start-time, .end-time").prop("disabled", isClosed); 
+                const isClosed = $(this).val() === "closed";
+                const row = $(this).closest(".day-row");
+                row.find(".start-time, .end-time").prop("disabled", isClosed);
             });
 
             $(".day-status").each(function () {
-                const isClosed = $(this).val() === "closed"; 
-                const row = $(this).closest(".day-row"); 
-                row.find(".start-time, .end-time").prop("disabled", isClosed); 
+                const isClosed = $(this).val() === "closed";
+                const row = $(this).closest(".day-row");
+                row.find(".start-time, .end-time").prop("disabled", isClosed);
             });
         });
     </script>

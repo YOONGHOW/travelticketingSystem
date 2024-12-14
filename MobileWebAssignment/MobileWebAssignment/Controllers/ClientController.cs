@@ -7,10 +7,14 @@ namespace MobileWebAssignment.Controllers
     {
 
         private readonly DB db;
+        private readonly IWebHostEnvironment en;
+        private readonly Helper hp;
 
-        public ClientController(DB db)
+        public ClientController(DB db, IWebHostEnvironment en, Helper hp)
         {
             this.db = db;
+            this.en = en;
+            this.hp = hp;
         }
 
         // GET: Home/Index
@@ -40,7 +44,6 @@ namespace MobileWebAssignment.Controllers
         {
             ViewBag.AttractionTypes = db.AttractionType.ToList();
             ViewBag.Attractions = db.Attraction.Include(a => a.AttractionType);
-
             return View();
         }
 
