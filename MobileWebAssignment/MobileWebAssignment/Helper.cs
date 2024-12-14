@@ -1,4 +1,5 @@
-﻿using SixLabors.ImageSharp;
+﻿using MobileWebAssignment.Models;
+using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 using System.Globalization;
 using System.Text.RegularExpressions;
@@ -129,7 +130,76 @@ public class Helper
         return model.operatingHours;
     }
 
-    // Helper method to parse time string into TimeSpan
+
+         public List<OperatingTime> ConvertOperatingTimes(string operatingHoursText)
+        {
+        // Initialize the list to hold the operating hours
+        List<OperatingTime> operatingHoursList = new List<OperatingTime>();
+
+        // Split the input string by '|' to separate each day and status
+        string[] daysStatus = operatingHoursText.Split('|');
+
+        // Iterate through each day and status pair
+        foreach (var dayStatus in daysStatus)
+        {
+            // Trim the leading and trailing spaces
+            var dayStatusTrimmed = dayStatus.Trim();
+
+            // Split the "Day Status" pair by spaces (splitting only the first two parts)
+            var parts = dayStatusTrimmed.Split(new[] { ' ' }, 3);
+
+            if (parts.Length >= 2)
+            {
+                var day = parts[0];   // First part is the day (e.g., "Monday")
+                var status = parts[1].Trim();  // The second part is the status (e.g., "open" or "closed")
+
+                // Initialize StartTime and EndTime as null
+                string? startTime = null;
+                string? endTime = null;
+
+                // Handle the "open" status by parsing the times if available
+                if (status.Equals("open", StringComparison.OrdinalIgnoreCase) && parts.Length == 3)
+                {
+                    var timeRange = parts[2].Trim();
+                    var timeParts = timeRange.Split(' '); // Split the time range like "22:58:00 13:02:00"
+
+                    if (timeParts.Length == 2)
+                    {
+                        startTime = ConvertToAmPmFormat(timeParts[0].Trim());  // First part is start time
+                        endTime = ConvertToAmPmFormat(timeParts[1].Trim());    // Second part is end time
+                    }
+                }
+
+                // If status is not "open", we assume it's "closed" and set times to null
+                if (status.Equals("closed", StringComparison.OrdinalIgnoreCase))
+                {
+                    startTime = null;
+                    endTime = null;
+                }
+
+                // Create an OperatingHour object and add it to the list
+                var operatingTime = new OperatingTime
+                {
+                    Day = day,
+                    Status = status,
+                    StartTime = startTime,
+                    EndTime = endTime
+                };
+
+                operatingHoursList.Add(operatingTime);
+            }
+        }
+
+        // Now the list has been populated, assign it to the model property
+        var model = new AttractionUpdateVM
+        {
+            operatingTimes = operatingHoursList,
+        };
+
+        return model.operatingTimes;
+    }
+
+    // Helper method to parse time string into TimeSpan ()
     private TimeSpan? ParseTime(string time)
     {
         // Try to parse time in the format "hh:mm:ss" or "h:mm:ss"
@@ -139,5 +209,23 @@ public class Helper
             return parsedTime;
         }
         return null; // Return null if parsing fails
+    }
+
+
+    //Helper method transfer time span to am/pm format
+    private string ConvertToAmPmFormat(string time)
+    {
+        try
+        {
+            // Parse the time string in "HH:mm:ss" (24-hour format)
+            DateTime parsedTime = DateTime.ParseExact(time, "HH:mm:ss", CultureInfo.InvariantCulture);
+
+            // Format the parsed time into "h:mm tt" (12-hour format with AM/PM)
+            return parsedTime.ToString("h:mm tt", CultureInfo.InvariantCulture);
+        }
+        catch (FormatException)
+        {
+            return null; // Return null if parsing fails
+        }
     }
 }

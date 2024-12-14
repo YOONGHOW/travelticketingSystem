@@ -1,50 +1,97 @@
 ﻿@{
     Layout = "_ClientLayout";
-    ViewBag.Title = "Client | Attraction";
 }
+
+@model AttractionUpdateVM
 
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/ClientCss/ClientAttraction.css" asp-append-version="true">
+
 </head>
 <body>
 </body>
 </html>
 
 <main style="min-height: 500px;">
-   <section>
-    <nav class="image_side">
-        <img src="/attractionImages/afamosa.jpeg" alt="afamosa">
-    </nav>
-    <div class="details_side">
-       <h1>A-Famosa</h1>
-        <p style="font-size:22px;">
-            <b>
-                RM120.00 | <span style="font-size:17px;">Remaining Ticket: 100</span>
-            </b>
-        </p>
-        <br />
-        <article>
-            <ul>
-                <li>If water fun is on your mind, splash over to Water Theme Park, just 1.5 hours from Kuala Lumpur, with an optional meal or Safari Wonderland access.</li>
-                <li>Rides: Discover Kids, Family, and Adventure Zones, with attractions like Arabian Village, Wave Pool, Lazy River, High Speed, Big Ice Cream, and more.</li>
-                <li>Options: Upgrade for a hearty meal with veg and non-veg choices or access Safari Wonderland for wildlife fun and up-close encounters with animals.</li>
-                <li>Facilities: Enjoy hassle-free fun with rental lockers, changing rooms, wheelchair accessibility, and cabanas for rent - convenient for everyone.</li>
-            </ul>
-        </article>
-        
+    <section class="attraction-container">
+        <!-- Image Section -->
+        <nav class="image-side">
+            <img src="/attractionImages/@Model.ImagePath" alt="@Model.Name">
+        </nav>
 
-        <form method="POST" action="ClientAttractionDetail">
-            <br>
-            <label for="quantity" class="qty">Quantity :</label>
-            <input type="number" id="quantity" name="quantity" value="1" min="1" max="<?= $product->product_stock ?>"><br>
-            @* <input type="hidden" name="product_id" value="<?= $product->product_id ?>"> *@
-            @* <input type="hidden" name="product_name" value="<?= $product->product_name ?>"> *@
-            @* <input type="hidden" name="product_price" value="<?= $product->product_price ?>"> *@
-            <input type="submit" id="addCartBtn" name="addCart" value="Add to Cart" /><br>    
-        </form>
-    </div>
+        <!-- Details Section -->
+        <div class="details-side">
+            <h1>@Model.Name</h1>
+            <p class="price-info">
+                <b>
+                    RM120.00 | <span class="remaining-ticket">Remaining Ticket: 100</span>
+                </b>
+            </p>
+            <article class="attraction-details">
+                <h4>Description</h4>
+                <p>@Model.Description</p>
+                <h4>Location</h4>
+                <p>@Model.Location</p>
+                <h4>Operating Hours</h4>
+                <p>
+                    <table style="text-align:left;">
+                        @foreach (var op in Model.operatingTimes)
+                        {
+                            string operateDetail = "";
+
+                            if (op.Status.Equals("open"))
+                            {
+                                operateDetail += " " + op.StartTime + " - " + op.EndTime;
+                            }
+                            else
+                            {
+                                operateDetail += " Closed";
+                            }
+
+                            <tr>
+                                <th>@op.Day</th>
+                                <td style="padding-left:10px;">@operateDetail</td>
+                            </tr>
+                        }
+                    </table>
+                </p>
+            </article>
+
+            <!-- Add to Cart Section -->
+            <form method="POST" action="ClientAttractionDetail" class="add-to-cart-form">
+                <label for="quantity" class="qty">Quantity:</label>
+                <input type="number" id="quantity" name="quantity" value="1" min="1" max="100">
+                <input type="hidden" name="attraction_id" value="@Model.Id">
+                <input type="submit" id="addCartBtn" name="addCart" value="Add to Cart">
+            </form>
+        </div>
+    </section>
+
+    <!-- Review Section -->
+    <section class="review-section">
+        <h2>Most Recent Reviews</h2>
+        <p class="review-summary">4.8/5 <span class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</span> Based on 27K+ reviews</p>
+
+        <!-- Add Review Button -->
+        <button id="add-review-btn" data-get="/Client/ClientFeedbackForm?attractionId=@Model.Id">Add Review</button>
+
+        <div class="review-cards">
+            <!-- Individual Review Cards -->
+            <div class="review-card">
+                <p class="review-author"><b>Klook User</b></p>
+                <p class="review-text">Easy to redeem, but a person in front took the card and walked off quickly when the card came out. Advised that when you put the card in, allow the person in front of you...</p>
+                <p class="review-date">3 days ago</p>
+            </div>
+            <div class="review-card">
+                <p class="review-author"><b>Klook User</b></p>
+                <p class="review-text">The JR Pass was such a money saver for my trip this time. I traveled to Japan multiple times and never used the JR Pass thinking it wasn’t worth it...</p>
+                <p class="review-date">5 days ago</p>
+            </div>
+        </div>
+        <a href="#" class="read-all-reviews">Read all reviews</a>
     </section>
 </main>
