@@ -17,14 +17,7 @@ public class AdminController : Controller
         this.en = en;
         this.hp = hp;
     }
-    public IActionResult AdminFeedback()
-
-    {
-        return View();
-    }
-
     
-
     public IActionResult AdminDiscount()
     {
         return View();
@@ -252,7 +245,7 @@ public class AdminController : Controller
                 if (operateTime.StartTime == null || operateTime.EndTime == null)
                 {
                     ModelState.AddModelError("operatingHours[" + i + "]", $"Operating hours for {operateTime.Day} are incomplete.");
-                }else if(operateTime.StartTime < operateTime.EndTime)
+                }else if(operateTime.StartTime > operateTime.EndTime)
                 {
                     ModelState.AddModelError("operatingHours[" + i + "]", $"End Time cannot less than Start Time for {operateTime.Day} .");
                 }
@@ -356,7 +349,7 @@ public class AdminController : Controller
                 {
                     ModelState.AddModelError("operatingHours[" + i + "]", $"Operating hours for {operateTime.Day} are incomplete.");
                 }
-                else if (operateTime.StartTime < operateTime.EndTime)
+                else if (operateTime.StartTime > operateTime.EndTime)
                 {
                     ModelState.AddModelError("operatingHours[" + i + "]", $"End Time cannot less than Start Time for {operateTime.Day} .");
                 }
@@ -444,6 +437,7 @@ public class AdminController : Controller
     }
 
 
+    //============================================ Attraction end =========================================================
     //============================================ Attraction end =========================================================
 
 }
