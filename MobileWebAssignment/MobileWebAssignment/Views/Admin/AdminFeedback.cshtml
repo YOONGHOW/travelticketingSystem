@@ -3,12 +3,15 @@
     ViewBag.Title = "Admin | Feedback";
 }
 
+@model IEnumerable<FeedbackInsertVM>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/css/AdminCss/AdminFeedback.css" asp-append-version="true">
+    
 </head>
 <body>
     <div class="reviews-container">
@@ -22,10 +25,10 @@
         <div class="filtering">
             <label for="attraction"><b>Attraction:</b></label>
             <select id="attraction" name="attraction">
-                <option value="all">All Attraction</option>
-                <option value="category1">Category 1</option>
-                <option value="category2">Category 2</option>
-                <option value="category3">Category 3</option>
+                <option value="all">All Attractions</option>
+                @foreach(var a in ViewBag.attractions){
+                    <option value="@a.Id">@a.Name</option>
+                }
             </select>
         </div>
 
@@ -42,28 +45,34 @@
         </div>
 
         <!-- Reviews Section -->
-        <div class="review">
-            <div class="review-header">
-                <div class="user-info">
-                    <img src="/images/miyabi.jpeg" alt="User">
-                    <div class="details">
-                        <span class="user-name">Towhidur Rahman</span>
-                        <span>Total Spend: $200</span>
-                        <span>Total Reviews: 14</span>
+        @foreach (var f in Model)
+        {
+            <div class="review">
+                <div class="review-header">
+                    <div class="user-info">
+                        <img src="/images/miyabi.jpeg" alt="User">
+                        <div class="details">
+                            <span class="user-name">Miyabi</span>
+                            <span>Total Spend: $200</span>
+                            <span>Reviews Title: @f.commentDetail.Title</span>
+                        </div>
                     </div>
+                    <span class="rating">
+                        @for (int i = 0; i < f.Rating; i++)
+                        {
+                            <b>★</b>
+                        }
+                    </span>
                 </div>
-                <span class="rating">★★★★★</span>
+                <p class="review-text">@f.commentDetail.Review</p>
+                <div class="actions">
+                    <button>Public Comment</button>
+                    <button>Direct Message</button>
+                    <button>❤</button>
+                </div>
             </div>
-            <p class="review-text">
-                My first and only mala ordered on Etsy, and I'm beyond delighted! I requested a custom mala based on two stones I was called to invite together in this kind of creation.
-            </p>
-            <div class="actions">
-                <button>Public Comment</button>
-                <button>Direct Message</button>
-                <button>❤</button>
-            </div>
-        </div>
-        <!-- Add more .review blocks here -->
+        }
+
     </div>
 </body>
 </html>

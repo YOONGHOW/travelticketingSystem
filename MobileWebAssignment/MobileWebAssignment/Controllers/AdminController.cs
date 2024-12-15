@@ -438,6 +438,33 @@ public class AdminController : Controller
 
 
     //============================================ Attraction end =========================================================
-    //============================================ Attraction end =========================================================
+    //============================================ Feedback start =========================================================
+    public IActionResult AdminFeedback()
+    {
+        var feedbacks = db.Feedback.Include(a => a.Attraction).Include(u => u.User).ToList();
+
+        ViewBag.attractions = db.Attraction.ToList();
+
+        var vm = new List<FeedbackInsertVM>();
+        foreach (var f in feedbacks)
+        {
+            vm.Add(new FeedbackInsertVM
+            {
+                Id = f.Id,
+                Comment = f.Comment,
+                Rating = f.Rating,
+                SubmitDate = f.SubmitDate,
+                AttractionId = f.AttractionId,
+                commentDetail = hp.ConvertComment(f.Comment),
+            });
+        }
+
+
+        return View(vm);
+    }
+
+
+
+    //============================================ Feedback end =========================================================
 
 }

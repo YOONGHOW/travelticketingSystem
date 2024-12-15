@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using MobileWebAssignment.Models;
 
 namespace MobileWebAssignment.Controllers
 {
@@ -52,11 +53,25 @@ namespace MobileWebAssignment.Controllers
         {
 
             var a = db.Attraction.Find(AttractionId);
-            ViewBag.Feedbacks = db.Feedback.Where(f => f.AttractionId == AttractionId).ToList();
+            var feedbacks = db.Feedback.Where(f => f.AttractionId == AttractionId).ToList();
 
             if (a == null)
             {
                 return RedirectToAction("ClientAttractionDetail");
+            }
+
+           ViewBag.Feedbacks = new List<FeedbackInsertVM>();
+            foreach (var f in feedbacks)
+            {
+                ViewBag.Feedbacks.Add(new FeedbackInsertVM
+                {
+                    Id = f.Id,
+                    Comment = f.Comment,
+                    Rating = f.Rating,
+                    SubmitDate = f.SubmitDate,
+                    AttractionId = f.AttractionId,
+                    commentDetail = hp.ConvertComment(f.Comment),
+                });
             }
 
             var vm = new AttractionUpdateVM
@@ -157,7 +172,118 @@ namespace MobileWebAssignment.Controllers
             return View(vm);
         }
 
-//------------------------------------------ FeedBack end ----------------------------------------------
+
+        public IActionResult ClientFeedback(string? userId)
+        {
+            var feedbacks = db.Feedback.Include(a => a.Attraction).Include(u => u.User).Where(f => f.UserId == userId).ToList();
+
+            if(feedbacks == null)
+            {
+                return RedirectToAction("HomePage");
+            }
+
+            ViewBag.attractions = db.Attraction.ToList();
+
+            var vm = new List<FeedbackInsertVM>();
+            foreach (var f in feedbacks)
+            {
+                vm.Add(new FeedbackInsertVM
+                {
+                    Id = f.Id,
+                    Comment = f.Comment,
+                    Rating = f.Rating,
+                    SubmitDate = f.SubmitDate,
+                    AttractionId = f.AttractionId,
+                    commentDetail = hp.ConvertComment(f.Comment),
+                });
+            }
+
+
+            return View(vm);
+        }
+
+        [HttpPost]
+        public IActionResult ClientFeedback(List<FeedbackInsertVM> vm, string feedbackId, string userId)
+        {
+            var f = db.Feedback.Find(feedbackId);
+
+            if (f != null)
+            {
+                db.Feedback.Remove(f);
+                db.SaveChanges();
+                TempData["Info"] = "Record Deleted.";
+                return RedirectToAction("ClientFeedback", new { userId = userId });
+            }
+
+            return View(vm);
+        }
+
+        public IActionResult ClientFeedbackUpdate(string? Id)
+        {
+            var f = db.Feedback.Find(Id);
+            if (f == null)
+            {
+                return RedirectToAction("ClientFeedback");
+            }
+
+            ViewBag.Attraction = db.Attraction.Find(f.AttractionId);
+
+            if (ViewBag.Attraction == null)
+            {
+                return RedirectToAction("ClientAttractionDetail");
+            }
+
+            Comment cd = hp.ConvertComment(f.Comment);
+
+            var vm = new FeedbackInsertVM
+            {
+                Id = f.Id,
+                AttractionId = f.AttractionId,
+                UserId = f.UserId,
+                SubmitDate = f.SubmitDate,
+                Rating = f.Rating,
+                Comment = f.Comment,
+                commentDetail = cd,
+                Partner = cd.Partner.Trim(),
+                Title = cd.Title.Trim(),
+                Review = cd.Review.Trim(),
+                Reason = cd.Reason.Trim(),
+            };
+
+            return View(vm);
+        }
+
+
+        [HttpPost]
+        public IActionResult ClientFeedbackUpdate(FeedbackInsertVM vm)
+        {
+            var f = db.Feedback.Find(vm.Id);
+
+            if (f == null)
+            {
+                return RedirectToAction("ClientFeedback");
+            }
+
+            if (ModelState.IsValid)
+            {
+                string comment = vm.Title + " | " + vm.Reason + " | " + vm.Partner + " | " + vm.Review;
+
+                f.Rating = vm.Rating;
+                f.Comment = comment.Trim();
+                db.SaveChanges();
+
+                TempData["Info"] = "Review Updated.";
+                return RedirectToAction("ClientFeedback", new { UserId = vm.UserId });
+            }
+
+            return View(vm);
+        }
+
+       
+
+
+
+        //------------------------------------------ FeedBack end ----------------------------------------------
 
 
         public IActionResult ClientPayment()

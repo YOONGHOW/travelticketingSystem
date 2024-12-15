@@ -131,8 +131,8 @@ public class Helper
     }
 
 
-         public List<OperatingTime> ConvertOperatingTimes(string operatingHoursText)
-        {
+    public List<OperatingTime> ConvertOperatingTimes(string operatingHoursText)
+    {
         // Initialize the list to hold the operating hours
         List<OperatingTime> operatingHoursList = new List<OperatingTime>();
 
@@ -227,5 +227,25 @@ public class Helper
         {
             return null; // Return null if parsing fails
         }
+    }
+
+
+    public Comment ConvertComment(string comment)
+    {
+        //create a new comment to store the converted comment
+        Comment commentDetails = new Comment();
+
+        //trim the blank space
+        comment = comment.Trim();
+
+        //retieve part by part
+        var parts = comment.Split('|');
+
+        commentDetails.Title = parts[0];
+        commentDetails.Reason = parts[1];
+        commentDetails.Partner = parts[2];
+        commentDetails.Review = parts[3];
+
+        return commentDetails;
     }
 }
