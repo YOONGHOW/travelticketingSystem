@@ -4,6 +4,7 @@
 
 @model AttractionUpdateVM
 
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -74,24 +75,57 @@
     <!-- Review Section -->
     <section class="review-section">
         <h2>Most Recent Reviews</h2>
-        <p class="review-summary">4.8/5 <span class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</span> Based on 27K+ reviews</p>
+        @if(ViewBag.Feedbacks.Count == 0){
+            <p>No review yet.</p>
+        }else{
+            
+                int total = 0;
+                double averageRating = 0.0;
+                foreach(var f in ViewBag.Feedbacks){
+                    total += f.Rating;
+                }
+
+                averageRating = (double)total / ViewBag.Feedbacks.Count;
+            
+        <p class="review-summary">@averageRating.ToString("F1") / 5 <span class="stars" data-rating="@averageRating.ToString("F1")" style="width: @averageRating.ToString("F1") * 20%;"></span> Based on @ViewBag.Feedbacks.Count review(s)</p>
 
         <!-- Add Review Button -->
-        <button id="add-review-btn" data-get="/Client/ClientFeedbackForm?attractionId=@Model.Id">Add Review</button>
+           <button id="add-review-btn" data-get="/Client/ClientFeedbackForm?attractionId=@Model.Id">Add Review</button>
 
         <div class="review-cards">
-            <!-- Individual Review Cards -->
-            <div class="review-card">
-                <p class="review-author"><b>Klook User</b></p>
-                <p class="review-text">Easy to redeem, but a person in front took the card and walked off quickly when the card came out. Advised that when you put the card in, allow the person in front of you...</p>
-                <p class="review-date">3 days ago</p>
-            </div>
-            <div class="review-card">
-                <p class="review-author"><b>Klook User</b></p>
-                <p class="review-text">The JR Pass was such a money saver for my trip this time. I traveled to Japan multiple times and never used the JR Pass thinking it wasn’t worth it...</p>
-                <p class="review-date">5 days ago</p>
-            </div>
+            @foreach(var f in ViewBag.Feedbacks){
+                <div class="review-card">
+                    <div class="review-score">
+                        <div class="stars" data-rating="@f.Rating"></div>
+                        <span class="score-label">@f.Rating.0 / 5</span>
+                    </div>
+                    <div class="review-details">
+                        <div class="review-user">
+                            <strong>Siti</strong>
+                        </div>
+                        <ul class="review-meta">
+                            <li>👪 @f.commentDetail.Partner</li>
+                            <li>🎫 Two Adults Ticket</li>
+                            <li>🎚️ Premium Ticket</li>
+                            <li>🤷‍♂ @f.commentDetail.Reason</li>
+                        </ul>
+                        <div class="review-comment">
+                            <h4>"@f.commentDetail.Title"</h4>
+                            <p>@f.commentDetail.Review</p>
+                            <span class="review-date">Reviewed @f.SubmitDate</span>
+                        </div>
+                    </div>
+                </div>
+            }
+           
         </div>
-        <a href="#" class="read-all-reviews">Read all reviews</a>
+        }
     </section>
 </main>
+<script>
+        document.querySelectorAll('.stars').forEach(function(starElement) {
+        let rating = starElement.getAttribute('data-rating');
+        let ratingRounded = Math.round(rating);
+        starElement.setAttribute('data-rating', ratingRounded); // round to nearest integer (1-5)
+    });
+</script>
