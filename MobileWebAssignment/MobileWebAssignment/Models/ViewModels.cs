@@ -112,6 +112,19 @@ public class FeedbackInsertVM
     public string? Reason { get; set; }
     [Required]
     public string? Review { get; set; }
+
+    public Comment? commentDetail { get; set; }
+}
+
+public class Comment()
+{
+    public string? Title { get; set; }
+    
+    public string? Partner { get; set; }
+    
+    public string? Reason { get; set; }
+    
+    public string? Review { get; set; }
 }
 
 
