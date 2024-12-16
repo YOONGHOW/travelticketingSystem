@@ -1,5 +1,4 @@
-﻿@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap');
-
+﻿
 * {
     box-sizing: border-box;
     font-family: 'Poppins', sans-serif;
@@ -39,14 +38,13 @@ body {
 
 .content form .user-details {
     display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    margin: 20px 0 12px 0;
+    flex-direction: column;
+    gap: 15px;
 }
 
 form .user-details .input-box {
     margin-bottom: 15px;
-    width: calc(100% / 3 - 20px);
+    width: 100%;
 }
 
 form .user-details .input-address {
@@ -54,10 +52,11 @@ form .user-details .input-address {
     width: 100%;
 }
 
-form .input-box span.details {
+form .input-box label.details {
     display: block;
     font-weight: 500;
     margin-bottom: 5px;
+    font-weight:bold;
 }
 
 .user-details .input-box input,
@@ -252,9 +251,9 @@ form .button {
 }
 
 /*error message*/
-.err {
+.text-danger {
     color: red;
-    font-size: 12px;
+    font-size: 13px;
 }
 
 /* Photo Upload ------------------------------------------------------------ */
