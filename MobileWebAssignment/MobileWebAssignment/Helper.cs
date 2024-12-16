@@ -1,4 +1,5 @@
-﻿using SixLabors.ImageSharp;
+﻿using Microsoft.AspNetCore.Identity;
+using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 using System.Text.RegularExpressions;
 
@@ -7,10 +8,12 @@ namespace MobileWebAssignment;
 public class Helper
 {
     private readonly IWebHostEnvironment en;
+    private readonly IHttpContextAccessor ct;
 
-    public Helper(IWebHostEnvironment en)
+    public Helper(IWebHostEnvironment en, IHttpContextAccessor ct)
     {
         this.en = en;
+        this.ct = ct;
     }
 
     // ------------------------------------------------------------------------
@@ -59,4 +62,22 @@ public class Helper
         var path = Path.Combine(en.WebRootPath, folder, file);
         File.Delete(path);
     }
+
+
+    // ------------------------------------------------------------------------
+    // Security Helper Functions
+    // ------------------------------------------------------------------------
+
+    private readonly PasswordHasher<object> ph = new();
+    public string HashPassword(string password)
+    {
+
+        return ph.HashPassword(0, password);
+    }
+
+    public bool VerifyPassword(string hash, string password)
+    {
+        return ph.VerifyHashedPassword(0, hash, password) == PasswordVerificationResult.Success;
+    }
+
 }

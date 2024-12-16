@@ -9,6 +9,9 @@ builder.Services.AddSqlServer<DB>($@"
 ");
 builder.Services.AddScoped<Helper>();
 
+builder.Services.AddAuthentication().AddCookie();
+builder.Services.AddHttpContextAccessor();
+
 var app = builder.Build();
 app.UseHttpsRedirection();//redirect HTTP to HTTPS
 app.UseStaticFiles();//enable static files serving from the wwwroot folder
