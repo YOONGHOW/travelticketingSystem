@@ -1,0 +1,57 @@
+﻿@{
+    Layout = "_ClientLayout";
+    ViewBag.Title = "Client | Attraction";
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/ClientCss/ClientAttraction.css" asp-append-version="true">
+
+</head>
+<body></body>
+</html>
+<main style="min-height: 600px;">
+    <p class="introduction">
+        From local escapes to far-flung adventures, find what makes you happy anytime, anywhere
+    </p>
+    <section>
+        <nav class="prod_side">
+            <form method="POST" action="product_list.php">
+                <input type="search" name="search" id="search_prod" placeholder="Search..." />
+
+                <br><br>
+                <label>Filter by Price : </label><br><br>
+                <input type="submit" name="sort_High_Low" id="priceBtn" value="High to Low" /> <br><br>
+                <input type="submit" name="sort_Low_High" id="priceBtn" value="Low to High">
+
+
+                <select name="category" id="category" onchange="this.form.submit()">
+                    <option value="all">All</option>
+                    @foreach (var at in ViewBag.AttractionTypes)
+                    { 
+                        <option value="@at.Id">@at.Name</option>
+                    }
+                </select>
+            </form>
+        </nav>
+
+        <div class="productList">
+            <div class="product-list">
+                @foreach (var a in ViewBag.Attractions)
+                {
+                     <div class="product-item" onclick="window.location.href='ClientAttractionDetail?attractionId=@a.Id'">
+                    <img src="/attractionImages/@a.ImagePath" alt="" class="product-image">
+                    <h3 class="product-name">@a.Name</h3>
+                    <p>★ 4.0(12)</p>
+                    <p class="product-cost">start with RM120 per ticket</p>
+                </div>
+                }
+
+			</div>
+        </div>
+    </section>
+</main>
+

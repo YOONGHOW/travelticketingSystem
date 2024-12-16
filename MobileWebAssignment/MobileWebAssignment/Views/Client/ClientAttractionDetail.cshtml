@@ -1,0 +1,131 @@
+﻿@{
+    Layout = "_ClientLayout";
+}
+
+@model AttractionUpdateVM
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/ClientCss/ClientAttraction.css" asp-append-version="true">
+
+</head>
+<body>
+</body>
+</html>
+
+<main style="min-height: 500px;">
+    <section class="attraction-container">
+        <!-- Image Section -->
+        <nav class="image-side">
+            <img src="/attractionImages/@Model.ImagePath" alt="@Model.Name">
+        </nav>
+
+        <!-- Details Section -->
+        <div class="details-side">
+            <h1>@Model.Name</h1>
+            <p class="price-info">
+                <b>
+                    RM120.00 | <span class="remaining-ticket">Remaining Ticket: 100</span>
+                </b>
+            </p>
+            <article class="attraction-details">
+                <h4>Description</h4>
+                <p>@Model.Description</p>
+                <h4>Location</h4>
+                <p>@Model.Location</p>
+                <h4>Operating Hours</h4>
+                <p>
+                    <table style="text-align:left;">
+                        @foreach (var op in Model.operatingTimes)
+                        {
+                            string operateDetail = "";
+
+                            if (op.Status.Equals("open"))
+                            {
+                                operateDetail += " " + op.StartTime + " - " + op.EndTime;
+                            }
+                            else
+                            {
+                                operateDetail += " Closed";
+                            }
+
+                            <tr>
+                                <th>@op.Day</th>
+                                <td style="padding-left:10px;">@operateDetail</td>
+                            </tr>
+                        }
+                    </table>
+                </p>
+            </article>
+
+            <!-- Add to Cart Section -->
+            <form method="POST" action="ClientAttractionDetail" class="add-to-cart-form">
+                <label for="quantity" class="qty">Quantity:</label>
+                <input type="number" id="quantity" name="quantity" value="1" min="1" max="100">
+                <input type="hidden" name="attraction_id" value="@Model.Id">
+                <input type="submit" id="addCartBtn" name="addCart" value="Add to Cart">
+            </form>
+        </div>
+    </section>
+
+    <!-- Review Section -->
+    <section class="review-section">
+        <h2>Most Recent Reviews</h2>
+        @if(ViewBag.Feedbacks.Count == 0){
+            <p>No review yet.</p>
+        }else{
+            
+                int total = 0;
+                double averageRating = 0.0;
+                foreach(var f in ViewBag.Feedbacks){
+                    total += f.Rating;
+                }
+
+                averageRating = (double)total / ViewBag.Feedbacks.Count;
+            
+        <p class="review-summary">@averageRating.ToString("F1") / 5 <span class="stars" data-rating="@averageRating.ToString("F1")" style="width: @averageRating.ToString("F1") * 20%;"></span> Based on @ViewBag.Feedbacks.Count review(s)</p>
+
+        <!-- Add Review Button -->
+           <button id="add-review-btn" data-get="/Client/ClientFeedbackForm?attractionId=@Model.Id">Add Review</button>
+
+        <div class="review-cards">
+            @foreach(var f in ViewBag.Feedbacks){
+                <div class="review-card">
+                    <div class="review-score">
+                        <div class="stars" data-rating="@f.Rating"></div>
+                        <span class="score-label">@f.Rating.0 / 5</span>
+                    </div>
+                    <div class="review-details">
+                        <div class="review-user">
+                            <strong>Siti</strong>
+                        </div>
+                        <ul class="review-meta">
+                            <li>👪 @f.commentDetail.Partner</li>
+                            <li>🎫 Two Adults Ticket</li>
+                            <li>🎚️ Premium Ticket</li>
+                            <li>🤷‍♂ @f.commentDetail.Reason</li>
+                        </ul>
+                        <div class="review-comment">
+                            <h4>"@f.commentDetail.Title"</h4>
+                            <p>@f.commentDetail.Review</p>
+                            <span class="review-date">Reviewed @f.SubmitDate</span>
+                        </div>
+                    </div>
+                </div>
+            }
+           
+        </div>
+        }
+    </section>
+</main>
+<script>
+        document.querySelectorAll('.stars').forEach(function(starElement) {
+        let rating = starElement.getAttribute('data-rating');
+        let ratingRounded = Math.round(rating);
+        starElement.setAttribute('data-rating', ratingRounded); // round to nearest integer (1-5)
+    });
+</script>
