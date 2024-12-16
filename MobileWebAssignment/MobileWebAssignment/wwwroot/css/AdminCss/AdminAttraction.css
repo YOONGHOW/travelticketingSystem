@@ -1,184 +1,131 @@
-﻿body {
-    overflow-x: hidden;
+﻿/* Base styling */
+body {
+    font-family: 'Open Sans', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f9f9f9;
+    overflow:initial;
 }
 
 .content {
-    position: relative;
-    background: #e4e8f0;
-    width: 95%;
-    padding: 2%;
-    margin-left: 6rem;
+    max-width: 1200px;
+    margin: 0 1% 0 6%;
+    padding: 20px;
+    background: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.card {
-    background-color: white;
-    padding: 4%;
-    border-radius: 10px;
-}
-
-.container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 5%;
-}
-
-.cardTitle {
-    padding-bottom: 2%;
-    font-size: 14px;
-}
-
-.payment {
-    border-radius: 10px;
-    padding: 1%;
-    width: 20%;
-    height: 140px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    transition: all 0.5s;
-    box-shadow: 1px 1px 10px;
-}
-
-.paymentHeader {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+h3 {
+    font-size: 1.5rem;
+    color: #333;
     margin-bottom: 20px;
 }
 
-.paymentUser {
-    font-size: 90%;
-}
-
-.amount {
-    display: flex;
-    flex-direction: column;
-}
-
-.totalAmount {
-    font-size: 12px;
-    font-weight: bold;
-    margin-bottom: 20%;
-}
-
-.amountValue {
-    font-size: 24px;
-    font-family: "Courier New", Courier, monospace;
-    margin-bottom: 10%;
-}
-
-.attractionTable,
-.attractionTypeData {
-    background-color: white;
-    margin-top: 2%;
-    border-radius: 10px;
-    padding: 4%;
-}
-
-.attractionTable,
-.attractionTypeTable {
-    width: 100%;
-}
-
-    .attractionTable table,
-    .attractionTypeTable table {
+    h3 span {
+        display: flex; 
+        justify-content: flex-end; 
+        gap: 10px; 
         width: 100%;
-        border-collapse: collapse;
     }
 
-    .attractionTable thead,
-    .attractionTypeTable thead {
-        background-color: #b0a4a4;
-        color: black;
-    }
-
-    .attractionTable th,
-    .attractionTypeTable th {
-        padding: 2%;
-        text-align: left;
-    }
-
-    .attractionTable tbody,
-    .attractionTypeTable tbody {
-        background-color: #e4e8f0;
-    }
-
-    .attractionTable td,
-    .attractionTypeTable td {
-        padding: 2%;
-        font-size: 16px;
-    }
-
-        .attractionTable td a {
-            font-size: 24px;
-        }
-
-    .attractionTable tfoot,
-    .attractionTypeTable tfoot {
-        background-color: #e4e8f0;
-        font-weight: bold;
-        color: black;
-    }
-
-        .attractionTable tfoot td,
-        .attractionTypeTable tfoot td {
-            padding: 5%;
-        }
-
-/* Button Styling */
 button {
+    font-size: 0.9rem;
     padding: 10px 20px;
     border: none;
-    border-radius: 5px;
+    border-radius: 4px;
     cursor: pointer;
-    font-size: 14px;
-    transition: background-color 0.3s, transform 0.2s;
 }
 
-    button:hover {
-        transform: scale(1.05);
-    }
-
-    /* Specific Button Colors */
     button.create {
-        background-color: #28a745; /* Green */
+        background-color: #28a745;
         color: white;
     }
-
-        button.create:hover {
-            background-color: #218838;
-        }
 
     button.update {
-        background-color: #007bff; /* Blue */
+        background-color: #007bff;
         color: white;
     }
-
-        button.update:hover {
-            background-color: #0056b3;
-        }
 
     button.delete {
-        background-color: #dc3545; /* Red */
+        background-color: #dc3545;
         color: white;
     }
 
-        button.delete:hover {
-            background-color: #c82333;
-        }
-
-    button.detail {
-        background-color: #6c757d; /* Gray */
-        color: white;
+    button:hover {
+        opacity: 0.9;
     }
 
-        button.detail:hover {
-            background-color: #5a6268;
-        }
+/* Table Styling */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
 
-/* Align "Create New" Button */
-.attractionTypeTitle span button,
-.attractionTitle span button {
-    float: right;
-    margin-left: auto;
+thead th {
+    background-color: #6c757d;
+    color: white;
+    padding: 10px;
+    text-align: left;
+}
+
+tbody tr:nth-child(odd) {
+    background-color: #f2f2f2;
+}
+
+tbody tr:nth-child(even) {
+    background-color: #ffffff;
+}
+
+td, th {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .content {
+        padding: 10px;
+    }
+
+    h3 {
+        font-size: 1.2rem;
+    }
+
+    table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    button {
+        font-size: 0.8rem;
+        padding: 8px 15px;
+    }
+}
+
+span.tableNav {
+    justify-content: space-between;
+    margin-top:12px;
+    font-family:Arial, sans-serif; 
+    font-size:20px;
+    vertical-align:middle;
+}
+
+#searchBar {
+    padding: 8px 12px;
+    font-size: 0.9rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-right: 10px;
+    flex-grow: 1;
+    max-width: 200px; /* Adjust the width as needed */
+}
+
+.tableNav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }

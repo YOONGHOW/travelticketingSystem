@@ -4,24 +4,16 @@ namespace MobileWebAssignment.Controllers
 {
     public class HomeController : Controller
     {
-        // GET: Home/Index
+
+        private readonly DB db;
+
+        public HomeController(DB db)
+        {
+            this.db = db;
+        }
         public IActionResult Index()
-
         {
             return View();
         }
-
-        //register for a account
-        public IActionResult RegisterAccount()
-        {
-            return View();
-        }
-
-        public IActionResult login()
-        {
-            return View();
-        }
-        
-
     }
 }

@@ -1,0 +1,138 @@
+﻿/* General reset */
+main {
+    font-family: Arial, sans-serif;
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Equal column widths */
+    gap: 20px; /* Space between sections */
+    padding: 20px;
+    width: 100%; /* Allow the main to take up the full width */
+    margin: 0 auto; /* Center the grid if needed */
+}
+
+.left {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    position: sticky;
+    top: 0; /* Keeps the left section fixed when scrolling */
+    height: 100vh; /* Makes sure the left section spans the full viewport height */
+    overflow: hidden; /* Prevents scrolling inside the left section */
+    text-align:center;
+}
+
+    .left img {
+        max-width: 50%;
+        height: auto;
+    }
+
+.right {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    overflow-y: auto; /* Allows vertical scrolling in the right section */
+    height: 100vh; /* Makes the right section take up the full viewport height */
+    padding-right: 20px; /* Add space for scroll bar */
+}
+
+
+/* Form Styling */
+form {
+    display: block;
+}
+
+.form-group {
+    margin-bottom: 10%;
+}
+
+    .form-group span {
+        color:red;
+    }
+
+label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 8px;
+    color: #555;
+}
+
+select, textarea, input[type="text"], button {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #fff;
+    color: #333;
+}
+
+button {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+    button:hover {
+        background-color: #0056b3;
+    }
+
+/* Footer Links */
+.footer {
+    text-align: center;
+    margin-top: 40px;
+}
+
+    .footer a {
+        color: #007bff;
+        text-decoration: none;
+        margin: 0 10px;
+        font-weight: bold;
+    }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+/* Rating Stars */
+.Rating {
+    display: flex;
+    flex-direction: row-reverse; /* Reverse order for intuitive star selection */
+    justify-content: center;
+    gap: 5px;
+}
+
+    .Rating input {
+        display: none; /* Hide the radio buttons */
+    }
+
+    .Rating label {
+        font-size: 2em; /* Make the stars larger */
+        color: #ccc; /* Default color for unselected stars */
+        cursor: pointer; /* Pointer cursor for interactive feel */
+        transition: color 0.2s ease-in-out; /* Smooth color transition */
+    }
+
+        .Rating label:hover,
+        .Rating label:hover ~ label {
+            color: #ffcc00; /* Change color on hover */
+        }
+
+    .Rating input:checked ~ label {
+        color: #ffcc00; /* Selected star and all preceding stars */
+    }
+
+/* Placeholder Styling */
+textarea::placeholder,
+input::placeholder {
+    color: #aaa;
+}
+
+
+
+
+
+        }
