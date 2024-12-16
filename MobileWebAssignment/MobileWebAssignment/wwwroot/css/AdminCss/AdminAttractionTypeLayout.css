@@ -222,3 +222,36 @@ select {
     select:focus {
         border-color: #9b59b6;
     }
+
+form .deleteButton {
+    display: flex;
+    gap: 10px; /* Adds spacing between buttons */
+}
+
+    form .deleteButton button {
+        flex: 1; /* Ensures buttons take equal space */
+        height: 45px;
+        border-radius: 5px;
+        border: none;
+        color: #fff;
+        font-size: 18px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+        form .deleteButton button#addCategoryButton {
+            background-color: #e74c3c; /* Red for delete */
+        }
+
+            form .deleteButton button#addCategoryButton:hover {
+                background-color: #c0392b; /* Darker red on hover */
+            }
+
+        form .deleteButton button[type="reset"] {
+            background-color: #7f8c8d; /* Neutral color for cancel */
+        }
+
+            form .deleteButton button[type="reset"]:hover {
+                background-color: #95a5a6; /* Lighter neutral color on hover */
+            }
