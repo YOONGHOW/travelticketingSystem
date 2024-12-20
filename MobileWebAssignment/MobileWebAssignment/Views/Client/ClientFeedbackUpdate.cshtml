@@ -1,0 +1,97 @@
+﻿@{
+    Layout = "_ClientLayout";
+}
+
+@model FeedbackInsertVM
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/ClientCss/ClientFeedback.css" asp-append-version="true">
+</head>
+<body>
+    <!-- Left Section -->
+    <div class="left">
+        <img src="/attractionImages/@ViewBag.Attraction.ImagePath" alt="@ViewBag.Attraction.Id">
+        <h1>@ViewBag.Attraction.Name</h1>
+    </div>
+
+    <!-- Right Section -->
+    <div class="right">
+        <form method="post" enctype="multipart/form-data">
+            <div asp-validation-summary="All"></div>
+
+            <div class="form-group">
+                <label asp-for="Rating"><h2>How would you rate your experience?</h2></label>
+                <div class="Rating" id="Rating">
+                    <input type="radio" id="star5" asp-for="Rating" value="5">
+                    <label for="star5" title="5 stars">&#9733;</label>
+
+                    <input type="radio" id="star4" asp-for="Rating" value="4">
+                    <label for="star4" title="4 stars">&#9733;</label>
+
+                    <input type="radio" id="star3" asp-for="Rating" value="3">
+                    <label for="star3" title="3 stars">&#9733;</label>
+
+                    <input type="radio" id="star2" asp-for="Rating" value="2">
+                    <label for="star2" title="2 stars">&#9733;</label>
+
+                    <input type="radio" id="star1" asp-for="Rating" value="1">
+                    <label for="star1" title="1 star">&#9733;</label>
+                </div>
+                <span asp-validation-for="Rating"></span>
+            </div>
+
+
+            <div class="form-group">
+                <label asp-for="Partner"><h2>Who did you go with?</h2></label>
+                <div>
+                    <label><input type="radio" asp-for="Partner" value="business"> Business</label>
+                    <label><input type="radio" asp-for="Partner" value="family"> Family</label>
+                    <label><input type="radio" asp-for="Partner" value="friends"> Friends</label>
+                    <label><input type="radio" asp-for="Partner" value="solo"> Solo</label>
+                </div>
+                <span asp-validation-for="Partner"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Reason"><h2>What were you here for?</h2></label>
+                <select id="reason" asp-for="Reason">
+                    <option value="none">Select one</option>
+                    <option value="dining">Dining</option>
+                    <option value="relaxation">Relaxation</option>
+                    <option value="events">Events</option>
+                    <option value="cultural">Cultural</option>
+                </select>
+                <span asp-validation-for="Reason"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Review"><h2>Write your review</h2></label>
+                <textarea id="review" placeholder="This spot is great for..." asp-for="Review"></textarea>
+                <span asp-validation-for="Review"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Title"><h2>Title your review</h2></label>
+                <input type="text" asp-for="Title" id="title" placeholder="Give us the gist of your experience">
+                <span asp-validation-for="Title"></span>
+            </div>
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" value="@ViewBag.Attraction.Id" asp-for="AttractionId" />
+            <input type="hidden" value="U001" asp-for="UserId" />
+            <div class="form-group">
+                <button type="submit">Update Review</button>
+            </div>
+        </form>
+    </div>
+
+</body>
+</html>
+<script>
+        document.querySelectorAll('.Rating input').forEach((input) => {
+        input.addEventListener('change', (e) => {
+            console.log(`Selected Rating: ${e.target.value}`);
+        });
+    });
+</script>
+

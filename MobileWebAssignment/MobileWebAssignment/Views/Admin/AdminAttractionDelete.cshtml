@@ -1,0 +1,120 @@
+﻿@model AttractionInsertVM
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/AdminCss/AdminAttractionTypeLayout.css">
+    <title>Delete Attraction</title>
+
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="/Admin/AdminAttraction" class="back-arrow"><img src="/images/back-arrow.png" alt="Back"></a>
+            <div class="title">Delete Attraction</div>
+        </div>
+
+        <div class="content">
+            <form method="post" enctype="multipart/form-data">
+                <div asp-validation-summary="All"></div>
+
+                <label asp-for="Photo">Attraction Image</label>
+                <label class="upload">
+                    <img src="/attractionImages/@Model.ImagePath">
+                </label>
+                <span asp-validation-for="Photo" class="err" style="text-align:center;"></span>
+
+                <div class="product-details">
+                    <div class="input-box">
+                        <label class="details" asp-for="Id">Attraction Id</label>
+                        <input asp-for="Id" readonly style="caret-color: transparent;color:#797777">
+                        <span asp-validation-for="Id"></span>
+                    </div>
+                    <div class="input-box"></div>
+                    <div class="input-box">
+                        <label class="details" asp-for="Name">Attraction Name</label>
+                        <input asp-for="Name" readonly style="caret-color: transparent;color:#797777">
+                        <span asp-validation-for="Name"></span>
+                    </div>
+
+                    <div class="input-box">
+                        <label class="details" asp-for="AttractionTypeId">Attraction Type Name</label>
+                        <input id="attraction-type" asp-for="AttractionTypeId" readonly style="caret-color: transparent;color:#797777">
+                        <span asp-validation-for="AttractionTypeId"></span>
+                    </div>
+
+                    <div class="input-box">
+                        <label class="details" asp-for="Description">Description</label>
+                        <textarea asp-for="Description" rows="5" readonly style="caret-color: transparent;color:#797777"></textarea>
+                        <span asp-validation-for="Description"></span>
+                    </div>
+
+                    <div class="input-box">
+                        <label class="details" asp-for="Location">Location</label>
+                        <textarea asp-for="Location" rows="3" readonly style="caret-color: transparent;color:#797777"></textarea>
+                        <span asp-validation-for="Location"></span>
+                    </div>
+                </div>
+
+                <div class="operating-hours">
+                    <h3>Operating Hours</h3>
+                    <div class="day-hours">
+                        @{
+                            var days = new[] { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" };
+                        }
+
+                        @for (int i = 0; i < days.Length; i++)
+                        {
+                            <div class="day-row">
+                                <span>@days[i]</span>
+                                <input type="hidden" name="OperatingHours[@i].Day" value="@days[i]" class="day-status" readonly style="caret-color: transparent;color:#797777" />
+                                <select name="OperatingHours[@i].Status" readonly style="caret-color: transparent;color:#797777">
+                                    <option value="open">Open</option>
+                                    <option value="closed">Closed</option>
+                                </select>
+                                <input type="time" name="OperatingHours[@i].StartTime" class="time-input start-time" placeholder="Start Time" readonly style="caret-color: transparent;color:#797777">
+                                <input type="time" name="OperatingHours[@i].EndTime" class="time-input end-time" placeholder="End Time" readonly style="caret-color: transparent;color:#797777">
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <div>
+                    <b>Are you sure you want to delete this record?</b>
+                    <!-- Buttons -->
+                    <div class="deleteButton">
+                        <button id="addCategoryButton" type="submit">Delete</button>
+                        <button type="reset" onclick="window.location.href='/Admin/AdminAttraction'">Cancel</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="/js/jquery.min.js"></script>
+    <script src="/js/jquery.unobtrusive-ajax.min.js"></script>
+    <script src="/js/jquery.validate.min.js"></script>
+    <script src="/js/jquery.validate.unobtrusive.min.js"></script>
+    <script src="~/js/app.js" asp-append-version="true"></script>
+    <script>
+                    $(document).ready(function () {
+            $(".day-status").on("change", function () {
+                const isClosed = $(this).val() === "closed";
+                const row = $(this).closest(".day-row");
+                row.find(".start-time, .end-time").prop("disabled", isClosed);
+            });
+
+            $(".day-status").each(function () {
+                const isClosed = $(this).val() === "closed";
+                const row = $(this).closest(".day-row");
+                row.find(".start-time, .end-time").prop("disabled", isClosed);
+            });
+        });
+    </script>
+</body>
+
+</html>

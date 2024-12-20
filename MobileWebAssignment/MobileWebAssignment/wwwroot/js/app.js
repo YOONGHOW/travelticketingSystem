@@ -56,3 +56,23 @@ $(document).on('click', '[data-checkable]', e => {
         .find(':checkbox')
         .prop('checked', (i, v) => !v);
 });
+
+// Photo preview
+$('.upload input').on('change', e => {
+    const f = e.target.files[0];
+    const img = $(e.target).siblings('img')[0];
+
+    img.dataset.src ??= img.src;
+
+    if (f && f.type.startsWith('image/')) {
+        img.onload = e => URL.revokeObjectURL(img.src);
+        img.src = URL.createObjectURL(f);
+    }
+    else {
+        img.src = img.dataset.src;
+        e.target.value = '';
+    }
+
+    // Trigger input validation
+    $(e.target).valid();
+});
