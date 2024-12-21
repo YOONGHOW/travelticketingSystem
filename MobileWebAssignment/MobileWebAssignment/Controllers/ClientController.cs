@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MobileWebAssignment.Models;
 
@@ -25,13 +26,57 @@ namespace MobileWebAssignment.Controllers
             return View();
         }
 
-        //register for a account
+        //testing purpose: 
+        [Authorize]
+        public IActionResult testlogin()
+        {
+            return View();
+        }
+
+        // Generate ID for register account
+        private string NextRegisterId()
+        {
+            string max = db.User.Max(s =>  s.Id) ?? "U000";
+            int n = int.Parse(max[1..]);
+            return (n + 1).ToString("'U'000");
+        }
+
+        //register for a account //GET
         public IActionResult RegisterAccount()
         {
             return View();
         }
 
-        public IActionResult login()
+        //register for a account //POST 
+        [HttpPost]
+        public IActionResult RegisterAccount(RegisterVM vm)
+        {
+
+            if (ModelState.IsValid)
+            {
+                db.Members.Add(new()
+                {
+                    Id = NextRegisterId(),
+                    Name = vm.Name,
+                    Email = vm.Email,
+                    Password = hp.HashPassword(vm.Password),
+                    IC = vm.IC,
+                    PhoneNumber = vm.PhoneNumber,
+                    Gender = vm.Gender,
+                    Freeze = false,
+                    PhotoURL = "/images/default_profile.png" //testing
+
+                });
+                db.SaveChanges();
+                TempData["Info"] = "Register successfully. Please login.";
+                return RedirectToAction("Login");
+            }
+
+            return View(vm);
+        }
+
+        //POST : Account/Login
+        public IActionResult Login()
         {
             return View();
         }
