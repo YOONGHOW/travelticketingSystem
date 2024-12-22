@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using System.Globalization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MobileWebAssignment.Models;
@@ -10,14 +11,17 @@ namespace MobileWebAssignment.Controllers
 
         private readonly DB db;
         private readonly IWebHostEnvironment en;
+        private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly Helper hp;
 
-        public ClientController(DB db, IWebHostEnvironment en, Helper hp)
+        public ClientController(DB db, IWebHostEnvironment en, Helper hp,, IHttpContextAccessor _httpContextAccessor)
         {
             this.db = db;
             this.en = en;
             this.hp = hp;
+            this._httpContextAccessor = _httpContextAccessor;
         }
+
 
         // GET: Home/Index
         public IActionResult Index()
@@ -89,8 +93,22 @@ namespace MobileWebAssignment.Controllers
         public IActionResult ClientAttraction()
         {
             ViewBag.AttractionTypes = db.AttractionType.ToList();
-            ViewBag.Attractions = db.Attraction.Include(a => a.AttractionType);
-            return View();
+
+            var attractions = db.Attraction.Include(a => a.AttractionType).ToList();
+            ViewBag.Attractions = attractions;
+
+            var attractFeedback = new List<AttractFeedback>(); 
+
+            foreach(var a in attractions)
+            {
+                attractFeedback.Add(new AttractFeedback
+                {
+                    attraction = a,
+                    feedbacks = db.Feedback.Where(f => f.AttractionId == a.Id).ToList(),
+                });
+            }
+
+            return View(attractFeedback);
         }
 
         //GET: AttractionDetail
@@ -333,8 +351,27 @@ namespace MobileWebAssignment.Controllers
 
         public IActionResult ClientPayment()
         {
+            List<Ticket> ticketList = new List<Ticket>();
+            Ticket ticket = new Ticket { };
+
+
             return View();
         }
+        public IActionResult ClientPaymentHIS()
+        {
+            var session = _httpContextAccessor.HttpContext.Session;
+            session.SetString("UserName", "U0001");
+            var trySession = session.GetString("UserName");
+            {
+                var m = db.PurchaseItem
+                    .Include(re => re.Ticket)
+                    .Include(re => re.Purchase)
+                    .Where(re=>re.Purchase.UserId==trySession).ToList();
+                   
 
+                return View(m);
+            }
+            
+        }
     }
 }

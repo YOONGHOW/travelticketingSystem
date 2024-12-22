@@ -44,6 +44,17 @@ public class AttractionInsertVM
 
 }
 
+public class PromotionInsertVM
+{
+    public string Id { get; set; } // PM0001
+    public string Title { get; set; } // Promotion Name
+    public string Code { get; set; } // PROMO2024
+    public decimal PriceDeduction { get; set; } // Discount Amount
+    public DateTime StartDate { get; set; }
+    public DateTime EndDate { get; set; }
+    public string PromoStatus { get; set; } // Active, Inactive, Expired
+}
+
 public class AttractionUpdateVM
 {
     public string Id { get; set; }
@@ -87,6 +98,15 @@ public class OperatingTime
     public string Status { get; set; }
     public string StartTime { get; set; }
     public string EndTime { get; set; }
+}
+
+//get average feedback
+public class AttractFeedback
+{
+    public Attraction attraction { get; set; }
+
+    public List<Feedback> feedbacks { get; set; }
+
 }
 
 
