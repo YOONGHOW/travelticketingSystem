@@ -21,7 +21,7 @@ public class AdminController : Controller
    
 
 //==================================== Attraction Type start =========================================================
-    public IActionResult AdminAttraction(int ATpage = 1, int Apage = 1)
+    public IActionResult AdminAttraction(string? Aname, int ATpage = 1, int Apage = 1)
     {
         //page list for Attraction Types
         if (ATpage < 1)
@@ -43,11 +43,18 @@ public class AdminController : Controller
             return RedirectToAction(null, new { Apage = 1 });
         }
 
-        var attractions = db.Attraction.Include(a => a.AttractionType).ToPagedList(Apage, 5);
+        Aname = Aname?.Trim() ?? "";
+
+        var attractions = db.Attraction.Include(a => a.AttractionType).Where(a => a.Name.Contains(Aname)).ToPagedList(Apage, 5);
 
         if (Apage > attractions.PageCount && attractions.PageCount > 0)
         {
             return RedirectToAction(null, new { Apage = attractions.PageCount });
+        }
+
+        if (Request.IsAjax())
+        {
+            return PartialView("_AdminAttraction", attractions);
         }
 
 

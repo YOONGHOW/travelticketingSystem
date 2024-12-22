@@ -1,5 +1,5 @@
-
-﻿using Microsoft.AspNetCore.Authorization;
+using System.Globalization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MobileWebAssignment.Models;
@@ -93,8 +93,22 @@ namespace MobileWebAssignment.Controllers
         public IActionResult ClientAttraction()
         {
             ViewBag.AttractionTypes = db.AttractionType.ToList();
-            ViewBag.Attractions = db.Attraction.Include(a => a.AttractionType);
-            return View();
+
+            var attractions = db.Attraction.Include(a => a.AttractionType).ToList();
+            ViewBag.Attractions = attractions;
+
+            var attractFeedback = new List<AttractFeedback>(); 
+
+            foreach(var a in attractions)
+            {
+                attractFeedback.Add(new AttractFeedback
+                {
+                    attraction = a,
+                    feedbacks = db.Feedback.Where(f => f.AttractionId == a.Id).ToList(),
+                });
+            }
+
+            return View(attractFeedback);
         }
 
         //GET: AttractionDetail

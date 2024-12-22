@@ -75,50 +75,57 @@
     <!-- Review Section -->
     <section class="review-section">
         <h2>Most Recent Reviews</h2>
-        @if(ViewBag.Feedbacks.Count == 0){
+        @if (ViewBag.Feedbacks.Count == 0)
+        {
+            <button id="add-review-btn" data-get="/Client/ClientFeedbackForm?attractionId=@Model.Id">Add Review</button>
+
             <p>No review yet.</p>
-        }else{
-            
-                int total = 0;
-                double averageRating = 0.0;
-                foreach(var f in ViewBag.Feedbacks){
-                    total += f.Rating;
+        }
+        else
+        {
+
+            int total = 0;
+            double averageRating = 0.0;
+            foreach (var f in ViewBag.Feedbacks)
+            {
+                total += f.Rating;
+            }
+
+            averageRating = (double)total / ViewBag.Feedbacks.Count;
+
+            <p class="review-summary">@averageRating.ToString("F1") / 5 <span class="stars" data-rating="@averageRating.ToString("F1")" style="width: @averageRating.ToString("F1") * 20%;"></span> Based on @ViewBag.Feedbacks.Count review(s)</p>
+
+            <!-- Add Review Button -->
+            <button id="add-review-btn" data-get="/Client/ClientFeedbackForm?attractionId=@Model.Id">Add Review</button>
+
+            <div class="review-cards">
+                @foreach (var f in ViewBag.Feedbacks)
+                {
+                    <div class="review-card">
+                        <div class="review-score">
+                            <div class="stars" data-rating="@f.Rating"></div>
+                            <span class="score-label">@f.Rating.0 / 5</span>
+                        </div>
+                        <div class="review-details">
+                            <div class="review-user">
+                                <strong>Siti</strong>
+                            </div>
+                            <ul class="review-meta">
+                                <li>👪 @f.commentDetail.Partner</li>
+                                <li>🎫 Two Adults Ticket</li>
+                                <li>🎚️ Premium Ticket</li>
+                                <li>🤷‍♂ @f.commentDetail.Reason</li>
+                            </ul>
+                            <div class="review-comment">
+                                <h4>"@f.commentDetail.Title"</h4>
+                                <p>@f.commentDetail.Review</p>
+                                <span class="review-date">Written @f.SubmitDate</span>
+                            </div>
+                        </div>
+                    </div>
                 }
 
-                averageRating = (double)total / ViewBag.Feedbacks.Count;
-            
-        <p class="review-summary">@averageRating.ToString("F1") / 5 <span class="stars" data-rating="@averageRating.ToString("F1")" style="width: @averageRating.ToString("F1") * 20%;"></span> Based on @ViewBag.Feedbacks.Count review(s)</p>
-
-        <!-- Add Review Button -->
-           <button id="add-review-btn" data-get="/Client/ClientFeedbackForm?attractionId=@Model.Id">Add Review</button>
-
-        <div class="review-cards">
-            @foreach(var f in ViewBag.Feedbacks){
-                <div class="review-card">
-                    <div class="review-score">
-                        <div class="stars" data-rating="@f.Rating"></div>
-                        <span class="score-label">@f.Rating.0 / 5</span>
-                    </div>
-                    <div class="review-details">
-                        <div class="review-user">
-                            <strong>Siti</strong>
-                        </div>
-                        <ul class="review-meta">
-                            <li>👪 @f.commentDetail.Partner</li>
-                            <li>🎫 Two Adults Ticket</li>
-                            <li>🎚️ Premium Ticket</li>
-                            <li>🤷‍♂ @f.commentDetail.Reason</li>
-                        </ul>
-                        <div class="review-comment">
-                            <h4>"@f.commentDetail.Title"</h4>
-                            <p>@f.commentDetail.Review</p>
-                            <span class="review-date">Reviewed @f.SubmitDate</span>
-                        </div>
-                    </div>
-                </div>
-            }
-           
-        </div>
+            </div>
         }
     </section>
 </main>
