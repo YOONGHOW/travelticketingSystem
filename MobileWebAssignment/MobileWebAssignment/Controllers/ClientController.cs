@@ -14,7 +14,7 @@ namespace MobileWebAssignment.Controllers
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly Helper hp;
 
-        public ClientController(DB db, IWebHostEnvironment en, Helper hp,, IHttpContextAccessor _httpContextAccessor)
+        public ClientController(DB db, IWebHostEnvironment en, Helper hp, IHttpContextAccessor _httpContextAccessor)
         {
             this.db = db;
             this.en = en;
