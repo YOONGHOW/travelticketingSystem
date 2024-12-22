@@ -1,0 +1,161 @@
+﻿/* General Reset and Body Styling */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background-color: #e4e8f0;
+    overflow-x: hidden;
+}
+
+.content {
+    position: relative;
+    background: #e4e8f0;
+    width: 95%;
+    padding: 2%;
+    margin-left: 6rem;
+}
+
+/* Card Styling */
+.card {
+    background-color: white;
+    padding: 4%;
+    border-radius: 10px;
+    box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.1);
+}
+
+.cardTitle {
+    padding-bottom: 2%;
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+}
+
+/* Table Container */
+.discountTable,
+.promotionTable {
+    background-color: white;
+    margin-top: 2%;
+    border-radius: 10px;
+    padding: 4%;
+    box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.1);
+}
+
+    .discountTable h3,
+    .promotionTable h3 {
+        font-size: 1.2rem;
+        color: #0056b3;
+        margin-bottom: 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+/* Table Styling */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #fff;
+}
+
+th, td {
+    padding: 1.5%;
+    text-align: center;
+    border: 1px solid #ddd;
+    font-size: 14px;
+}
+
+thead {
+    background-color: #b0a4a4;
+    color: black;
+    font-weight: bold;
+}
+
+tbody tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+tfoot {
+    background-color: #e4e8f0;
+    font-weight: bold;
+    color: black;
+}
+
+    tfoot td {
+        padding: 2%;
+    }
+
+/* Button Styling */
+button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s, transform 0.2s;
+    text-transform: capitalize;
+}
+
+    button:hover {
+        transform: scale(1.05);
+    }
+
+    /* Button Colors */
+    button.create {
+        background-color: #28a745; /* Green */
+        color: white;
+    }
+
+        button.create:hover {
+            background-color: #218838;
+        }
+
+    button.update {
+        background-color: #ffc107; /* Yellow */
+        color: white;
+    }
+
+        button.update:hover {
+            background-color: #e0a800;
+        }
+
+    button.delete {
+        background-color: #dc3545; /* Red */
+        color: white;
+    }
+
+        button.delete:hover {
+            background-color: #c82333;
+        }
+
+    button.detail {
+        background-color: #6c757d; /* Gray */
+        color: white;
+    }
+
+        button.detail:hover {
+            background-color: #5a6268;
+        }
+
+/* Align "Create New" Button */
+.discountTitle span button,
+.promotionTitle span button {
+    float: right;
+    margin-left: auto;
+}
+
+/* Responsive Design for Small Screens */
+@media (max-width: 768px) {
+    table {
+        font-size: 12px;
+    }
+
+    button {
+        font-size: 12px;
+        padding: 8px 12px;
+    }
+
+    .content {
+        margin-left: 0;
+        padding: 5%;
+    }
+}

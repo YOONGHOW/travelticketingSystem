@@ -44,6 +44,17 @@ public class AttractionInsertVM
 
 }
 
+public class PromotionInsertVM
+{
+    public string Id { get; set; } // PM0001
+    public string Title { get; set; } // Promotion Name
+    public string Code { get; set; } // PROMO2024
+    public decimal PriceDeduction { get; set; } // Discount Amount
+    public DateTime StartDate { get; set; }
+    public DateTime EndDate { get; set; }
+    public string PromoStatus { get; set; } // Active, Inactive, Expired
+}
+
 public class AttractionUpdateVM
 {
     public string Id { get; set; }

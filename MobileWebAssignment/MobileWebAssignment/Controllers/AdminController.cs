@@ -18,10 +18,7 @@ public class AdminController : Controller
         this.hp = hp;
     }
     
-    public IActionResult AdminDiscount()
-    {
-        return View();
-    }
+   
 
 //==================================== Attraction Type start =========================================================
     public IActionResult AdminAttraction(string? Aname, int ATpage = 1, int Apage = 1)
@@ -473,5 +470,138 @@ public class AdminController : Controller
 
 
     //============================================ Feedback end =========================================================
+    //============================================ Feedback end =========================================================
+
+    private string GeneratePromotionId()
+    {
+        string lastId = db.Promotion.OrderByDescending(p => p.Id).Select(p => p.Id).FirstOrDefault() ?? "PM0000";
+        int idNum = int.Parse(lastId.Substring(2)) + 1;
+        return $"PM{idNum:D4}";
+    }
+    public IActionResult AdminDiscount(int page = 1)
+    {
+        if (page < 1) return RedirectToAction(nameof(AdminDiscount), new { page = 1 });
+
+        var promotions = db.Promotion.ToPagedList(page, 5);
+
+        if (page > promotions.PageCount && promotions.PageCount > 0)
+        {
+            return RedirectToAction(nameof(AdminDiscount), new { page = promotions.PageCount });
+        }
+
+        return View(promotions);
+    }
+
+    public IActionResult AdminDiscountCreate()
+    {
+        var vm = new PromotionInsertVM
+        {
+            Id = GeneratePromotionId(),
+            StartDate = DateTime.Today,
+            EndDate = DateTime.Today.AddDays(7),
+            PromoStatus = "Active"
+        };
+        return View(vm);
+    }
+
+    [HttpPost]
+    public IActionResult AdminDiscountCreate(PromotionInsertVM vm)
+    {
+        if (vm.StartDate >= vm.EndDate)
+        {
+            ModelState.AddModelError("EndDate", "End Date must be later than Start Date.");
+        }
+
+        if (ModelState.IsValid)
+        {
+            db.Promotion.Add(new Promotion
+            {
+                Id = vm.Id,
+                Title = vm.Title.Trim(),
+                Code = vm.Code.Trim(),
+                PriceDeduction = vm.PriceDeduction,
+                StartDate = vm.StartDate,
+                EndDate = vm.EndDate,
+                PromoStatus = vm.PromoStatus.Trim()
+            });
+
+            db.SaveChanges();
+            TempData["Info"] = "Promotion added successfully.";
+            return RedirectToAction(nameof(AdminDiscount));
+        }
+
+        return View(vm);
+    }
+
+    public IActionResult AdminDiscountUpdate(string id)
+    {
+        var promo = db.Promotion.Find(id);
+        if (promo == null) return RedirectToAction(nameof(AdminDiscount));
+
+        var vm = new PromotionInsertVM
+        {
+            Id = promo.Id,
+            Title = promo.Title,
+            Code = promo.Code,
+            PriceDeduction = promo.PriceDeduction,
+            StartDate = promo.StartDate,
+            EndDate = promo.EndDate,
+            PromoStatus = promo.PromoStatus
+        };
+
+        return View(vm);
+    }
+
+    [HttpPost]
+    public IActionResult AdminDiscountUpdate(PromotionInsertVM vm)
+    {
+        var promo = db.Promotion.Find(vm.Id);
+        if (promo == null) return RedirectToAction(nameof(AdminDiscount));
+
+        if (vm.StartDate >= vm.EndDate)
+        {
+            ModelState.AddModelError("EndDate", "End Date must be later than Start Date.");
+        }
+
+        if (ModelState.IsValid)
+        {
+            promo.Title = vm.Title.Trim();
+            promo.Code = vm.Code.Trim();
+            promo.PriceDeduction = vm.PriceDeduction;
+            promo.StartDate = vm.StartDate;
+            promo.EndDate = vm.EndDate;
+            promo.PromoStatus = vm.PromoStatus.Trim();
+
+            db.SaveChanges();
+            TempData["Info"] = "Promotion updated successfully.";
+            return RedirectToAction(nameof(AdminDiscount));
+        }
+
+        return View(vm);
+    }
+
+    public IActionResult AdminDiscountDelete(string id)
+    {
+        var promo = db.Promotion.Find(id);
+        if (promo == null) return RedirectToAction(nameof(AdminDiscount));
+
+        return View(promo);
+    }
+
+    [HttpPost]
+    public IActionResult AdminDiscountDeleteConfirmed(string id)
+    {
+        var promo = db.Promotion.Find(id);
+        if (promo != null)
+        {
+            db.Promotion.Remove(promo);
+            db.SaveChanges();
+            TempData["Info"] = "Promotion deleted successfully.";
+        }
+
+        return RedirectToAction(nameof(AdminDiscount));
+    }
+
+}
 
 }
