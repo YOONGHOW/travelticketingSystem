@@ -89,6 +89,15 @@ public class OperatingTime
     public string EndTime { get; set; }
 }
 
+//get average feedback
+public class AttractFeedback
+{
+    public Attraction attraction { get; set; }
+
+    public List<Feedback> feedbacks { get; set; }
+
+}
+
 
 //Feedback
 public class FeedbackInsertVM
