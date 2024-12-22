@@ -1,9 +1,12 @@
-﻿@{
+﻿@using X.PagedList
+@using X.PagedList.Mvc.Core
+
+@{
     Layout = "_AdminLayout";
     ViewBag.Title = "Admin | Discounts and Promotions";
 }
 
-@model IEnumerable<PromotionInsertVM>
+@model IPagedList<Promotion>
 
 <html>
 <head>
@@ -35,15 +38,15 @@
                     </thead>
 
                     <tbody>
-                        @foreach (var Promotion in Model.Promotion)
+                        @foreach (var Promotion in @Model)
                         {
                             <tr>
-                                <td>@Promotion.DiscountID</td>
+                                <td>@Promotion.Id</td>
                                 <td>@Promotion.Title</td>
-                                <td>@Promotion.Amount</td>
+                                @* <td>@Promotion.Amount</td> *@
                                 <td>@Promotion.StartDate.ToString("yyyy-MM-dd")</td>
                                 <td>@Promotion.EndDate.ToString("yyyy-MM-dd")</td>
-                                <td>@Promotion.Status</td>
+                                @* <td>@Promotion.Status</td> *@
                                 <td style="text-align:center;">
                                     <button class="update">Update</button>
                                 </td>
