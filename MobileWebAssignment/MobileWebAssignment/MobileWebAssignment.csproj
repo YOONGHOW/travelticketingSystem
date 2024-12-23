@@ -7,10 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Views\User\**" />
-    <Content Remove="Views\User\**" />
-    <EmbeddedResource Remove="Views\User\**" />
-    <None Remove="Views\User\**" />
+    <Folder Include="Views\User\" />
+    <Folder Include="wwwroot\css\UserCss\" />
   </ItemGroup>
 
   <ItemGroup>
@@ -19,12 +17,6 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.6" />
-    <PackageReference Include="X.PagedList.Mvc.Core" Version="10.5.7" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Migrations\" />
   </ItemGroup>
 
 </Project>
