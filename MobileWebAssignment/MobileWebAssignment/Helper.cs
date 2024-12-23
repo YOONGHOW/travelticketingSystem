@@ -6,6 +6,10 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 using System.Globalization;
 using System.Text.RegularExpressions;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
+using System.Net.Mail;
+using System.Net;
 
 namespace MobileWebAssignment;
 
@@ -13,11 +17,13 @@ public class Helper
 {
     private readonly IWebHostEnvironment en;
     private readonly IHttpContextAccessor ct;
+    private readonly IConfiguration cf;
 
-    public Helper(IWebHostEnvironment en, IHttpContextAccessor ct)
+    public Helper(IWebHostEnvironment en, IHttpContextAccessor ct,IConfiguration cf)
     {
         this.en = en;
         this.ct = ct;
+        this.cf = cf;
     }
 
     // ------------------------------------------------------------------------
@@ -67,6 +73,9 @@ public class Helper
         File.Delete(path);
     }
 
+    // ------------------------------------------------------------------------
+    // Calculation Helper Functions
+    // ------------------------------------------------------------------------
 
     public List<OperatingHour> ParseOperatingHours(string operatingHoursText)
     {
@@ -255,6 +264,61 @@ public class Helper
         return commentDetails;
     }
 
+    public static string ConvertIcToBirthDate(string icNumber)
+    {
+        // Extract the first 6 characters of the IC number (YYMMDD format)
+        string birthDatePart = icNumber.Substring(0, 6);
+
+        // Parse the year, month, and day
+        string yearPart = birthDatePart.Substring(0, 2);
+        string monthPart = birthDatePart.Substring(2, 2);
+        string dayPart = birthDatePart.Substring(4, 2);
+
+        // Determine the full year (1900s or 2000s)
+        int year = int.Parse(yearPart);
+        if (year <= DateTime.Now.Year % 100)
+        {
+            year += 2000; // Assume 2000s
+        }
+        else
+        {
+            year += 1900; // Assume 1900s
+        }
+
+        DateTime birthDate;
+        if (!DateTime.TryParse($"{year}-{monthPart}-{dayPart}", out birthDate))
+        {
+            throw new ArgumentException("Invalid birthdate in IC number.");
+        }
+
+        return birthDate.ToString("yyyy-MM-dd");
+    }
+
+    // ------------------------------------------------------------------------
+    // Email Helper Functions
+    // ------------------------------------------------------------------------
+
+    public void SendEmail(MailMessage mail)
+    {
+        string user = cf["Smtp:User"] ?? "";
+        string pass = cf["Smtp:Pass"] ?? "";
+        string name = cf["Smtp:Name"] ?? "";
+        string host = cf["Smtp:Host"] ?? "";
+        int port = cf.GetValue<int>("Smtp:Port");
+
+        mail.From = new MailAddress(user, name);
+
+        using var smtp = new SmtpClient()
+        {
+            Host = host,
+            Port = port,
+            EnableSsl = true,
+            Credentials = new NetworkCredential(user, pass),
+        };
+
+        smtp.Send(mail);
+    }
+
     // ------------------------------------------------------------------------
     // Security Helper Functions
     // ------------------------------------------------------------------------
@@ -266,9 +330,48 @@ public class Helper
         return ph.HashPassword(0, password);
     }
 
-    public bool VerifyPassword(string hash, string password)
+    public bool VerifyPassword(string Password, string PasswordCurrent)
     {
-        return ph.VerifyHashedPassword(0, hash, password) == PasswordVerificationResult.Success;
+        return ph.VerifyHashedPassword(0, Password, PasswordCurrent) == PasswordVerificationResult.Success;
+    }
+
+    public string RandomPassword()
+    {
+        string s = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        string password = "";
+
+        Random r = new();
+
+        for (int i = 1; i <= 10; i++)
+        {
+            password += s[r.Next(s.Length)];
+        }
+
+        return password;
+    }
+
+    public void SignIn(string email, string role)
+    {
+        // (1) Claim, identity and principal
+        List<Claim> claims = [
+            new(ClaimTypes.Name,email),
+            new(ClaimTypes.Role,role)
+            ];
+
+        ClaimsIdentity identity = new(claims, "Cookies");
+
+        ClaimsPrincipal principal = new(identity);
+
+        // (2) Sign in
+        ct.HttpContext!.SignInAsync(principal);
+
+
+    }
+
+    public void SignOut()
+    {
+        // Sign out
+        ct.HttpContext!.SignOutAsync();
     }
 
 
