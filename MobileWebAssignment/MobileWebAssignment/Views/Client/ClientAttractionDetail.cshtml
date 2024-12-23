@@ -64,6 +64,31 @@
 
             <!-- Add to Cart Section -->
             <form method="POST" action="ClientAttractionDetail" class="add-to-cart-form">
+                <h2>Tickets</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Ticket ID</th>
+                            <th>Description</th>
+                            <th>Price</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var ticket in ViewBag.Tickets as List<TicketVM>)
+                        {
+                            <tr>
+                                <td>@ticket.Id</td>
+                                <td>@ticket.ticketName</td>
+                                <td>RM @ticket.ticketPrice</td>
+                                <td>@ticket.stockQty</td>
+                                <td>@ticket.ticketStatus</td>
+                                <td>@ticket.ticketType</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+
                 <label for="quantity" class="qty">Quantity:</label>
                 <input type="number" id="quantity" name="quantity" value="1" min="1" max="100">
                 <input type="hidden" name="attraction_id" value="@Model.Id">
