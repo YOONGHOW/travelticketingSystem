@@ -18,25 +18,14 @@
 </html>
 
 <main style="min-height: 500px;">
-    <section class="attraction-container">
-        <!-- Image Section -->
-        <nav class="image-side">
-            <img src="/attractionImages/@Model.ImagePath" alt="@Model.Name">
-        </nav>
-
-        <!-- Details Section -->
-        <div class="details-side">
-            <h1>@Model.Name</h1>
-            <p class="price-info">
-                <b>
-                    RM120.00 | <span class="remaining-ticket">Remaining Ticket: 100</span>
-                </b>
-            </p>
-            <article class="attraction-details">
-                <h4>Description</h4>
-                <p>@Model.Description</p>
-                <h4>Location</h4>
-                <p>@Model.Location</p>
+    <div class="attaraction_details">
+        <h1>@Model.Name</h1><br />
+        <p style="font-size:18px;">@Model.Description<br /> <br />
+        <p>@Model.Location</p><br />
+        <img src="/attractionImages/@Model.ImagePath" alt="@Model.Name" class="detailsImg">
+        <br />
+                
+                
                 <h4>Operating Hours</h4>
                 <p>
                     <table style="text-align:left;">
@@ -60,7 +49,6 @@
                         }
                     </table>
                 </p>
-            </article>
 
             <!-- Add to Cart Section -->
             <form method="POST" action="ClientAttractionDetail" class="add-to-cart-form">
@@ -68,20 +56,19 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>Ticket ID</th>
-                            <th>Description</th>
-                            <th>Price</th>
+                            <th>Ticket Name</th>
+                            <th>Ticket Price</th>
+                            <th>Ticket Available Stock</th>
+                            <th>Ticket Type</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach (var ticket in ViewBag.Tickets as List<TicketVM>)
                         {
                             <tr>
-                                <td>@ticket.Id</td>
                                 <td>@ticket.ticketName</td>
                                 <td>RM @ticket.ticketPrice</td>
                                 <td>@ticket.stockQty</td>
-                                <td>@ticket.ticketStatus</td>
                                 <td>@ticket.ticketType</td>
                             </tr>
                         }
@@ -94,9 +81,7 @@
                 <input type="hidden" name="attraction_id" value="@Model.Id">
                 <input type="submit" id="addCartBtn" name="addCart" value="Add to Cart">
             </form>
-        </div>
-    </section>
-
+    </div>
     <!-- Review Section -->
     <section class="review-section">
         <h2>Most Recent Reviews</h2>
