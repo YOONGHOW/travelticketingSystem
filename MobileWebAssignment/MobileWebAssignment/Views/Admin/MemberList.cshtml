@@ -1,0 +1,108 @@
+﻿
+@{
+    Layout = "_AdminLayout";
+    ViewBag.Title = "Admin | Member";
+}
+
+@using X.PagedList
+@using X.PagedList.Mvc.Core
+@model IPagedList<User>
+
+
+
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <link rel="stylesheet" href="/css/AdminCss/MemberList.css" asp-append-version="true">
+
+</head>
+<body>
+    <div class="content">
+
+        <div class="MemberListData">
+            <h3 class="MemberListTitle">
+                Member List
+                <span class="tableNav">
+                    <input type="text" id="searchBar" placeholder="Search..." />
+
+                    @Model.Count() of @Model.TotalItemCount record(s) |
+                    Page @Model.PageNumber of @Model.PageCount
+                    <button class="create" data-get="/Admin/CreateAccount">Create New</button>
+                </span>
+            </h3>
+
+            <div class="MemberListTable">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>User ID</th>
+                            <th>Email</th>
+                            <th>Name</th>
+                            <th>IC</th>
+                            <th>Phone No.</th>
+                            <th>Gender</th>
+                            <th>Status</th>
+                            <th colspan="2" style="text-align:center;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (ViewBag.Users != null)
+                        {
+                            foreach (var user in ViewBag.Users)
+                            {
+                                <tr>
+                                    <td>@user.Id</td>
+                                    <td>@user.Email</td>
+                                    <td>@user.Name</td>
+                                    <td>@user.IC</td>
+                                    <td>@user.PhoneNumber</td>
+                                    <td>@user.Gender</td>
+                                    @if(user.Freeze == false)
+                                        {
+                                        <td>Active</td>
+                                        }else{
+                                        <td>Block</td>
+                                        }
+                                    <td style="text-align:center;">
+                                        <button class="update" data-get="/Admin/AdminUpdateMember/@user.Id">Update</button>
+                                    </td>
+                                    <td style="text-align:center;">
+                                        <form method="post" asp-action="UserStatus" asp-controller="Admin">
+                                            <input type="hidden" name="id" value="@user.Id" />
+                                            <button type="submit" class="toggle-block @(user.Freeze ? "unblock" : "block")">
+                                                @(user.Freeze ? "Unblock" : "Block")
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="8" style="text-align:center;">No Users Found</td>
+                            </tr>
+                        }
+                    </tbody>
+
+                </table>
+                @{
+                    var options = PagedListRenderOptions.ClassicPlusFirstAndLast;
+                    options.LinkToFirstPageFormat = "First";
+                    options.LinkToLastPageFormat = "Last";
+                    options.LinkToPreviousPageFormat = "Previous";
+                    options.LinkToNextPageFormat = "Next";
+                }
+
+                @Html.PagedListPager(
+                         (IPagedList)ViewBag.Users,
+                         page => Url.Action("MemberList", new { page = page }),
+                         options
+                         )
+            </div>
+        </div>
+        <br />
+        <br />
+    </div>
+</body>
+</html>
