@@ -1,14 +1,13 @@
 ﻿﻿
 <!DOCTYPE html>
 <html lang="en">
-
-@model RegisterVM
+@model UpdateProfileVm
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/css/ClientCss/RegisterAccount.css" asp-append-version="true">
-    <title>Member Registration</title>
+    <link rel="stylesheet" href="/css/ClientCss/UpdateProfile.css" asp-append-version="true">
+    <title>User Profile</title>
 
     <style>
         html {
@@ -40,46 +39,59 @@
 
 <body>
 
+
     <div class="container">
-        <div class="title">Registration</div>
+        <div class="title">Profile</div>
         <div class="content">
             <form method="POST" id="state" enctype="multipart/form-data">
-                <div asp-validation-summary="All"></div>
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                 <div class="user-details">
 
-                    <div class="input-address"> 
-                         <label class="details" asp-for="Photo">Profile Photo</label> 
-                         <label class="upload" tabindex="0"> 
-                             <input asp-for="Photo" class="form-control" type="file" accept="image/jpg,image/png" hidden> 
-                             <img src="/images/photo.jpg" id="drag"> 
-                        </label> 
-                        <span asp-validation-for="Photo" class="text-danger"></span>
-                    </div> 
+                    <!--Profile Photo -->
+                    <div class="input-address">
+                        <label class="upload" tabindex="0">
+                            <input class="form-control" type="file" accept="image/jpg,image/png" name="Photo" asp-for="Photo" hidden>
+                            <img src="@Model.PhotoURL" id="drag">
+                            <span asp-validation-for="Photo" class="text-danger"></span>
+                        </label>
+                    </div>
 
+                    <!-- Full Name -->
                     <div class="input-box">
-                        <label class="details" asp-for="Name">Full Name</label>
-                        <input asp-for="Name" class="form-control" placeholder="Enter your name" />
+                        <label class="details">Full Name</label>
+                        <input class="form-control" asp-for="Name" placeholder="Enter your name" />
                         <span asp-validation-for="Name" class="text-danger"></span>
+
                     </div>
 
+                    <!-- Email -->
                     <div class="input-box">
-                        <label class="details" asp-for="Email">Email</label>
-                        <input asp-for="Email" class="form-control" placeholder="e.g. xxx@gmail.com" />
-                        <span asp-validation-for="Email" class="text-danger"></span>
+                        <label class="details">Email</label>
+                        <input class="form-control" asp-for="Email" placeholder="e.g. xxx@gmail.com" readonly />
                     </div>
 
-                    <div class="input-box">
-                        <label class="details" asp-for="IC">IC Number</label>
-                        <input asp-for="IC" class="form-control" placeholder="010203020321" />
-                        <span asp-validation-for="IC" class="text-danger"></span>
-                    </div>
-
+                    <!--Phone Number -->
                     <div class="input-box">
                         <label class="details" asp-for="PhoneNumber">Phone Number</label>
                         <input asp-for="PhoneNumber" class="form-control" placeholder="e.g. 0121234567" />
                         <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+
                     </div>
 
+                    <!-- IC Number -->
+                    <div class="input-box">
+                        <label class="details">IC Number</label>
+                        <input class="form-control" asp-for="IC" placeholder="010203020321" />
+                        <span asp-validation-for="IC" class="text-danger"></span>
+                    </div>
+
+                    <!-- Birth Date -->
+                    <div class="input-box">
+                        <label class="details">Birth Date</label>
+                        <input class="form-control" asp-for="BirthDate" readonly />
+                    </div>
+
+                    <!-- Gender -->
                     <div class="input-box">
                         <label class="details" asp-for="Gender">Gender</label>
                         <select asp-for="Gender" class="form-control">
@@ -90,28 +102,17 @@
                         <span asp-validation-for="Gender" class="text-danger"></span>
                     </div>
 
-                    <div class="input-box">
-                        <label class="details" asp-for="Password">Password</label>
-                        <input asp-for="Password" class="form-control" type="password" placeholder="Enter your password" />
-                        <span asp-validation-for="Password" class="text-danger"></span>
-                    </div>
-
-                    <div class="input-box">
-                        <label class="details" asp-for="ConfirmPassword">Confirm Password</label>
-                        <input asp-for="ConfirmPassword" class="form-control" type="password" placeholder="Enter your password again" />
-                        <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
-                    </div>
-
+                    <!-- Submit Button -->
                     <div class="button-container">
-                        <input type="submit" value="Register">
-                        <a href="Login">Cancel</a>
+                        <input type="submit" value="Update Profile">
+                        <a href="Homepage">Cancel</a>
                     </div>
                 </div>
             </form>
+
         </div>
     </div>
 </body>
-
 </html>
 
 <script src="/js/jquery.min.js"></script>

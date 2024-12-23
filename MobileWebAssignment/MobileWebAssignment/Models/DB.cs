@@ -250,7 +250,7 @@ public class User //U0001
     [Required, MaxLength(30)]
     public string Name { get; set; }
 
-    [Required, MaxLength(50)]
+    [Required, MaxLength(500)]
     public string Password { get; set; }
 
     [MaxLength(15)]

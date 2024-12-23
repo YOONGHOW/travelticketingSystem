@@ -1,6 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
+
+using System.Globalization;
+using System.Net.Mail;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Identity.Client;
 using MobileWebAssignment.Models;
+using MobileWebAssignment.Service;
 
 namespace MobileWebAssignment.Controllers
 {
@@ -9,29 +16,21 @@ namespace MobileWebAssignment.Controllers
 
         private readonly DB db;
         private readonly IWebHostEnvironment en;
+        private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly Helper hp;
 
-        public ClientController(DB db, IWebHostEnvironment en, Helper hp)
+        public ClientController(DB db, IWebHostEnvironment en, Helper hp, IHttpContextAccessor _httpContextAccessor)
         {
             this.db = db;
             this.en = en;
             this.hp = hp;
+            this._httpContextAccessor = _httpContextAccessor;
         }
+
 
         // GET: Home/Index
         public IActionResult Index()
 
-        {
-            return View();
-        }
-
-        //register for a account
-        public IActionResult RegisterAccount()
-        {
-            return View();
-        }
-
-        public IActionResult login()
         {
             return View();
         }
@@ -41,11 +40,370 @@ namespace MobileWebAssignment.Controllers
             return View();
         }
 
+        //============================================ Account Maintenance =========================================================
+
+        // Generate ID for register account
+        private string NextRegisterId()
+        {
+            string max = db.User.Max(s =>  s.Id) ?? "U000";
+            int n = int.Parse(max[1..]);
+            return (n + 1).ToString("'U'000");
+        }
+
+        // GET: Client/CheckEmail
+        public bool CheckEmail(string email)
+        {
+            return !db.User.Any(u => u.Email == email);
+        }
+
+        //register for a account //GET
+        public IActionResult RegisterAccount()
+        {
+            return View();
+        }
+
+        //register for a account //POST 
+        [HttpPost]
+        public IActionResult RegisterAccount(RegisterVM vm)
+        {
+            if (db.User.Any(u => u.Email == vm.Email))
+            {
+                ModelState.AddModelError("Email", "Duplicated Email.");
+            }
+
+            //check photo
+            if (ModelState.IsValid("Photo"))
+            {
+                var e = hp.ValidatePhoto(vm.Photo);
+                if (e != "") ModelState.AddModelError("Photo", e);
+            }
+
+            if (ModelState.IsValid)
+            {
+                db.Members.Add(new()
+                {
+                    Id = NextRegisterId(),
+                    Name = vm.Name,
+                    Email = vm.Email,
+                    Password = hp.HashPassword(vm.Password),
+                    IC = vm.IC,
+                    PhoneNumber = vm.PhoneNumber,
+                    Gender = vm.Gender,
+                    Freeze = false,
+                    PhotoURL = hp.SavePhoto(vm.Photo, "User")
+                });
+                db.SaveChanges();
+                TempData["Info"] = "Register successfully. Please login.";
+                return RedirectToAction("Login");
+            }
+
+            return View(vm);
+        }
+
+        //GET : Client/Login
+        public IActionResult Login()
+        {
+            return View();
+        }
+
+        //POST : Client/Login
+        [HttpPost]
+        public IActionResult Login(LoginVm vm, string? returnURL)
+        {
+            if (string.IsNullOrEmpty(vm.Email) )
+            {
+                ModelState.AddModelError("", "Email are required.");
+                return View(vm);
+            }
+            
+            if (string.IsNullOrEmpty(vm.PasswordCurrent))
+            {
+                ModelState.AddModelError("", "Password are required.");
+                return View(vm);
+            }
+
+            var u = db.User.SingleOrDefault(user => user.Email == vm.Email);
+
+            if(u.Freeze == true)
+            {
+                ModelState.AddModelError("", "Account already block by Admin.");
+                return View(vm);
+            }
+
+            if (u == null || string.IsNullOrEmpty(u.Password) || !hp.VerifyPassword(u.Password, vm.PasswordCurrent))
+            {
+                ModelState.AddModelError("", "Login credentials not matched.");
+                return View(vm);
+            }
+
+            // Successful login
+            TempData["Info"] = "Login successfully.";
+
+            var role = (u is Admin) ? "Admin" : "Member";
+            hp.SignIn(u.Email, role);
+
+            if (!string.IsNullOrEmpty(returnURL))
+            {
+                return Redirect(returnURL);
+            }
+
+            if(role == "Admin")
+            {
+                return RedirectToAction("AdminAttraction", "Admin");
+
+            }
+            else
+            {
+                return RedirectToAction("Homepage", "Client");
+            }
+
+        }
+
+        // GET : Client/Logout
+        public IActionResult Logout()
+        {
+            TempData["Info"] = "Logout Successful.";
+
+            hp.SignOut();
+
+            return RedirectToAction("Login", "Client");
+        }
+
+        //GET : Client/UpdateProfile
+        [Authorize(Roles = "Member")]
+        public IActionResult UpdateProfile()
+        {
+            var email = User.Identity!.Name; // Get the logged-in user's email
+            var m = db.Members.SingleOrDefault(member => member.Email == email); // Retrieve member details
+
+            var photo = $"/User/{m.PhotoURL}";
+
+            if (m == null) return RedirectToAction("Homepage", "Client");
+
+            var birthDate = Helper.ConvertIcToBirthDate(m.IC);
+
+            var vm = new UpdateProfileVm
+            {
+                Name = m.Name,
+                Email = m.Email,
+                PhoneNumber = m.PhoneNumber,
+                Gender = m.Gender,
+                IC = m.IC,
+                BirthDate = birthDate,
+                PhotoURL = photo,
+            };
+
+            return View(vm); 
+        }
+
+        //POST : Client/UpdateProfile
+        [HttpPost]
+        public IActionResult UpdateProfile(UpdateProfileVm vm)
+        {
+
+            // Retrieve the logged-in user's email
+            var email = User.Identity!.Name;
+
+            // Find the user by email
+            var user = db.Members.SingleOrDefault(member => member.Email == email);
+
+            if (user == null)
+            {
+                return RedirectToAction("Homepage", "Client"); // Redirect if user not found
+            }
+
+            //check photo
+            if (ModelState.IsValid("Photo"))
+            {
+                var e = hp.ValidatePhoto(vm.Photo);
+                if (e != "") ModelState.AddModelError("Photo", e);
+            }
+
+
+            // Validate other fields (e.g., name)
+            if (string.IsNullOrWhiteSpace(vm.Name))
+            {
+                ModelState.AddModelError("Name", "Name is required.");
+            }
+
+            // Additional validation for other fields can go here
+
+            if (ModelState.IsValid)
+            {
+                // Update user details
+                user.Name = vm.Name.Trim();
+                user.PhoneNumber = vm.PhoneNumber?.Trim(); // Handle optional fields
+                user.Gender = vm.Gender;
+                user.IC = vm.IC;
+
+                // Update profile photo if a new one is uploaded
+                
+                if (vm.Photo != null)
+                {
+                    hp.DeletePhoto(user.PhotoURL, "User");
+                    user.PhotoURL = hp.SavePhoto(vm.Photo, "User");
+                }
+
+                // Save changes to the database
+                db.SaveChanges();
+
+                TempData["Info"] = "Profile updated successfully.";
+                return RedirectToAction("Homepage", "Client");
+            }
+
+            return View(vm);
+        }
+
+        //GET Client/ChangePassword
+        [Authorize]
+        public IActionResult ChangePassword()
+        {
+            return View();
+        }
+
+        //POST Client/ChangePassword
+        [Authorize]
+        [HttpPost]
+        public IActionResult ChangePassword(ChangePassword vm)
+        {
+            // Retrieve the logged-in user's email
+            var email = User.Identity!.Name;
+
+            // Find the user by email
+            var user = db.Members.SingleOrDefault(member => member.Email == email);
+
+
+            if (user == null)
+            {
+                return RedirectToAction("Homepage", "Client"); // Redirect if user not found
+            }
+
+            if (!hp.VerifyPassword(user.Password, vm.CurrentPassword))
+            {
+                ModelState.AddModelError("Current", "Current Password Incorrect.");
+            }
+
+
+            if (ModelState.IsValid)
+            {
+
+                user.Password = hp.HashPassword(vm.NewPassword);
+                db.SaveChanges();
+
+                TempData["Info"] = "Password updated.";
+                return RedirectToAction("Homepage","Client");
+
+            }
+
+
+            return View(vm);
+        }
+
+        //GET Client/ResetPassword
+        public IActionResult ResetPassword()
+        {
+            return View();
+        }
+
+        //POST Client/ResetPassword
+        [HttpPost]
+        public async Task<IActionResult> ResetPassword(ResetPassword vm)
+        {
+            if (vm.RecaptchaToken == null)
+            {
+                ModelState.AddModelError("", "reCAPTCHA validation failed.");
+                return View(vm);
+            }
+            else if (!await RecaptchaService.verifyRecaptchaV2(vm.RecaptchaToken, "6LcsrqMqAAAAAKF7Sxh6S-SBwDC3czdQMo00XPhj"))
+            {
+                ModelState.AddModelError("", "Token sent fail");
+                return View(vm);
+            }
+
+            var u = db.User.SingleOrDefault(user => user.Email == vm.Email);
+
+            if (u == null)
+            {
+                ModelState.AddModelError("Email", "Email not found.");
+            }
+
+            if (ModelState.IsValid) 
+            {
+                string password = hp.RandomPassword();
+
+                u!.Password = hp.HashPassword(password);
+                db.SaveChanges();
+
+                // Send reset password email
+                SendResetPasswordEmail(u, password);
+
+                TempData["Info"] = $"Password reset. Check your email.";
+                return RedirectToAction("Login","Client");
+            }
+
+
+            return View();
+        }
+
+        //Send password to email
+        private void SendResetPasswordEmail(User u, string password)
+        {
+            var mail = new MailMessage();
+            mail.To.Add(new MailAddress(u.Email, u.Name));
+            mail.Subject = "Reset Password";
+            mail.IsBodyHtml = true;
+
+
+            var url = Url.Action("Login", "Client", null, "https");
+
+
+            var path = u switch
+            {
+                Admin => Path.Combine(en.WebRootPath, "images", "reset-password.png"),
+                Member m => Path.Combine(en.WebRootPath, "User", m.PhotoURL),
+                _ => "",
+            };
+
+            var att = new Attachment(path);
+            mail.Attachments.Add(att);
+            att.ContentId = "photo";
+
+            mail.Body = $@"
+            <img src='cid:photo' style='width: 200px; height: 200px;
+                                        border: 1px solid #333'>
+            <p>Dear {u.Name},<p>
+            <p>Your password has been reset to:</p>
+            <h1 style='color: red'>{password}</h1>
+            <p>
+                Please <a href='{url}'>login</a>
+                with your new password.
+            </p>
+            <p>From, 🐱 Super Admin</p>
+        ";
+
+            hp.SendEmail(mail);
+        }
+        //============================================ Account Maintenance End =========================================================
+
         public IActionResult ClientAttraction()
         {
             ViewBag.AttractionTypes = db.AttractionType.ToList();
-            ViewBag.Attractions = db.Attraction.Include(a => a.AttractionType);
-            return View();
+
+            var attractions = db.Attraction.Include(a => a.AttractionType).ToList();
+            ViewBag.Attractions = attractions;
+
+            var attractFeedback = new List<AttractFeedback>(); 
+
+            foreach(var a in attractions)
+            {
+                attractFeedback.Add(new AttractFeedback
+                {
+                    attraction = a,
+                    feedbacks = db.Feedback.Where(f => f.AttractionId == a.Id).ToList(),
+                });
+            }
+
+            return View(attractFeedback);
         }
 
         //GET: AttractionDetail
@@ -60,7 +418,7 @@ namespace MobileWebAssignment.Controllers
                 return RedirectToAction("ClientAttractionDetail");
             }
 
-           ViewBag.Feedbacks = new List<FeedbackInsertVM>();
+            ViewBag.Feedbacks = new List<FeedbackInsertVM>();
             foreach (var f in feedbacks)
             {
                 ViewBag.Feedbacks.Add(new FeedbackInsertVM
@@ -74,6 +432,20 @@ namespace MobileWebAssignment.Controllers
                 });
             }
 
+            var tickets = db.Ticket.Where(t => t.AttractionId == AttractionId).ToList();
+            ViewBag.Tickets = tickets.Select(t => new TicketVM
+            {
+                Id = t.Id,
+                ticketName = t.ticketName,
+                stockQty = t.stockQty,
+                ticketPrice = t.ticketPrice,
+                ticketStatus = t.ticketStatus,
+                ticketDetails = t.ticketDetails,
+                ticketType = t.ticketType,
+                AttractionId = t.AttractionId,             
+
+            }).ToList();
+
             var vm = new AttractionUpdateVM
             {
                 Id = a.Id,
@@ -86,6 +458,7 @@ namespace MobileWebAssignment.Controllers
                 operatingTimes = hp.ConvertOperatingTimes(a.OperatingHours),
             };
 
+            
             return View(vm);
         }
 
@@ -279,17 +652,37 @@ namespace MobileWebAssignment.Controllers
             return View(vm);
         }
 
-       
+
 
 
 
         //------------------------------------------ FeedBack end ----------------------------------------------
 
 
+
         public IActionResult ClientPayment()
         {
+            List<Ticket> ticketList = new List<Ticket>();
+            Ticket ticket = new Ticket { };
+
+
             return View();
         }
+        public IActionResult ClientPaymentHIS()
+        {
+            var session = _httpContextAccessor.HttpContext.Session;
+            session.SetString("UserName", "U0001");
+            var trySession = session.GetString("UserName");
+            {
+                var m = db.PurchaseItem
+                    .Include(re => re.Ticket)
+                    .Include(re => re.Purchase)
+                    .Where(re=>re.Purchase.UserId==trySession).ToList();
+                   
 
+                return View(m);
+            }
+            
+        }
     }
 }
