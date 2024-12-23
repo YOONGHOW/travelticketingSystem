@@ -142,7 +142,7 @@ input#priceBtn {
 
 
 
-div.details_side {
+/*div.details_side {
     margin-left: -200px;
     float: left;
     padding: 20px;
@@ -160,6 +160,7 @@ div.details_side {
         font-size: 18px;
         color: #242424;
     }
+*/
 
 section::after {
     content: "";
@@ -606,3 +607,18 @@ nav.image_side {
     #add-review-btn:hover {
         background-color: #0056b3;
     }
+
+.attaraction_details{
+    margin-top:2%;
+    margin-left: 10%;
+}
+
+.attBox {
+    display: flex;
+    align-items: center;
+}
+
+.detailsImg{
+    width:70%;
+    height:400px;
+}

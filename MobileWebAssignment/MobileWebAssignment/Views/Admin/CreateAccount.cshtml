@@ -47,14 +47,14 @@
                 <div asp-validation-summary="All"></div>
                 <div class="user-details">
 
-                    <div class="input-address"> 
-                         <label class="details" asp-for="Photo">Profile Photo</label> 
-                         <label class="upload" tabindex="0"> 
-                             <input asp-for="Photo" class="form-control" type="file" accept="image/jpg,image/png" hidden> 
-                             <img src="/images/photo.jpg" id="drag"> 
-                        </label> 
+                    <div class="input-address">
+                        <label class="details" asp-for="Photo">Profile Photo</label>
+                        <label class="upload" tabindex="0">
+                            <input asp-for="Photo" class="form-control" type="file" accept="image/jpg,image/png" hidden>
+                            <img src="/images/photo.jpg" id="drag">
+                        </label>
                         <span asp-validation-for="Photo" class="text-danger"></span>
-                    </div> 
+                    </div>
 
                     <div class="input-box">
                         <label class="details" asp-for="Name">Full Name</label>
@@ -103,8 +103,8 @@
                     </div>
 
                     <div class="button-container">
-                        <input type="submit" value="Register">
-                        <a href="Login">Cancel</a>
+                        <input type="submit" value="Create Account">
+                        <a href="MemberList">Cancel</a>
                     </div>
                 </div>
             </form>
