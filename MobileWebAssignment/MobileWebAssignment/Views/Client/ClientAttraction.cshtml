@@ -3,6 +3,8 @@
     ViewBag.Title = "Client | Attraction";
 }
 
+@model IEnumerable<AttractFeedback>
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -40,12 +42,30 @@
 
         <div class="productList">
             <div class="product-list">
-                @foreach (var a in ViewBag.Attractions)
+                @foreach (var a in @Model)
                 {
-                     <div class="product-item" onclick="window.location.href='ClientAttractionDetail?attractionId=@a.Id'">
-                    <img src="/attractionImages/@a.ImagePath" alt="" class="product-image">
-                    <h3 class="product-name">@a.Name</h3>
-                    <p>★ 4.0(12)</p>
+                     <div class="product-item" onclick="window.location.href='ClientAttractionDetail?attractionId=@a.attraction.Id'">
+                    <img src="/attractionImages/@a.attraction.ImagePath" alt="" class="product-image">
+                        <h3 class="product-name">@a.attraction.Name</h3>
+                        @{
+                            if(a.feedbacks.Count == 0){
+                                <p>★ 0.0(0)</p>
+                            }else{
+                                int total = 0;
+                                double averageRating = 0.0;
+                                foreach (var f in a.feedbacks)
+                                {
+                                    total += f.Rating;
+                                }
+
+                                averageRating = (double)total / a.feedbacks.Count;
+
+
+								<p>★ @averageRating.ToString("F1") (@a.feedbacks.Count)</p>
+							}
+						}
+                        
+                    
                     <p class="product-cost">start with RM120 per ticket</p>
                 </div>
                 }

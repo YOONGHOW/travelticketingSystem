@@ -35,11 +35,21 @@
         <!-- Stats Section -->
         <div class="stats">
             <div class="stat">
-                <h3>10.0k</h3>
+                <h3>@Model.Count()</h3>
                 <p>Total Reviews</p>
             </div>
             <div class="stat">
-                <h3>4.0 ★</h3>
+                @{
+                    int total = 0;
+                    double averageRating = 0.0;
+                    foreach (var f in Model)
+                    {
+                        total += f.Rating;
+                    }
+
+                    averageRating = (double)total / Model.Count();
+                }
+                <h3>@averageRating.ToString("F1") ★</h3>
                 <p>Average Rating</p>
             </div>
         </div>

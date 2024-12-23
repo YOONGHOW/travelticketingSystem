@@ -1,4 +1,6 @@
-﻿using System.Net.Mail;
+
+using System.Globalization;
+using System.Net.Mail;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -14,14 +16,17 @@ namespace MobileWebAssignment.Controllers
 
         private readonly DB db;
         private readonly IWebHostEnvironment en;
+        private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly Helper hp;
 
-        public ClientController(DB db, IWebHostEnvironment en, Helper hp)
+        public ClientController(DB db, IWebHostEnvironment en, Helper hp, IHttpContextAccessor _httpContextAccessor)
         {
             this.db = db;
             this.en = en;
             this.hp = hp;
+            this._httpContextAccessor = _httpContextAccessor;
         }
+
 
         // GET: Home/Index
         public IActionResult Index()
@@ -383,8 +388,22 @@ namespace MobileWebAssignment.Controllers
         public IActionResult ClientAttraction()
         {
             ViewBag.AttractionTypes = db.AttractionType.ToList();
-            ViewBag.Attractions = db.Attraction.Include(a => a.AttractionType);
-            return View();
+
+            var attractions = db.Attraction.Include(a => a.AttractionType).ToList();
+            ViewBag.Attractions = attractions;
+
+            var attractFeedback = new List<AttractFeedback>(); 
+
+            foreach(var a in attractions)
+            {
+                attractFeedback.Add(new AttractFeedback
+                {
+                    attraction = a,
+                    feedbacks = db.Feedback.Where(f => f.AttractionId == a.Id).ToList(),
+                });
+            }
+
+            return View(attractFeedback);
         }
 
         //GET: AttractionDetail
@@ -399,7 +418,7 @@ namespace MobileWebAssignment.Controllers
                 return RedirectToAction("ClientAttractionDetail");
             }
 
-           ViewBag.Feedbacks = new List<FeedbackInsertVM>();
+            ViewBag.Feedbacks = new List<FeedbackInsertVM>();
             foreach (var f in feedbacks)
             {
                 ViewBag.Feedbacks.Add(new FeedbackInsertVM
@@ -413,6 +432,20 @@ namespace MobileWebAssignment.Controllers
                 });
             }
 
+            var tickets = db.Ticket.Where(t => t.AttractionId == AttractionId).ToList();
+            ViewBag.Tickets = tickets.Select(t => new TicketVM
+            {
+                Id = t.Id,
+                ticketName = t.ticketName,
+                stockQty = t.stockQty,
+                ticketPrice = t.ticketPrice,
+                ticketStatus = t.ticketStatus,
+                ticketDetails = t.ticketDetails,
+                ticketType = t.ticketType,
+                AttractionId = t.AttractionId,             
+
+            }).ToList();
+
             var vm = new AttractionUpdateVM
             {
                 Id = a.Id,
@@ -425,6 +458,7 @@ namespace MobileWebAssignment.Controllers
                 operatingTimes = hp.ConvertOperatingTimes(a.OperatingHours),
             };
 
+            
             return View(vm);
         }
 
@@ -618,17 +652,37 @@ namespace MobileWebAssignment.Controllers
             return View(vm);
         }
 
-       
+
 
 
 
         //------------------------------------------ FeedBack end ----------------------------------------------
 
 
+
         public IActionResult ClientPayment()
         {
+            List<Ticket> ticketList = new List<Ticket>();
+            Ticket ticket = new Ticket { };
+
+
             return View();
         }
+        public IActionResult ClientPaymentHIS()
+        {
+            var session = _httpContextAccessor.HttpContext.Session;
+            session.SetString("UserName", "U0001");
+            var trySession = session.GetString("UserName");
+            {
+                var m = db.PurchaseItem
+                    .Include(re => re.Ticket)
+                    .Include(re => re.Purchase)
+                    .Where(re=>re.Purchase.UserId==trySession).ToList();
+                   
 
+                return View(m);
+            }
+            
+        }
     }
 }

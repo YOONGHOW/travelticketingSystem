@@ -1,7 +1,11 @@
-﻿using Azure;
+
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+
+using Azure;
 using Microsoft.EntityFrameworkCore;
 using MobileWebAssignment.Models;
+using System.Net.Sockets;
 using X.PagedList.Extensions;
 
 namespace MobileWebAssignment.Controllers;
@@ -19,13 +23,10 @@ public class AdminController : Controller
         this.hp = hp;
     }
     
-    public IActionResult AdminDiscount()
-    {
-        return View();
-    }
+   
 
 //==================================== Attraction Type start =========================================================
-    public IActionResult AdminAttraction(int ATpage = 1, int Apage = 1)
+    public IActionResult AdminAttraction(string? Aname, int ATpage = 1, int Apage = 1)
     {
         //page list for Attraction Types
         if (ATpage < 1)
@@ -47,11 +48,18 @@ public class AdminController : Controller
             return RedirectToAction(null, new { Apage = 1 });
         }
 
-        var attractions = db.Attraction.Include(a => a.AttractionType).ToPagedList(Apage, 5);
+        Aname = Aname?.Trim() ?? "";
+
+        var attractions = db.Attraction.Include(a => a.AttractionType).Where(a => a.Name.Contains(Aname)).ToPagedList(Apage, 5);
 
         if (Apage > attractions.PageCount && attractions.PageCount > 0)
         {
             return RedirectToAction(null, new { Apage = attractions.PageCount });
+        }
+
+        if (Request.IsAjax())
+        {
+            return PartialView("_AdminAttraction", attractions);
         }
 
 
@@ -469,6 +477,139 @@ public class AdminController : Controller
     //============================================ Feedback end =========================================================
 
 
+    
+
+    private string GeneratePromotionId()
+    {
+        string lastId = db.Promotion.OrderByDescending(p => p.Id).Select(p => p.Id).FirstOrDefault() ?? "PM0000";
+        int idNum = int.Parse(lastId.Substring(2)) + 1;
+        return $"PM{idNum:D4}";
+    }
+    public IActionResult AdminDiscount(int page = 1)
+    {
+        if (page < 1) return RedirectToAction(nameof(AdminDiscount), new { page = 1 });
+
+        var promotions = db.Promotion.ToPagedList(page, 5);
+
+        if (page > promotions.PageCount && promotions.PageCount > 0)
+        {
+            return RedirectToAction(nameof(AdminDiscount), new { page = promotions.PageCount });
+        }
+
+        return View(promotions);
+    }
+
+    public IActionResult AdminDiscountCreate()
+    {
+        var vm = new PromotionInsertVM
+        {
+            Id = GeneratePromotionId(),
+            StartDate = DateTime.Today,
+            EndDate = DateTime.Today.AddDays(7),
+            PromoStatus = "Active"
+        };
+        
+        
+        return View(vm);
+    }
+
+    [HttpPost]
+    public IActionResult AdminDiscountCreate(PromotionInsertVM vm)
+    {
+        if (vm.StartDate >= vm.EndDate)
+        {
+            ModelState.AddModelError("EndDate", "End Date must be later than Start Date.");
+            
+            }
+            
+          
+            db.Promotion.Add(new Promotion
+            {
+                Id = vm.Id,
+                Title = vm.Title.Trim(),
+                Code = vm.Code.Trim(),
+                PriceDeduction = vm.PriceDeduction,
+                StartDate = vm.StartDate,
+                EndDate = vm.EndDate,
+                PromoStatus = vm.PromoStatus.Trim()
+            });
+
+            db.SaveChanges();
+            TempData["Info"] = "Promotion added successfully.";
+            return RedirectToAction(nameof(AdminDiscount));
+}
+
+
+    public IActionResult AdminDiscountUpdate(string id)
+    {
+        var promo = db.Promotion.Find(id);
+        if (promo == null) return RedirectToAction(nameof(AdminDiscount));
+
+        var vm = new PromotionInsertVM
+        {
+            Id = promo.Id,
+            Title = promo.Title,
+            Code = promo.Code,
+            PriceDeduction = promo.PriceDeduction,
+            StartDate = promo.StartDate,
+            EndDate = promo.EndDate,
+            PromoStatus = promo.PromoStatus
+        };
+
+        return View(vm);
+    }
+
+    [HttpPost]
+    public IActionResult AdminDiscountUpdate(PromotionInsertVM vm)
+    {
+        var promo = db.Promotion.Find(vm.Id);
+        if (promo == null) return RedirectToAction(nameof(AdminDiscount));
+
+        if (vm.StartDate >= vm.EndDate)
+        {
+            ModelState.AddModelError("EndDate", "End Date must be later than Start Date.");
+        }
+
+        if (ModelState.IsValid)
+        {
+            promo.Title = vm.Title.Trim();
+            promo.Code = vm.Code.Trim();
+            promo.PriceDeduction = vm.PriceDeduction;
+            promo.StartDate = vm.StartDate;
+            promo.EndDate = vm.EndDate;
+            promo.PromoStatus = vm.PromoStatus.Trim();
+
+            db.SaveChanges();
+            TempData["Info"] = "Promotion updated successfully.";
+            return RedirectToAction(nameof(AdminDiscount));
+        }
+
+        return View(vm);
+    }
+
+    public IActionResult AdminDiscountDelete(string id)
+    {
+        var promo = db.Promotion.Find(id);
+        if (promo == null) return RedirectToAction(nameof(AdminDiscount));
+
+        return View(promo);
+    }
+
+    [HttpPost]
+    public IActionResult AdminDiscountDeleteConfirmed(string id)
+    {
+        var promo = db.Promotion.Find(id);
+        if (promo != null)
+        {
+            db.Promotion.Remove(promo);
+            db.SaveChanges();
+            TempData["Info"] = "Promotion deleted successfully.";
+        }
+
+        return RedirectToAction(nameof(AdminDiscount));
+    }
+
+
 
     //============================================ Member Maintenance =========================================================
 
@@ -500,10 +641,12 @@ public class AdminController : Controller
         {
             var e = hp.ValidatePhoto(vm.Photo);
             if (e != "") ModelState.AddModelError("Photo", e);
+
         }
 
         if (ModelState.IsValid)
         {
+
             db.Members.Add(new()
             {
                 Id = NextRegisterId(),
@@ -519,12 +662,13 @@ public class AdminController : Controller
             db.SaveChanges();
             TempData["Info"] = "Create successfully. Please login.";
             return RedirectToAction("MemberList");
+
         }
 
         return View(vm);
     }
 
-    //GET Admin/MemberList
+//GET Admin/MemberList
     public IActionResult MemberList(int page = 1)
     {
         // Ensure the page number is at least 1
@@ -650,4 +794,183 @@ public class AdminController : Controller
 
     //============================================ Member Maintenance End =========================================================
 
+
+    
+ //============================================ Ticket start =========================================================
+
+    public IActionResult AdminTicket()
+    {
+        ViewBag.AttractionTypes = db.AttractionType;
+        var attractions = db.Attraction.Include(a => a.AttractionType);
+
+        return View(attractions);
+    }
+    //Auto generate id
+    private string NextTicketId()
+    {
+        string max = db.Ticket.Max(s => s.Id) ?? "TK0000";
+        int n = int.Parse(max[2..]); 
+        return (n + 1).ToString("'TK'0000"); 
+    }
+    // Insert ticket
+    [HttpGet]
+    public IActionResult AdminTicketInsert(string id)
+    {
+        var attraction = db.Attraction.FirstOrDefault(a => a.Id == id);
+        if (attraction == null)
+        {
+            return NotFound();
+        }
+
+        var vm = new TicketVM
+        {
+            AttractionId = id 
+        };
+
+        return View(vm);
+    }
+
+    [HttpPost]
+    public IActionResult AdminTicketInsert(TicketVM vm)
+    {
+        if (ModelState.IsValid)
+        {
+            db.Ticket.Add(new()
+            {
+                Id = NextTicketId(),
+                ticketName = vm.ticketName,
+                stockQty = vm.stockQty,
+                ticketPrice = vm.ticketPrice,
+                ticketStatus = vm.ticketStatus,
+                ticketDetails = vm.ticketDetails,
+                ticketType = vm.ticketType,
+                AttractionId = vm.AttractionId,
+            });
+            db.SaveChanges();
+
+            TempData["Info"] = "Record Insert";
+            return RedirectToAction("AdminTicketDetails", new { id = vm.AttractionId });
+        }
+        return View(vm);
+    }
+
+    //Update ticket
+
+    //Get ticket
+    public IActionResult AdminTicketUpdate(string? Id)
+    {
+        var t = db.Ticket.Find(Id);
+
+        if (t == null)
+        {
+            return RedirectToAction("Index");
+        }
+        var vm = new TicketVM
+        {
+            Id = t.Id,
+            ticketName = t.ticketName,
+            stockQty = t.stockQty,
+            ticketPrice = t.ticketPrice,
+            ticketStatus = t.ticketStatus,
+            ticketDetails = t.ticketDetails,
+            ticketType = t.ticketType,
+            AttractionId = t.AttractionId,
+        };
+
+        ViewBag.ProgramList = new SelectList(db.Ticket, "Id", "Name");
+        return View(vm);
+    }
+
+    [HttpPost]
+    public IActionResult AdminTicketUpdate(TicketVM vm)
+    {
+        var t = db.Ticket.Find(vm.Id);
+
+        if(t == null)
+        {
+            return RedirectToAction("AdminTicketDetails");
+        }
+
+        if (ModelState.IsValid) {
+            t.ticketName = vm.ticketName.Trim();
+            t.stockQty = vm.stockQty;
+            t.ticketPrice = vm.ticketPrice;
+            t.ticketStatus = vm.ticketStatus;
+            t.ticketDetails = vm.ticketDetails;
+            t.ticketType = vm.ticketType;
+            t.AttractionId = vm.AttractionId;
+            db.SaveChanges();
+
+            TempData["Info"] = "Record updated.";
+            return RedirectToAction("AdminTicketDetails", new { id = vm.AttractionId });
+
+        };
+        ViewBag.ProgramList = new SelectList(db.Ticket, "Id", "Name");
+        return View(vm);
+    }
+
+    //display attraction and ticket details
+    public IActionResult AdminTicketDetails(string id)
+    {
+        var attraction = db.Attraction.Include(a => a.AttractionType)
+                                       .FirstOrDefault(a => a.Id == id);
+
+        if (attraction == null)
+        {
+            return NotFound();
+        }
+
+        var tickets = db.Ticket.Where(t => t.AttractionId == id).ToList();
+        var vm = new AdminTicketDetails
+        {
+            Attraction = attraction,
+            Tickets = tickets
+        };
+        return View(vm);
+    }
+
+    //Delete ticket
+    public ActionResult AdminTicketDelete(string? Id)
+    {
+        var t = db.Ticket.Find(Id);
+
+        if (t == null)
+        {
+            return RedirectToAction("AdminTicketDetails");
+        }
+        var vm = new TicketVM
+        {
+            Id = t.Id,
+            ticketName = t.ticketName,
+            stockQty = t.stockQty,
+            ticketPrice = t.ticketPrice,
+            ticketStatus = t.ticketStatus,
+            ticketDetails = t.ticketDetails,
+            ticketType = t.ticketType,
+        };
+        return View(vm);
+    }
+
+    [HttpPost]
+    public IActionResult AdminTicketDelete(TicketVM vm)
+    {
+        var t = db.Ticket.Find(vm.Id);
+
+        if (t != null)
+        {
+            string attractionId = t.AttractionId;
+            db.Ticket.Remove(t);
+            db.SaveChanges();
+            TempData["Info"] = "Record Deleted.";
+
+            return RedirectToAction("AdminTicketDetails", new { id = attractionId });
+        }
+        return RedirectToAction("AdminTicketDetails", new { id = vm.AttractionId });
+    }
+
+    
+
 }
+
+
+
