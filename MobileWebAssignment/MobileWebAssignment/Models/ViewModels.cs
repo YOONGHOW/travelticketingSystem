@@ -1,5 +1,6 @@
 ﻿
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 
 namespace MobileWebAssignment.Models;
@@ -67,6 +68,7 @@ public class AttractionUpdateVM
 
     public IFormFile? Photo { get; set; }
 
+    public List<TicketVM> Tickets { get; set; }
     public List<OperatingHour>? operatingHours { get; set; }
     public List<OperatingTime>? operatingTimes { get; set; }
 
@@ -171,4 +173,28 @@ public class RegisterVM
     //[Display(Name = "Profile Photo")]
     //public IFormFile Photo { get; set; }
 
+}
+
+public class TicketVM {
+
+    public string Id { get; set; }
+    [StringLength(200)]
+    [Required(ErrorMessage = "Ticket Name is required.")]
+    public string ticketName { get; set; }
+    public int stockQty { get; set; }
+    [Precision(4, 2)]
+    public decimal ticketPrice { get; set; }
+    public string ticketStatus { get; set; }
+    [StringLength(1000)]
+    [Required(ErrorMessage = "Ticket details is required.")]
+    public string ticketDetails { get; set; }
+    public string ticketType { get; set; }
+    //FK
+    public string AttractionId { get; set; }
+}
+
+public class AdminTicketDetails
+{
+    public Attraction Attraction { get; set; }
+    public List<Ticket> Tickets { get; set; }
 }

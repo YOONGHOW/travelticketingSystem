@@ -105,7 +105,7 @@ namespace MobileWebAssignment.Controllers
                 return RedirectToAction("ClientAttractionDetail");
             }
 
-           ViewBag.Feedbacks = new List<FeedbackInsertVM>();
+            ViewBag.Feedbacks = new List<FeedbackInsertVM>();
             foreach (var f in feedbacks)
             {
                 ViewBag.Feedbacks.Add(new FeedbackInsertVM
@@ -119,6 +119,20 @@ namespace MobileWebAssignment.Controllers
                 });
             }
 
+            var tickets = db.Ticket.Where(t => t.AttractionId == AttractionId).ToList();
+            ViewBag.Tickets = tickets.Select(t => new TicketVM
+            {
+                Id = t.Id,
+                ticketName = t.ticketName,
+                stockQty = t.stockQty,
+                ticketPrice = t.ticketPrice,
+                ticketStatus = t.ticketStatus,
+                ticketDetails = t.ticketDetails,
+                ticketType = t.ticketType,
+                AttractionId = t.AttractionId,             
+
+            }).ToList();
+
             var vm = new AttractionUpdateVM
             {
                 Id = a.Id,
@@ -131,6 +145,7 @@ namespace MobileWebAssignment.Controllers
                 operatingTimes = hp.ConvertOperatingTimes(a.OperatingHours),
             };
 
+            
             return View(vm);
         }
 
@@ -324,11 +339,12 @@ namespace MobileWebAssignment.Controllers
             return View(vm);
         }
 
-       
+
 
 
 
         //------------------------------------------ FeedBack end ----------------------------------------------
+
 
 
         public IActionResult ClientPayment()
