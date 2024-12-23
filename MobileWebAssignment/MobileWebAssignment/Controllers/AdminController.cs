@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Azure;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MobileWebAssignment.Models;
 using X.PagedList.Extensions;
@@ -466,5 +467,187 @@ public class AdminController : Controller
 
 
     //============================================ Feedback end =========================================================
+
+
+
+    //============================================ Member Maintenance =========================================================
+
+    // Generate ID for create account
+    private string NextRegisterId()
+    {
+        string max = db.User.Max(s => s.Id) ?? "U000";
+        int n = int.Parse(max[1..]);
+        return (n + 1).ToString("'U'000");
+    }
+
+    // GET Admin/CreateAccount
+    public IActionResult CreateAccount()
+    {
+        return View();
+    }
+
+    //POST Admin/CreateAccount
+    [HttpPost]
+    public IActionResult CreateAccount(RegisterVM vm)
+    {
+        if (db.User.Any(u => u.Email == vm.Email))
+        {
+            ModelState.AddModelError("Email", "Duplicated Email.");
+        }
+
+        //check photo
+        if (ModelState.IsValid("Photo"))
+        {
+            var e = hp.ValidatePhoto(vm.Photo);
+            if (e != "") ModelState.AddModelError("Photo", e);
+        }
+
+        if (ModelState.IsValid)
+        {
+            db.Members.Add(new()
+            {
+                Id = NextRegisterId(),
+                Name = vm.Name,
+                Email = vm.Email,
+                Password = hp.HashPassword(vm.Password),
+                IC = vm.IC,
+                PhoneNumber = vm.PhoneNumber,
+                Gender = vm.Gender,
+                Freeze = false,
+                PhotoURL = hp.SavePhoto(vm.Photo, "User")
+            });
+            db.SaveChanges();
+            TempData["Info"] = "Create successfully. Please login.";
+            return RedirectToAction("MemberList");
+        }
+
+        return View(vm);
+    }
+
+    //GET Admin/MemberList
+    public IActionResult MemberList(int page = 1)
+    {
+        // Ensure the page number is at least 1
+        if (page < 1)
+        {
+            return RedirectToAction(null, new { page = 1 });
+        }
+
+        // Get paged list of users from the database
+        ViewBag.Users = db.User.ToPagedList(page, 5);
+
+        // Ensure the page number does not exceed the total page count
+        if (page > ViewBag.Users.PageCount && ViewBag.Users.PageCount > 0)
+        {
+            return RedirectToAction(null, new { page = ViewBag.Users.PageCount });
+        }
+
+        // Return the view with the paged list
+        return View(ViewBag.Users);
+    }
+
+
+    //POST : UserStatus
+    [HttpPost]
+    public IActionResult UserStatus(string id)
+    {
+        // Find the user in the database
+        var user = db.User.FirstOrDefault(u => u.Id == id);
+
+        if (user != null)
+        {
+            // Toggle the Freeze status
+            user.Freeze = !user.Freeze;
+
+            // Save changes to the database
+            db.SaveChanges();
+
+            string action = user.Freeze ? "blocked" : "unblocked";
+            TempData["SuccessMessage"] = $"User with ID {id} has been {action}.";
+            return RedirectToAction("MemberList");
+        }
+
+        TempData["ErrorMessage"] = "User not found.";
+        return RedirectToAction("MemberList");
+    }
+
+    //GET Admin/AdminUpdateMember
+    [HttpGet("Admin/AdminUpdateMember/{Id?}")]
+    public IActionResult AdminUpdateMember(string? Id)
+    {
+        var user = db.Members.Find(Id);
+
+        if (user == null) return RedirectToAction("MemberList", "Admin");
+
+        var photo = $"/User/{user.PhotoURL}";
+
+        var birthDate = Helper.ConvertIcToBirthDate(user.IC);
+
+        var vm = new UpdateProfileVm
+        {
+            Name = user.Name,
+            Email = user.Email,
+            PhoneNumber = user.PhoneNumber,
+            Gender = user.Gender,
+            IC = user.IC,
+            BirthDate = birthDate,
+            PhotoURL = photo,
+        };
+
+        return View(vm);
+    }
+
+    //POST Admin/AdminUpdateMember 
+    [HttpPost("Admin/AdminUpdateMember/{Id?}")]
+    public IActionResult AdminUpdateMember(UpdateProfileVm vm,string? Id)
+    {
+        var user = db.Members.Find(Id);
+
+        if (user == null) return RedirectToAction("MemberList", "Admin");
+
+        //check photo
+        if (ModelState.IsValid("Photo"))
+        {
+            var e = hp.ValidatePhoto(vm.Photo);
+            if (e != "") ModelState.AddModelError("Photo", e);
+        }
+
+        // Validate other fields (e.g., name)
+        if (string.IsNullOrWhiteSpace(vm.Name))
+        {
+            ModelState.AddModelError("Name", "Name is required.");
+        }
+
+        // Additional validation for other fields can go here
+
+        if (ModelState.IsValid)
+        {
+            // Update user details
+            user.Name = vm.Name.Trim();
+            user.PhoneNumber = vm.PhoneNumber?.Trim(); // Handle optional fields
+            user.Gender = vm.Gender;
+            user.IC = vm.IC;
+
+            // Update profile photo if a new one is uploaded
+
+            if (vm.Photo != null)
+            {
+                hp.DeletePhoto(user.PhotoURL, "User");
+                user.PhotoURL = hp.SavePhoto(vm.Photo, "User");
+            }
+
+            // Save changes to the database
+            db.SaveChanges();
+
+            TempData["Info"] = "Profile updated successfully.";
+            return RedirectToAction("MemberList", "Admin");
+        }
+
+        return View(vm);
+
+    }
+
+
+    //============================================ Member Maintenance End =========================================================
 
 }

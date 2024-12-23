@@ -93,6 +93,12 @@ select {
     border-color: #9b59b6;
 }
 
+input[readonly] {
+    background-color: #e9ecef;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
 form .gender-details .gender-title {
     font-size: 20px;
     font-weight: 500;
@@ -134,8 +140,8 @@ form input[type="radio"] {
 
 form .button-container {
     display: flex;
-    justify-content: flex-end; 
-    gap: 10px; 
+    justify-content: flex-end;
+    gap: 10px;
 }
 
     form .button-container input,

@@ -1,4 +1,6 @@
-﻿<!DOCTYPE html>
+﻿@inject DB db
+
+<!DOCTYPE html>
 
 <html lang="en">
 
@@ -33,10 +35,38 @@
                             <span style="background-color:red; border:none; border-radius:50%; padding:4px;font-size:10px;"><?= $total_item ?></span>
                         </a>
                     </li>
+
+
                    
-                    <li><a href="/Client/Login">Login</a></li>
+                    @if(User.Identity!.IsAuthenticated)
+                    {
+                        <li><a href="/Client/Logout">Logout</a></li>
+
+                    }else{
+                        <li><a href="/Client/Login">Login</a></li>
+
+                    }
+
+                    @* //Member Photo *@
+                    @if (User.IsInRole("Member"))
+                    {
+                        var member = db.Members.FirstOrDefault(m => m.Email == User.Identity!.Name);
+
+                        if (member != null)
+                        {
+                            var photoURL = string.IsNullOrEmpty(member.PhotoURL) ? "default.png" : member.PhotoURL;
+                            <a href="/Client/UpdateProfile"><img href="" style="width:5%;height:10%;border-radius:100%;" src="/User/@photoURL" alt="User Photo"></a>
+                        }
+                        else
+                        {
+                            <p>User not found</p>
+                        }
+                    }
                     
                 </ul>
+
+
+                    
             </nav>
         </div>
     </header>
