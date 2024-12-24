@@ -9,7 +9,7 @@ body {
 
 .content {
     max-width: 1200px;
-    margin: 0 1% 0 6%;
+    margin: 0 auto;
     padding: 20px;
     background: #ffffff;
     border-radius: 8px;
@@ -129,3 +129,5 @@ span.tableNav {
     align-items: center;
     justify-content: space-between;
 }
+
+
