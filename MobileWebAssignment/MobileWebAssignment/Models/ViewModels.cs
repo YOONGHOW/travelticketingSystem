@@ -1,4 +1,4 @@
-
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -41,7 +41,7 @@ public class AttractionInsertVM
 
     public string AttractionTypeId { get; set; }
 
-    public IFormFile Photo { get; set; }
+    public ImageSet Photo { get; set; }
 
     public List<OperatingHour>? operatingHours { get; set; }
 
@@ -79,10 +79,9 @@ public class AttractionUpdateVM
 
     public string AttractionTypeId { get; set; }
 
-    public IFormFile? Photo { get; set; }
-    public int quantity { get;set; }
 
-    public List<TicketVM> Tickets { get; set; }
+    public IFormFile? Photo { get; set; }
+    public ImageSet? Photo { get; set; }
 
     public List<OperatingHour>? operatingHours { get; set; }
     public List<OperatingTime>? operatingTimes { get; set; }
@@ -291,6 +290,16 @@ public class AdminTicketDetails
 {
     public Attraction Attraction { get; set; }
     public List<Ticket> Tickets { get; set; }
+}
+
+public class ImageSet
+{
+    [Required(ErrorMessage = "Please select file.")]
+    [Display(Name = "Browse File")]
+    public List<IFormFile> images { get; set; }
+
+    public List<string>? imagePaths { get; set; }
+
 }
 
 
