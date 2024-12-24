@@ -140,23 +140,25 @@ public class Ticket //TK0001
     //navigation 
     public Attraction Attraction { get; set; }
     public List<PurchaseItem> PurchaseItems { get; set; } = [];
-    public List<Cart> Carts { get; set; } = [];
 
 }//end of ticket
 
 public class Cart
 {
-    [Key, MaxLength(8)] //CART0001
-    public string CartID { get; set; }
-    //FK USER ID
+    [Key, MaxLength(8)] // Example: CART0001
+    public string Id { get; set; }
+
+    // FK USER ID
     public string UserId { get; set; }
-    //FK ticketID
+
+    // FK Ticket ID
     public string TicketId { get; set; }
-    public int quantity { get; set; }
-    
-    //navigation
-    public Ticket Ticket { get; set; }
+
+    public int Quantity { get; set; }
+
+    // Navigation
     public User User { get; set; }
+    public Ticket Ticket { get; set; } 
 }
 //end of cart
 

@@ -79,7 +79,9 @@ public class AttractionUpdateVM
 
     public string AttractionTypeId { get; set; }
 
+
     public ImageSet? Photo { get; set; }
+
 
     public List<OperatingHour>? operatingHours { get; set; }
     public List<OperatingTime>? operatingTimes { get; set; }
@@ -274,6 +276,15 @@ public class TicketVM {
     //FK
     public string AttractionId { get; set; }
 }
+
+public class CartVM
+{
+    public string Id { get; set; }
+    public string TicketId { get; set; }
+    public string UserId { get; set; }
+    public int quantity { get; set; }
+}
+
 
 public class AdminTicketDetails
 {
