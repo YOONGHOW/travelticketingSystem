@@ -78,6 +78,9 @@
 
                 <div class="operating-hours">
                     <h3>Operating Hours</h3>
+                    <div class="button">
+                        <button type="button" id="syncStartTimeButton">Sync Start Times</button>
+                    </div>
                     <div class="day-hours">
                         @{
                             var days = new[] { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" };
@@ -126,6 +129,8 @@
                 row.find(".start-time, .end-time").prop("disabled", isClosed);
             });
         });
+
+
     </script>
     <script>
         const fileInput = document.getElementById('fileInput');
@@ -189,6 +194,24 @@
                 document.getElementById("singleImage").style.display = "block";
             }
 
+        });
+    </script>
+    <script>
+                $(document).ready(function () {
+            // When the button is clicked
+            $("#syncStartTimeButton").on("click", function () {
+                // Get the value of the first start time field
+                const firstStartTime = $(".start-time").first().val();
+
+                // If a start time is selected, update all other start time fields to match it
+                if (firstStartTime) {
+                    $(".start-time").each(function () {
+                        $(this).val(firstStartTime);
+                    });
+                } else {
+                    alert("Please select a start time first.");
+                }
+            });
         });
     </script>
 </body>
