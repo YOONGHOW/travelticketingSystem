@@ -73,6 +73,47 @@ public class Helper
         File.Delete(path);
     }
 
+    public string SaveMultiplePhoto(List<IFormFile> files, string folder)
+    {
+        string imagePaths = "";
+        string fileName = "";
+
+        foreach (var file in files)
+        {
+            fileName = SavePhoto(file, "attractionImages");
+            //DeletePhoto(file, "uploads");
+            imagePaths += fileName + "|";
+        }
+
+        return imagePaths;
+    }
+
+    public void DeleteMultiplePhoto(string files, string folder)
+    {
+        List<string> imagePaths = SplitImagePath(files);
+
+        foreach (var imagePath in imagePaths)
+        {
+            string imagepath = Path.GetFileName(imagePath);
+            var path = Path.Combine(en.WebRootPath, folder, imagepath);
+            File.Delete(path);
+        }
+    }
+
+    public List<string> SplitImagePath(string imagePath)
+    {
+        string[] imgs = imagePath.Split('|');
+        List<string> imagePaths = new List<string>();
+        foreach (var img in imgs)
+        {
+            imagePaths.Add(img.Trim());
+        }
+
+        imagePaths.RemoveAt(imagePaths.Count() - 1);
+
+        return imagePaths;
+    }
+
     // ------------------------------------------------------------------------
     // Calculation Helper Functions
     // ------------------------------------------------------------------------
