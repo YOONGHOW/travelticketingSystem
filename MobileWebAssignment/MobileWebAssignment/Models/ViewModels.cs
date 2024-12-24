@@ -80,8 +80,8 @@ public class AttractionUpdateVM
     public string AttractionTypeId { get; set; }
 
 
+    public IFormFile? Photo { get; set; }
     public ImageSet? Photo { get; set; }
-
 
     public List<OperatingHour>? operatingHours { get; set; }
     public List<OperatingTime>? operatingTimes { get; set; }
