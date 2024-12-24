@@ -1,0 +1,63 @@
+﻿@{
+    Layout = "_AdminLayout";
+    ViewBag.Title = "Admin | Ticket";
+}
+
+@model TicketVM
+
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <link rel="stylesheet" href="/css/AdminCss/AdminTicket.css" asp-append-version="true">
+
+</head>
+<body>
+    <div class="content">
+    <h1>Insert ticket</h1>
+    <form method="post" class="form">
+        <div asp-validation-summary="ModelOnly"></div>
+
+        <input asp-for="AttractionId" type="hidden" value="@Model.AttractionId" />
+        <input asp-for="Id" type="hidden">
+
+        <lable asp-for="ticketName"></lable>
+        <input asp-for="ticketName" data-upper autofocus />
+        <span asp-validation-for="ticketName"></span>
+
+        <lable asp-for="stockQty"></lable>
+        <input asp-for="stockQty" type="number" min="1" />
+        <span asp-validation-for="stockQty"></span>
+
+        <lable asp-for="ticketPrice"></lable>
+        <input asp-for="ticketPrice" type="number" min="0.01" />
+        <span asp-validation-for="ticketPrice"></span>
+
+        <lable asp-for="ticketStatus"></lable>
+        <div>
+            <label><input asp-for="ticketStatus" type="radio" value="Good" />Available</label>
+            <label><input asp-for="ticketStatus" type="radio" value="Fail" />Non-available</label>
+        </div>
+        <span asp-validation-for="ticketStatus"></span>
+
+        <lable asp-for="ticketDetails"></lable>
+        <input asp-for="ticketDetails" type="text" />
+        <span asp-validation-for="ticketDetails"></span>
+
+        <lable asp-for="ticketType"></lable>
+        <div>
+            <label><input asp-for="ticketType" type="radio" value="adult" />Adult</label>
+            <label><input asp-for="ticketType" type="radio" value="child" />Child</label>
+            <label><input asp-for="ticketType" type="radio" value="oku" />OKU</label>
+        </div>
+        <span asp-validation-for="ticketType"></span>
+
+        <section>
+            <button>Submit</button>
+            <button type="reset">Reset</button>
+        </section>
+
+    </form>
+    </div>
+</body>
+</html>
+
