@@ -1,0 +1,54 @@
+﻿@{
+    Layout = "_AdminLayout";
+    ViewBag.Title = "Admin | Ticket";
+}
+
+<html>
+    <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <link rel="stylesheet" href="/css/AdminCss/AdminTicket.css" asp-append-version="true">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    </head>
+
+    <body>
+        <div class="content">
+        <h1>Ticket management</h1>
+
+        <table class="attractionTicket">
+            <thead>
+                <tr>
+                    <th>Attraction ID</th>
+                    <th>Attraction Name</th>
+                    <th>Attraction Type</th>
+                    <th>Location(Region)</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var a in Model)
+                {
+                    <tr class="clickable-row" data-href="@Url.Action("AdminTicketDetails", "Admin", new { id = a.Id })">
+                        <td>@a.Id</td>
+                        <td>@a.Name</td>
+                        <td>@a.AttractionType?.Name</td>
+                        <td>@a.Location</td>
+                    </tr>
+                }
+
+            </tbody>
+        </table>
+    </div>
+
+
+
+    <script>
+        // jQuery to make rows clickable
+        $(document).ready(function () {
+            $(".clickable-row").click(function () {
+                window.location = $(this).data("href");
+            });
+        });
+    </script>
+    </body>
+
+</html>
+
