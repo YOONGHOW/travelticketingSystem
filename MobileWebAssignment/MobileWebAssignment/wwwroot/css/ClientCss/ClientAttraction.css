@@ -170,7 +170,7 @@ section::after {
 
 input#addCartBtn {
     margin-top: 20px;
-    width: 60%;
+    width: 70%;
     border: none;
     padding: 10px;
     color: #ffffff;
@@ -463,6 +463,23 @@ nav.image_side {
     margin-bottom: 15px;
 }
 
+
+.review-container {
+    display: flex; 
+    align-items: center; 
+    gap: 10px; 
+    font-size:18px;
+}
+
+.review-head {
+    margin: 0; 
+}
+
+.location {
+    margin: 0;
+    color: black;
+}
+
 .stars {
     color: #f5c518;
     font-size: 1.5em;
@@ -481,7 +498,7 @@ nav.image_side {
 }
 
 .review-score {
-    text-align: center;
+    text-align:center;
     margin-right: 20px;
     flex-shrink: 0;
 }
@@ -621,4 +638,31 @@ nav.image_side {
 .detailsImg{
     width:70%;
     height:400px;
+    border-radius:3%;
+}
+
+.details-container {
+    display: flex; 
+    gap: 20px; 
+    align-items: flex-start; 
+}
+
+.operating-hours {
+    margin-top:5%;
+    flex-grow: 1; 
+    font-size:18px;
+    margin-left:10px;
+}
+
+.tableTicketDetails{
+    margin-top:20px; 
+    width:100%;
+    font-size:18px;
+}
+
+.ticket-box {
+    border: 2px solid #c4c4c4;
+    border-radius:10px;
+    width:70%;
+    padding:20px;
 }

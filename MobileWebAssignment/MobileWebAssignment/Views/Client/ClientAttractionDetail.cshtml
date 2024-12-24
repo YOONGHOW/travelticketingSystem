@@ -11,7 +11,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/css/ClientCss/ClientAttraction.css" asp-append-version="true">
-
 </head>
 <body>
 </body>
@@ -21,12 +20,36 @@
     <div class="attaraction_details">
         <h1>@Model.Name</h1><br />
         <p style="font-size:18px;">@Model.Description<br /> <br />
-        <p>@Model.Location</p><br />
+            @if (ViewBag.Feedbacks.Count == 0)
+        {
+            <p>No review yet.</p>
+        }
+        else
+        {
+
+            int total = 0;
+            double averageRating = 0.0;
+            foreach (var f in ViewBag.Feedbacks)
+            {
+                total += f.Rating;
+            }
+
+            averageRating = (double)total / ViewBag.Feedbacks.Count;
+
+            <div class="review-container">
+                <p class="review-head">⭐@averageRating.ToString("F1") (@ViewBag.Feedbacks.Count reviews)</p>
+                <p class="location">📍@Model.Location</p>
+                
+            </div>
+            }
+        <br />
+        <div class="details-container">
         <img src="/attractionImages/@Model.ImagePath" alt="@Model.Name" class="detailsImg">
         <br />
-                
-                
-                <h4>Operating Hours</h4>
+
+            <div class="operating-hours">   
+                <h4><b>Operating Hours</b></h4>
+                <br />
                 <p>
                     <table style="text-align:left;">
                         @foreach (var op in Model.operatingTimes)
@@ -44,43 +67,43 @@
 
                             <tr>
                                 <th>@op.Day</th>
-                                <td style="padding-left:10px;">@operateDetail</td>
+                                <td style="padding-left:50px;">@operateDetail</td>
                             </tr>
+                            
                         }
                     </table>
+                    </div>
+        </div>
                 </p>
 
             <!-- Add to Cart Section -->
-            <form method="POST" action="ClientAttractionDetail" class="add-to-cart-form">
-                <h2>Tickets</h2>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Ticket Name</th>
-                            <th>Ticket Price</th>
-                            <th>Ticket Available Stock</th>
-                            <th>Ticket Type</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var ticket in ViewBag.Tickets as List<TicketVM>)
-                        {
+        
+            <h2>Package Option</h2>
+                <br />
+            @foreach (var ticket in ViewBag.Tickets as List<TicketVM>)
+            {
+            <form asp-action="AddToCart" method="post">
+                <div class="ticket-box">
+                    <input type="hidden" name="ticketId" value="@ticket.Id" />
+                        <p style="font-size:18px;">@ticket.ticketName</p>
+                        <table class="tableTicketDetails">
                             <tr>
-                                <td>@ticket.ticketName</td>
-                                <td>RM @ticket.ticketPrice</td>
-                                <td>@ticket.stockQty</td>
-                                <td>@ticket.ticketType</td>
+                        <td>@ticket.ticketType</td>
+                        <td><span>RM</span>@ticket.ticketPrice</td>
+                            <td>
+                            <label for="quantity" class="qty">Quantity:</label>
+                            <input type="number" id="quantity" name="quantity" value="1" min="1" max="100">
+                        </td>
+                                
                             </tr>
-                        }
-                    </tbody>
-                </table>
-
-
-                <label for="quantity" class="qty">Quantity:</label>
-                <input type="number" id="quantity" name="quantity" value="1" min="1" max="100">
-                <input type="hidden" name="attraction_id" value="@Model.Id">
-                <input type="submit" id="addCartBtn" name="addCart" value="Add to Cart">
+                        </table>
+                </div>
+                <button type="submit">Add to Cart</button>
             </form>
+            }
+           
+
+           
     </div>
     <!-- Review Section -->
     <section class="review-section">
