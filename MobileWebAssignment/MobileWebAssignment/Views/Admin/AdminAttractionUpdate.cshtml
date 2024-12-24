@@ -22,10 +22,18 @@
             <form method="post" enctype="multipart/form-data">
                 <div asp-validation-summary="All"></div>
 
-                <label asp-for="Photo">Attraction Image</label>
+                <label asp-for="Photo.images">Attraction Image</label>
                 <label class="upload">
-                    <input asp-for="Photo" accept="image/jpeg,image/png" hidden>
-                    <img src="/attractionImages/@Model.ImagePath">
+                    <input asp-for="Photo.images" accept="image/jpeg,image/png" multiple >
+						@* <img src="/attractionImages/@Model.ImagePath"> *@
+                        <div id="preview">
+                    @foreach (var imagePath in Model.Photo.imagePaths)
+                    {  
+                            <img src="/attractionImages/@imagePath">
+
+                    }
+                    </div>
+                    <div id="errorMessage" class="error"></div>
                 </label>
                 <span asp-validation-for="Photo" class="err" style="text-align:center;"></span>
 
@@ -49,6 +57,7 @@
                             @foreach (var at in ViewBag.AttractionTypes)
                             {
                                 <option value="@at.Id">@at.Name</option>
+                                <span>Remove</span>
                             }
                         </select>
                         <span asp-validation-for="AttractionTypeId"></span>
@@ -116,6 +125,70 @@
                 const row = $(this).closest(".day-row");
                 row.find(".start-time, .end-time").prop("disabled", isClosed);
             });
+        });
+    </script>
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const preview = document.getElementById('preview');
+        const errorMessage = document.getElementById('errorMessage');
+        const maxFileSize = 2 * 1024 * 1024; // 2MB
+        const maxImages = 5;
+
+        fileInput.addEventListener('change', () => {
+            preview.innerHTML = ''; // Clear previous previews
+            errorMessage.innerHTML = ''; // Clear error message
+            const files = fileInput.files;
+
+            // Create an array to hold the files excluding the ones that are removed
+            let fileArray = Array.from(files);
+
+            // Check number of images validation
+            if (fileArray.length > maxImages) {
+                errorMessage.innerHTML = `You can only upload up to ${maxImages} images.`;
+                return;
+            }else if(fileArray.length > 1){
+                document.getElementById("singleImage").style.display = "none";
+
+                        fileArray.forEach((file) => {
+            // Check file size validation
+            if (file.size > maxFileSize) {
+                errorMessage.innerHTML = `File "${file.name}" is too large. Maximum allowed size is 2MB.`;
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const div = document.createElement('div');
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                div.appendChild(img);
+
+                // Create a remove button
+                const removeBtn = document.createElement('span');
+                removeBtn.textContent = 'Remove';
+                removeBtn.classList.add('remove-btn');
+                removeBtn.onclick = () => {
+                    // Remove the file from the fileArray
+                    fileArray = fileArray.filter((f) => f !== file);
+
+                    // Update the file input element with the remaining files
+                    const dataTransfer = new DataTransfer();
+                    fileArray.forEach((file) => dataTransfer.items.add(file));
+                    fileInput.files = dataTransfer.files;
+
+                    // Remove the preview from the UI
+                    preview.removeChild(div);
+                };
+                div.appendChild(removeBtn);
+
+                preview.appendChild(div);
+            };
+            reader.readAsDataURL(file);
+        });
+            }else{
+                document.getElementById("singleImage").style.display = "block";
+            }
+
         });
     </script>
 </body>

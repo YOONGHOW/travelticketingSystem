@@ -255,3 +255,28 @@ form .deleteButton {
             form .deleteButton button[type="reset"]:hover {
                 background-color: #95a5a6; /* Lighter neutral color on hover */
             }
+
+
+#preview {
+    display: flex; /* Use flexbox to display images horizontally */
+    flex-wrap: wrap; /* Allow wrapping if there are too many images */
+    gap: 10px; /* Add space between the images */
+}
+
+    #preview img {
+        max-width: 150px;
+        margin-bottom: 10px;
+        display: block;
+    }
+
+.remove-btn {
+    display: inline-block;
+    margin-top: 5px;
+    cursor: pointer;
+    color: red;
+}
+
+.error {
+    color: red;
+    margin-top: 10px;
+}

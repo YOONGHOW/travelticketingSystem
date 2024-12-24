@@ -68,7 +68,7 @@ public class Attraction //A0001
     public string Location { get; set; }
     [MaxLength(500)]
     public string OperatingHours { get; set; }
-    [MaxLength(200)]
+    [MaxLength(800)]
     public string ImagePath { get; set; }
 
     //FK

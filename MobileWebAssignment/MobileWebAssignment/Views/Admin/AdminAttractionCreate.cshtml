@@ -8,7 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/css/AdminCss/AdminAttractionTypeLayout.css">
     <title>Add New Attraction Information</title>
-   
+
 </head>
 
 <body>
@@ -20,12 +20,14 @@
 
         <div class="content">
             <form method="post" enctype="multipart/form-data">
-                <div asp-validation-summary="ModelOnly"></div>
+                <div asp-validation-summary="All"></div>
 
-                <label asp-for="Photo">Attraction Image</label>
+                <label asp-for="Photo.images">Attraction Image</label>
                 <label class="upload">
-                    <input asp-for="Photo" accept="image/jpeg,image/png" hidden>
-                    <img src="/images/photo.jpg">
+                    <input asp-for="Photo.images" type="file" id="fileInput" accept="image/jpeg,image/png" multiple >
+                    <div id="errorMessage" class="error"></div>
+					<div id="preview"></div>
+                    <img src="/images/photo.jpg" id="singleImage">
                 </label>
                 <span asp-validation-for="Photo" class="err" style="text-align:center;"></span>
 
@@ -46,8 +48,8 @@
                         <label class="details" asp-for="AttractionTypeId">Attraction Type Name</label>
                         <select id="attraction-type" asp-for="AttractionTypeId">
                             <option value="none">-- Select Attraction Type --</option>
-                            @foreach (var at in ViewBag.AttractionTypes) 
-                            { 
+                            @foreach (var at in ViewBag.AttractionTypes)
+                            {
                                 <option value="@at.Id">@at.Name</option>
                             }
                         </select>
@@ -73,12 +75,12 @@
                         @{
                             var days = new[] { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" };
                         }
-                        
+
                         @for (int i = 0; i < days.Length; i++)
                         {
                             <div class="day-row">
                                 <span>@days[i]</span>
-                                <input type="hidden" name="operatingHours[@i].Day" value="@days[i]" class="day-status"/>
+                                <input type="hidden" name="operatingHours[@i].Day" value="@days[i]" class="day-status" />
                                 <select asp-for="operatingHours[@i].Status" class="day-status">
                                     <option value="open">Open</option>
                                     <option value="closed">Closed</option>
@@ -106,16 +108,80 @@
     <script>
                     $(document).ready(function () {
             $(".day-status").on("change", function () {
-                const isClosed = $(this).val() === "closed"; 
-                const row = $(this).closest(".day-row"); 
-                row.find(".start-time, .end-time").prop("disabled", isClosed); 
+                const isClosed = $(this).val() === "closed";
+                const row = $(this).closest(".day-row");
+                row.find(".start-time, .end-time").prop("disabled", isClosed);
             });
 
             $(".day-status").each(function () {
-                const isClosed = $(this).val() === "closed"; 
-                const row = $(this).closest(".day-row"); 
-                row.find(".start-time, .end-time").prop("disabled", isClosed); 
+                const isClosed = $(this).val() === "closed";
+                const row = $(this).closest(".day-row");
+                row.find(".start-time, .end-time").prop("disabled", isClosed);
             });
+        });
+    </script>
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const preview = document.getElementById('preview');
+        const errorMessage = document.getElementById('errorMessage');
+        const maxFileSize = 2 * 1024 * 1024; // 2MB
+        const maxImages = 5;
+
+        fileInput.addEventListener('change', () => {
+            preview.innerHTML = ''; // Clear previous previews
+            errorMessage.innerHTML = ''; // Clear error message
+            const files = fileInput.files;
+
+            // Create an array to hold the files excluding the ones that are removed
+            let fileArray = Array.from(files);
+
+            // Check number of images validation
+            if (fileArray.length > maxImages) {
+                errorMessage.innerHTML = `You can only upload up to ${maxImages} images.`;
+                return;
+            }else if(fileArray.length > 1){
+                document.getElementById("singleImage").style.display = "none";
+
+                        fileArray.forEach((file) => {
+            // Check file size validation
+            if (file.size > maxFileSize) {
+                errorMessage.innerHTML = `File "${file.name}" is too large. Maximum allowed size is 2MB.`;
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const div = document.createElement('div');
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                div.appendChild(img);
+
+                // Create a remove button
+                const removeBtn = document.createElement('span');
+                removeBtn.textContent = 'Remove';
+                removeBtn.classList.add('remove-btn');
+                removeBtn.onclick = () => {
+                    // Remove the file from the fileArray
+                    fileArray = fileArray.filter((f) => f !== file);
+
+                    // Update the file input element with the remaining files
+                    const dataTransfer = new DataTransfer();
+                    fileArray.forEach((file) => dataTransfer.items.add(file));
+                    fileInput.files = dataTransfer.files;
+
+                    // Remove the preview from the UI
+                    preview.removeChild(div);
+                };
+                div.appendChild(removeBtn);
+
+                preview.appendChild(div);
+            };
+            reader.readAsDataURL(file);
+        });
+            }else{
+                document.getElementById("singleImage").style.display = "block";
+            }
+
         });
     </script>
 </body>
