@@ -403,12 +403,27 @@ namespace MobileWebAssignment.Controllers
                 });
             }
 
+            
+
+            foreach (var a in attractFeedback)
+            {
+                if (hp.SplitImagePath(a.attraction.ImagePath).Count > 0)
+                a.attraction.ImagePath = hp.SplitImagePath(a.attraction.ImagePath)[0];
+            }
+
             return View(attractFeedback);
         }
 
         //GET: AttractionDetail
         public IActionResult ClientAttractionDetail(string? AttractionId)
         {
+            // Retrieve the logged-in user's email
+            var email = User.Identity!.Name;
+
+            // Find the user by email
+            var user = db.Members.SingleOrDefault(member => member.Email == email);
+
+            ViewBag.User = user;
 
             var a = db.Attraction.Find(AttractionId);
             var feedbacks = db.Feedback.Where(f => f.AttractionId == AttractionId).ToList();
@@ -458,9 +473,11 @@ namespace MobileWebAssignment.Controllers
                 ImagePath = a.ImagePath,
                 AttractionTypeId = a.AttractionTypeId,
                 operatingTimes = hp.ConvertOperatingTimes(a.OperatingHours),
+                Photo = new UpdateImageSet(),
             };
 
-            
+            vm.Photo.imagePaths = hp.SplitImagePath(a.ImagePath);
+
             return View(vm);
         }
         //------------------------------------------ Cart start ----------------------------------------------
@@ -558,6 +575,12 @@ namespace MobileWebAssignment.Controllers
         {
             ViewBag.Attraction = db.Attraction.Find(attractionId);
 
+            // Retrieve the logged-in user's email
+            var email = User.Identity!.Name;
+
+            // Find the user by email
+            var user = db.Members.SingleOrDefault(member => member.Email == email);
+
             if (ViewBag.Attraction == null)
             {
                 return RedirectToAction("ClientAttractionDetail");
@@ -567,8 +590,16 @@ namespace MobileWebAssignment.Controllers
             {
                 Id = NextFeedbackId(),
                 AttractionId = attractionId,
-                UserId = "U001",
             };
+
+            if (user != null)
+            {
+                vm.UserId = user.Id;
+            }
+            else
+            {
+                vm.UserId = "none";
+            }
 
             return View(vm);
         }
