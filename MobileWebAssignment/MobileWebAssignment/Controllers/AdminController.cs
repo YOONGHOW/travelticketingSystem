@@ -295,7 +295,7 @@ public class AdminController : Controller
             });
             db.SaveChanges();
 
-            TempData["Info"] = "Attraction inserted." + " " + vm.Photo.images.Count();
+            TempData["Info"] = "Attraction inserted.";
             return RedirectToAction("AdminAttraction");
         }
 

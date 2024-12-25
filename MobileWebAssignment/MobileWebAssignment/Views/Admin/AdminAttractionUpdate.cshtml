@@ -115,23 +115,7 @@
     <script src="/js/jquery.validate.min.js"></script>
     <script src="/js/jquery.validate.unobtrusive.min.js"></script>
     <script src="~/js/app.js" asp-append-version="true"></script>
-    <script>
-                    $(document).ready(function () {
-            $(".day-status").on("change", function () {
-                const isClosed = $(this).val() === "closed";
-                const row = $(this).closest(".day-row");
-                row.find(".start-time, .end-time").prop("disabled", isClosed);
-            });
-
-            $(".day-status").each(function () {
-                const isClosed = $(this).val() === "closed";
-                const row = $(this).closest(".day-row");
-                row.find(".start-time, .end-time").prop("disabled", isClosed);
-            });
-        });
-
-
-    </script>
+   
     <script>
         const fileInput = document.getElementById('fileInput');
         const preview = document.getElementById('preview');
@@ -196,24 +180,7 @@
 
         });
     </script>
-    <script>
-                $(document).ready(function () {
-            // When the button is clicked
-            $("#syncStartTimeButton").on("click", function () {
-                // Get the value of the first start time field
-                const firstStartTime = $(".start-time").first().val();
-
-                // If a start time is selected, update all other start time fields to match it
-                if (firstStartTime) {
-                    $(".start-time").each(function () {
-                        $(this).val(firstStartTime);
-                    });
-                } else {
-                    alert("Please select a start time first.");
-                }
-            });
-        });
-    </script>
+    
 </body>
 
 </html>

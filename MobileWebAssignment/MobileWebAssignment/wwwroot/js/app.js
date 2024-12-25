@@ -77,3 +77,41 @@ $('.upload input').on('change', e => {
     $(e.target).valid();
 });
 
+// Sync start time when button is clicked
+$("#syncStartTimeButton").on("click", function () {
+    const firstStartTime = $(".start-time").first().val();
+
+    if (firstStartTime) {
+        $(".start-time").each(function () {
+            $(this).val(firstStartTime);
+        });
+    } else {
+        alert("Please select a start time first.");
+    }
+});
+
+// Sync end time when button is clicked
+$("#syncEndTimeButton").on("click", function () {
+    const firstEndTime = $(".end-time").first().val();
+
+    if (firstEndTime) {
+        $(".end-time").each(function () {
+            $(this).val(firstEndTime);
+        });
+    } else {
+        alert("Please select an end time first.");
+    }
+});
+
+$(".day-status").on("change", function () {
+    const isClosed = $(this).val() === "closed";
+    const row = $(this).closest(".day-row");
+    row.find(".start-time, .end-time").prop("disabled", isClosed);
+});
+
+$(".day-status").each(function () {
+    const isClosed = $(this).val() === "closed";
+    const row = $(this).closest(".day-row");
+    row.find(".start-time, .end-time").prop("disabled", isClosed);
+});
+
