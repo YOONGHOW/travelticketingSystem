@@ -78,7 +78,6 @@ form .input-box span.details {
     display: block;
     font-weight: 500;
     margin-bottom: 5px;
-    
 }
 
 .product-details .input-box input,
@@ -269,12 +268,29 @@ form .deleteButton {
         display: block;
     }
 
-.remove-btn {
-    display: inline-block;
-    margin-top: 5px;
-    cursor: pointer;
-    color: red;
+#imageList {
+    display: flex; /* Use flexbox to display images horizontally */
+    flex-wrap: wrap; /* Allow wrapping if there are too many images */
+    gap: 5px; /* Add space between the images */
 }
+
+    #imageList img {
+        max-width: 150px;
+        margin-bottom: 10px;
+        display: block;
+    }
+
+    #imageList span{
+        color:red;
+        cursor:pointer;
+    }
+
+    .remove-btn {
+        display: inline-block;
+        margin-top: 5px;
+        cursor: pointer;
+        color: red;
+    }
 
 .error {
     color: red;

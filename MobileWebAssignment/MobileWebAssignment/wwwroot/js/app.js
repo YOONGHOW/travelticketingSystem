@@ -77,6 +77,40 @@ $('.upload input').on('change', e => {
     $(e.target).valid();
 });
 
+// Drag and drop functionality
+$('label.upload').on('dragenter dragover', e => {
+    e.preventDefault();  // Prevent default behavior, which is open the file in browser
+    e.stopPropagation();
+    $('#drag').css('border', '5px dotted #9b59b6');
+});
+
+$('label.upload').on('dragleave', e => {
+    e.preventDefault();
+    e.stopPropagation();
+    $('#drag').css('border', '2px solid black');
+});
+
+$('label.upload').on('drop', e => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const dt = e.originalEvent.dataTransfer;
+    const f = dt.files[0];
+    const img = $(e.currentTarget).find('img')[0]; // Use currentTarget to ensure we reference the label element
+    const input = $(e.currentTarget).find('input[type=file]')[0];
+
+    if (!img) return;
+
+    img.dataset.src ??= img.src;
+
+    if (f?.type.startsWith('image/')) {
+        img.src = URL.createObjectURL(f);
+        input.files = dt.files; //set the file to input[type=file]
+    } else {
+        img.src = img.dataset.src;
+    }
+});
+
 // Sync start time when button is clicked
 $("#syncStartTimeButton").on("click", function () {
     const firstStartTime = $(".start-time").first().val();
@@ -114,4 +148,6 @@ $(".day-status").each(function () {
     const row = $(this).closest(".day-row");
     row.find(".start-time, .end-time").prop("disabled", isClosed);
 });
+
+
 

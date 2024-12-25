@@ -242,9 +242,14 @@ public class AdminController : Controller
         if (ModelState.IsValid("Photo"))
         {
 
-            if(vm.Photo.images.Count == 0)
+            if (vm.Photo.images.Count == 0)
             {
                 ModelState.AddModelError("Photo", "Please upload the attraction image(s)");
+            }
+            else
+            {
+                var e = hp.ValidateMultiplePhoto(vm.Photo.images);
+                if (e != "") ModelState.AddModelError("Photo.images", e);
             }
         }
 
@@ -325,7 +330,7 @@ public class AdminController : Controller
             ImagePath = a.ImagePath,
             AttractionTypeId = a.AttractionTypeId,
             operatingHours = hp.ParseOperatingHours(a.OperatingHours),
-            Photo = new ImageSet(),
+            Photo = new UpdateImageSet(),
         };
 
         vm.Photo.imagePaths = hp.SplitImagePath(a.ImagePath);
@@ -337,8 +342,10 @@ public class AdminController : Controller
     [HttpPost]
     public IActionResult AdminAttractionUpdate(AttractionUpdateVM vm)
     {
+
         var a = db.Attraction.Find(vm.Id);
         ViewBag.AttractionTypes = db.AttractionType.ToList();
+        
 
         //check vm model
         if (a == null)
@@ -347,12 +354,17 @@ public class AdminController : Controller
         }
 
         //check photo if have
-        if (ModelState.IsValid("Photo"))
+        if (ModelState.IsValid("Photo.images"))
         {
 
             if (vm.Photo.images.Count == 0)
             {
                 ModelState.AddModelError("Photo", "Please upload the attraction image(s)");
+            }
+            else
+            {
+                var e = hp.ValidateMultiplePhoto(vm.Photo.images);
+                if (e != "") ModelState.AddModelError("Photo.images", e);
             }
         }
 
@@ -399,7 +411,7 @@ public class AdminController : Controller
             a.AttractionTypeId = vm.AttractionTypeId;
             if (vm.Photo != null)
             {
-                hp.DeletePhoto(a.ImagePath, "attractionImages");
+                hp.DeleteMultiplePhoto(a.ImagePath, "attractionImages");
                 a.ImagePath = hp.SaveMultiplePhoto(vm.Photo.images, "attractionImages");
             }
             db.SaveChanges();
@@ -408,6 +420,8 @@ public class AdminController : Controller
             return RedirectToAction("AdminAttraction");
 
         }
+        vm.Photo.imagePaths = hp.SplitImagePath(a.ImagePath);
+
 
         return View(vm);
     }
@@ -432,7 +446,10 @@ public class AdminController : Controller
             OperatingHours = a.OperatingHours,
             ImagePath = a.ImagePath,
             AttractionTypeId = a.AttractionTypeId,
+            Photo = new ImageSet(),
         };
+
+        vm.Photo.imagePaths = hp.SplitImagePath(a.ImagePath);
 
         return View(vm);
     }
@@ -445,7 +462,7 @@ public class AdminController : Controller
 
         if (a != null)
         {
-            hp.DeletePhoto(a.ImagePath, "attractionImages");
+            hp.DeleteMultiplePhoto(a.ImagePath, "attractionImages");
             db.Attraction.Remove(a);
             db.SaveChanges();
             TempData["Info"] = "Record Deleted.";
@@ -481,7 +498,7 @@ public class AdminController : Controller
         return View(vm);
     }
     //============================================ Feedback end =========================================================
-    
+
     //============================================ Promotion start =========================================================
     private string GeneratePromotionId()
     {
