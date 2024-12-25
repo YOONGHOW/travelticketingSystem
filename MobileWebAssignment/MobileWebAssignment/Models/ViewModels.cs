@@ -49,14 +49,23 @@ public class AttractionInsertVM
 
 public class PromotionInsertVM
 {
-    public string Id { get; set; } // PM0001
-    public string Title { get; set; } // Promotion Name
-    public string Code { get; set; } // PROMO2024
-    public decimal PriceDeduction { get; set; } // Discount Amount
+    [Required]
+    public string Id { get; set; }
+    [Required]
+    public string Title { get; set; }
+    [Required]
+    public string Code { get; set; }
+
+    // Ensure this field has appropriate data type and validation
+    [Range(0, double.MaxValue, ErrorMessage = "Price deduction must be a positive value.")]
+    public decimal PriceDeduction { get; set; }
+    [Required]
     public DateTime StartDate { get; set; }
+    [Required]
     public DateTime EndDate { get; set; }
-    public string PromoStatus { get; set; } // Active, Inactive, Expired
+    public string? PromoStatus { get; set; }
 }
+
 
 public class AttractionUpdateVM
 {
@@ -306,5 +315,17 @@ public class UpdateImageSet
 
     public List<string>? imagePaths { get; set; }
 
+}
+
+//map
+public class Locations
+{
+    public string latitude { get; set; }
+    public string longitude { get; set; }
+    public Locations(string latitude, string longitude)
+    {
+        this.latitude = latitude;
+        this.longitude = longitude;
+    }
 }
 

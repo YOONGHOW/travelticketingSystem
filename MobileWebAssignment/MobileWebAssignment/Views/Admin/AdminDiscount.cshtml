@@ -1,17 +1,15 @@
-﻿@using X.PagedList
-@using X.PagedList.Mvc.Core
-
-@{
+﻿@{
     Layout = "_AdminLayout";
     ViewBag.Title = "Admin | Discounts and Promotions";
 }
 
-@model IPagedList<Promotion>
+
+@model List<MobileWebAssignment.Models.PromotionInsertVM>
 
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <link rel="stylesheet" href="/css/AdminCss/AdminPromotions.css" asp-append-version="true">
+    <link rel="stylesheet" href="/css/AdminCss/AdminDiscount.css" asp-append-version="true">
 </head>
 <body>
     <div class="content">
@@ -20,7 +18,11 @@
         <div class="discountTable">
             <h3 class="discountTitle">
                 Discounts List
-                <span><button class="create">Create New</button></span>
+                <span>
+                    <a href="@Url.Action("AdminDiscountCreate", "Admin")">
+                        <button class="create">Create New</button>
+                    </a>
+                </span>
             </h3>
             <br />
             <div class="discountTableContent">
@@ -38,20 +40,24 @@
                     </thead>
 
                     <tbody>
-                        @foreach (var Promotion in @Model)
+                        @foreach (var promotion in Model)
                         {
                             <tr>
-                                <td>@Promotion.Id</td>
-                                <td>@Promotion.Title</td>
-                                @* <td>@Promotion.Amount</td> *@
-                                <td>@Promotion.StartDate.ToString("yyyy-MM-dd")</td>
-                                <td>@Promotion.EndDate.ToString("yyyy-MM-dd")</td>
-                                @* <td>@Promotion.Status</td> *@
+                                <td>@promotion.Id</td>
+                                <td>@promotion.Title</td>
+                                <td>@promotion.PriceDeduction</td>
+                                <td>@promotion.StartDate.ToString("yyyy-MM-dd")</td>
+                                <td>@promotion.EndDate.ToString("yyyy-MM-dd")</td>
+                                <td>@promotion.PromoStatus</td>
                                 <td style="text-align:center;">
-                                    <button class="update">Update</button>
+                                    <a href="@Url.Action("AdminDiscountUpdate", "Admin", new { id = promotion.Id })">
+                                        <button class="update">Update</button>
+                                    </a>
                                 </td>
                                 <td style="text-align:center;">
-                                    <button class="delete">Delete</button>
+                                    <a href="@Url.Action("AdminDiscountDelete", "Admin", new { id = promotion.Id })">
+                                        <button class="delete">Delete</button>
+                                    </a>
                                 </td>
                             </tr>
                         }

@@ -4,185 +4,186 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/css/AdminCss/AdminAttractionTypeLayout.css">
-    <title>Add New Attraction Information</title>
-
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="/css/AdminCss/AdminAttractionTypeLayout.css">
+	<title>Add New Attraction Information</title>
 </head>
 
 <body>
-    <div class="container">
-        <div class="header">
-            <a href="/Admin/AdminAttraction" class="back-arrow"><img src="/images/back-arrow.png" alt="Back"></a>
-            <div class="title">Add New Attraction</div>
-        </div>
+	<div class="container">
+		<div class="header">
+			<a href="/Admin/AdminAttraction" class="back-arrow"><img src="/images/back-arrow.png" alt="Back"></a>
+			<div class="title">Add New Attraction</div>
+		</div>
 
-        <div class="content">
-            <form method="post" enctype="multipart/form-data">
-                <div asp-validation-summary="ModelOnly"></div>
+		<div class="content">
+			<form method="post" enctype="multipart/form-data">
+				<div asp-validation-summary="ModelOnly"></div>
 
-                <label asp-for="Photo.images">Attraction Image</label>
-                <label class="upload">
-                    <input asp-for="Photo.images" type="file" id="fileInput" accept="image/jpeg,image/png" multiple hidden >
-                    <div id="errorMessage" class="error"></div>
+				<label asp-for="Photo.images">Attraction Image</label>
+				<label class="upload">
+					<input asp-for="Photo.images" type="file" id="fileInput" accept="image/jpeg,image/png" multiple hidden>
+					<div id="errorMessage" class="error"></div>
 					<div id="preview"></div>
-                    <img src="/images/photo.jpg" id="singleImage" class="drag">
-                </label>
-                <span asp-validation-for="Photo.images" class="err" style="text-align:center;"></span>
+					<img src="/images/photo.jpg" id="singleImage" class="drag">
+				</label>
+				<span asp-validation-for="Photo.images" class="err" style="text-align:center;"></span>
 
-                <div class="product-details">
-                    <div class="input-box">
-                        <label class="details" asp-for="Id">Attraction Id</label>
-                        <input asp-for="Id" readonly style="caret-color: transparent;color:#797777">
-                        <span asp-validation-for="Id"></span>
-                    </div>
-                    <div class="input-box"></div>
-                    <div class="input-box">
-                        <label class="details" asp-for="Name">Attraction Name</label>
-                        <input asp-for="Name">
-                        <span asp-validation-for="Name"></span>
-                    </div>
+				<div class="product-details">
+					<div class="input-box">
+						<label class="details" asp-for="Id">Attraction Id</label>
+						<input asp-for="Id" readonly style="caret-color: transparent;color:#797777">
+						<span asp-validation-for="Id"></span>
+					</div>
+					<div class="input-box"></div>
+					<div class="input-box">
+						<label class="details" asp-for="Name">Attraction Name</label>
+						<input asp-for="Name">
+						<span asp-validation-for="Name"></span>
+					</div>
 
-                    <div class="input-box">
-                        <label class="details" asp-for="AttractionTypeId">Attraction Type Name</label>
-                        <select id="attraction-type" asp-for="AttractionTypeId">
-                            <option value="none">-- Select Attraction Type --</option>
-                            @foreach (var at in ViewBag.AttractionTypes)
-                            {
-                                <option value="@at.Id">@at.Name</option>
-                            }
-                        </select>
-                        <span asp-validation-for="AttractionTypeId"></span>
-                    </div>
+					<div class="input-box">
+						<label class="details" asp-for="AttractionTypeId">Attraction Type Name</label>
+						<select id="attraction-type" asp-for="AttractionTypeId">
+							<option value="none">-- Select Attraction Type --</option>
+							@foreach (var at in ViewBag.AttractionTypes)
+							{
+								<option value="@at.Id">@at.Name</option>
+							}
+						</select>
+						<span asp-validation-for="AttractionTypeId"></span>
+					</div>
 
-                    <div class="input-box">
-                        <label class="details" asp-for="Description">Description</label>
-                        <textarea asp-for="Description" rows="5"></textarea>
-                        <span asp-validation-for="Description"></span>
-                    </div>
+					<div class="input-box">
+						<label class="details" asp-for="Description">Description</label>
+						<textarea asp-for="Description" rows="5"></textarea>
+						<span asp-validation-for="Description"></span>
+					</div>
 
-                    <div class="input-box">
-                        <label class="details" asp-for="Location">Location</label>
-                        <textarea asp-for="Location" rows="3"></textarea>
-                        <span asp-validation-for="Location"></span>
-                    </div>
-                </div>
+					<!-- Map container -->
+					<div id="mapContainer" style="width: 100%; height: 400px;"></div>
 
-                <div class="operating-hours">
-                    <h3>Operating Hours</h3>
-                    <div class="button">
-                        <button type="button" id="syncStartTimeButton">Sync Start Times</button>
-                    </div>
+					<div class="input-box">
+						<label class="details" asp-for="Location">Location</label>
+						<textarea asp-for="Location" rows="3"></textarea>
+						<button type="button" id="searchButton">Search Location</button>
+						<span asp-validation-for="Location"></span>
+					</div>
+				</div>
 
-                    <div class="button">
-                        <button type="button" id="syncEndTimeButton">Sync End Times</button>
-                    </div>
-                    <div class="day-hours">
-                        @{
-                            var days = new[] { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" };
-                        }
+				<div class="operating-hours">
+					<h3>Operating Hours</h3>
+					<div class="button">
+						<button type="button" id="syncStartTimeButton">Sync Start Times</button>
+					</div>
 
-                        @for (int i = 0; i < days.Length; i++)
-                        {
-                            <div class="day-row">
-                                <span>@days[i]</span>
-                                <input type="hidden" name="operatingHours[@i].Day" value="@days[i]" class="day-status" />
-                                <select asp-for="operatingHours[@i].Status" class="day-status">
-                                    <option value="open">Open</option>
-                                    <option value="closed">Closed</option>
-                                </select>
-                                <input type="time" name="operatingHours[@i].StartTime" class="time-input start-time" value="operatingHours[@i].StartTime">
-                                <input type="time" name="operatingHours[@i].EndTime" class="time-input end-time" value="operatingHours[@i].EndTime">
-                            </div>
-                            <span class="err" asp-validation-for="operatingHours[@i]"></span>
-                        }
-                    </div>
-                </div>
+					<div class="button">
+						<button type="button" id="syncEndTimeButton">Sync End Times</button>
+					</div>
 
-                <div class="button">
-                    <button id="addCategoryButton">Add Attraction</button>
-                </div>
-            </form>
-        </div>
-    </div>
+					<div class="day-hours">
+						@{
+							var days = new[] { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" };
+						}
 
-    <script src="/js/jquery.min.js"></script>
-    <script src="/js/jquery.unobtrusive-ajax.min.js"></script>
-    <script src="/js/jquery.validate.min.js"></script>
-    <script src="/js/jquery.validate.unobtrusive.min.js"></script>
-    <script src="~/js/app.js" asp-append-version="true"></script>
-    
-    <script>
-        const fileInput = document.getElementById('fileInput');
-        const preview = document.getElementById('preview');
-        const errorMessage = document.getElementById('errorMessage');
-        const maxFileSize = 2 * 1024 * 1024; // 2MB
-        const maxImages = 5;
+						@for (int i = 0; i < days.Length; i++)
+						{
+							<div class="day-row">
+								<span>@days[i]</span>
+								<input type="hidden" name="operatingHours[@i].Day" value="@days[i]" class="day-status" />
+								<select asp-for="operatingHours[@i].Status" class="day-status">
+									<option value="open">Open</option>
+									<option value="closed">Closed</option>
+								</select>
+								<input type="time" name="operatingHours[@i].StartTime" class="time-input start-time" value="operatingHours[@i].StartTime">
+								<input type="time" name="operatingHours[@i].EndTime" class="time-input end-time" value="operatingHours[@i].EndTime">
+							</div>
+							<span class="err" asp-validation-for="operatingHours[@i]"></span>
+						}
+					</div>
+				</div>
 
-        fileInput.addEventListener('change', () => {
-            preview.innerHTML = ''; // Clear previous previews
-            errorMessage.innerHTML = ''; // Clear error message
-            const files = fileInput.files;
+				<div class="button">
+					<button id="addCategoryButton">Add Attraction</button>
+				</div>
+			</form>
+		</div>
+	</div>
 
-            // Create an array to hold the files excluding the ones that are removed
-            let fileArray = Array.from(files);
+	<script src="/js/jquery.min.js"></script>
+	<script src="/js/jquery.unobtrusive-ajax.min.js"></script>
+	<script src="/js/jquery.validate.min.js"></script>
+	<script src="/js/jquery.validate.unobtrusive.min.js"></script>
+	<script src="~/js/app.js" asp-append-version="true"></script>
 
-            // Check number of images validation
-            if (fileArray.length > maxImages) {
-                errorMessage.innerHTML = `You can only upload up to ${maxImages} images.`;
-                return;
-            }else if(fileArray.length > 1){
-                document.getElementById("singleImage").style.display = "none";
+	@* map api *@
+	<script src="https://atlas.microsoft.com/sdk/javascript/mapcontrol/2/atlas.min.js"></script>
+	<link rel="stylesheet" href="https://atlas.microsoft.com/sdk/javascript/mapcontrol/2/atlas.min.css">
 
-                        fileArray.forEach((file) => {
-            // Check file size validation
-            if (file.size > maxFileSize) {
-                errorMessage.innerHTML = `File "${file.name}" is too large. Maximum allowed size is 2MB.`;
-                return;
-            }
+	<script>
+		const subscriptionKey = '6vAoTcX8f06OO59G3nxZnpomsOza1t6aO8jIQUQ3mFhur7lcuC45JQQJ99ALACYeBjFNNgXKAAAgAZMP4VXz'; // Replace with your Azure Maps subscription key
+		let selectedLocation = null;
 
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const div = document.createElement('div');
-                const img = document.createElement('img');
-                img.src = e.target.result;
-                div.appendChild(img);
+		// Initialize Azure Maps
+		var map = new atlas.Map('mapContainer', {
+			center: [101.6869, 3.139], // Default center: Kuala Lumpur, Malaysia (Longitude, Latitude)
+			zoom: 12,
+			authOptions: {
+				authType: 'subscriptionKey',
+				subscriptionKey: subscriptionKey
+			}
+		});
 
-                // Create a remove button
-                const removeBtn = document.createElement('span');
-                removeBtn.textContent = 'Remove';
-                removeBtn.classList.add('remove-btn');
-                removeBtn.onclick = (e) => {
+		// Add a click event to place a marker when the user clicks on the map
+		map.events.add('click', function (e) {
+			const coordinates = e.position;
+			selectedLocation = coordinates;
+			addMarker(coordinates);
+			displayCoordinates(coordinates);
+		});
 
-                    // Prevent the upload event from triggering
-                    e.preventDefault();
-                    e.stopPropagation();
+		// Function to add a marker to the map
+		function addMarker(coordinates) {
+			var marker = new atlas.HtmlMarker({
+				position: coordinates,
+				popup: new atlas.Popup({
+					content: '<h3>Selected Location</h3><p>Latitude: ' + coordinates[1] + '<br/>Longitude: ' + coordinates[0] + '</p>'
+				})
+			});
+			map.markers.add(marker);
+		}
 
-                    // Remove the file from the fileArray
-                    fileArray = fileArray.filter((f) => f !== file);
+		// Function to display coordinates in the form
+		function displayCoordinates(coordinates) {
+			document.getElementById('Location').value = `Latitude: ${coordinates[1]}, Longitude: ${coordinates[0]}`;
+		}
 
-                    // Update the file input element with the remaining files
-                    const dataTransfer = new DataTransfer();
-                    fileArray.forEach((file) => dataTransfer.items.add(file));
-                    fileInput.files = dataTransfer.files;
+		// Geocode address input and place a marker
+		document.getElementById('searchButton').addEventListener('click', function () {
+			const address = document.getElementById('Location').value;
+			geocodeAddress(address);
+		});
 
-                    // Remove the preview from the UI
-                    preview.removeChild(div);
-                };
-                div.appendChild(removeBtn);
-
-                preview.appendChild(div);
-            };
-            reader.readAsDataURL(file);
-        });
-            }else{
-                document.getElementById("singleImage").style.display = "block";
-            }
-
-        });
-    </script>
-    
+		// Function to geocode the address entered by the user
+		function geocodeAddress(address) {
+			var geocoder = new atlas.service.GeocodeClient(subscriptionKey);
+			geocoder.geocode(address).then(function (response) {
+				if (response && response.results && response.results.length > 0) {
+					const result = response.results[0];
+					const coordinates = result.position;
+					map.setCamera({ center: coordinates, zoom: 15 });
+					addMarker(coordinates);
+					displayCoordinates(coordinates);
+				} else {
+					alert('Address not found!');
+				}
+			}).catch(function (err) {
+				console.error('Error geocoding address: ', err);
+				alert('An error occurred while geocoding the address.');
+			});
+		}
+	</script>
 </body>
 
 </html>
