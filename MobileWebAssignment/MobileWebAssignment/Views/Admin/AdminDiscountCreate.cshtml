@@ -1,0 +1,78 @@
+﻿@model PromotionInsertVM
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/AdminCss/AdminDiscountCreate.css" asp-append-version="true">
+    <title>Add New Promotion</title>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="/Admin/AdminDiscount" class="back-arrow"><img src="/images/back-arrow.png" alt="Back"></a>
+            <div class="title">Add New Promotion</div>
+        </div>
+
+        <div class="content">
+            <form method="post" enctype="multipart/form-data">
+                <div asp-validation-summary="ModelOnly"></div>
+
+                <div class="promotion-details">
+                    <div class="input-box">
+                        <label class="details" asp-for="Id">Promotion ID</label>
+                        <input asp-for="Id" readonly style="caret-color: transparent;color:#797777">
+                        <span asp-validation-for="Id"></span>
+                    </div>
+
+                    <div class="input-box">
+                        <label class="details" asp-for="Title">Promotion Title</label>
+                        <input asp-for="Title">
+                        <span asp-validation-for="Title"></span>
+                    </div>
+
+                    <div class="input-box">
+                        <label class="details" asp-for="Code">Promotion Code</label>
+                        <input asp-for="Code">
+                        <span asp-validation-for="Code"></span>
+                    </div>
+
+                    <div class="input-box">
+                        <label class="details" asp-for="PriceDeduction">Price Deduction</label>
+                        <input asp-for="PriceDeduction" type="number" min="0" step="0.01">
+                        <span asp-validation-for="PriceDeduction"></span>
+                    </div>
+
+                    <div class="input-box">
+                        <label class="details" asp-for="StartDate">Start Date</label>
+                        <input asp-for="StartDate" type="date">
+                        <span asp-validation-for="StartDate"></span>
+                    </div>
+
+                    <div class="input-box">
+                        <label class="details" asp-for="EndDate">End Date</label>
+                        <input asp-for="EndDate" type="date">
+                        <span asp-validation-for="EndDate"></span>
+                    </div>
+
+                    <input asp-for="PromoStatus" type="hidden" value="available"/>
+                </div>
+
+                <div class="button">
+                    <button id="addPromotionButton">Add Promotion</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="/js/jquery.min.js"></script>
+    <script src="/js/jquery.unobtrusive-ajax.min.js"></script>
+    <script src="/js/jquery.validate.min.js"></script>
+    <script src="/js/jquery.validate.unobtrusive.min.js"></script>
+    <script src="~/js/app.js" asp-append-version="true"></script>
+</body>
+
+</html>
