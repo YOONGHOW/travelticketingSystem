@@ -27,9 +27,9 @@
                     <input asp-for="Photo.images" type="file" id="fileInput" accept="image/jpeg,image/png" multiple hidden >
                     <div id="errorMessage" class="error"></div>
 					<div id="preview"></div>
-                    <img src="/images/photo.jpg" id="singleImage">
+                    <img src="/images/photo.jpg" id="singleImage" class="drag">
                 </label>
-                <span asp-validation-for="Photo" class="err" style="text-align:center;"></span>
+                <span asp-validation-for="Photo.images" class="err" style="text-align:center;"></span>
 
                 <div class="product-details">
                     <div class="input-box">
@@ -156,6 +156,7 @@
                 removeBtn.onclick = (e) => {
 
                     // Prevent the upload event from triggering
+                    e.preventDefault();
                     e.stopPropagation();
 
                     // Remove the file from the fileArray

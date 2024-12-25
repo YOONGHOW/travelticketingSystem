@@ -473,7 +473,7 @@ namespace MobileWebAssignment.Controllers
                 ImagePath = a.ImagePath,
                 AttractionTypeId = a.AttractionTypeId,
                 operatingTimes = hp.ConvertOperatingTimes(a.OperatingHours),
-                Photo = new ImageSet(),
+                Photo = new UpdateImageSet(),
             };
 
             vm.Photo.imagePaths = hp.SplitImagePath(a.ImagePath);
