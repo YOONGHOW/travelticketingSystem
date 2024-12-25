@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="/css/ClientCss/ClientFeedback.css" asp-append-version="true">
 </head>
 <body>
+    
     <!-- Left Section -->
     <div class="left">
         <img src="/attractionImages/@ViewBag.Attraction.ImagePath" alt="@ViewBag.Attraction.Id">
@@ -78,13 +79,13 @@
             </div>
             <input type="hidden" asp-for="Id" />
             <input type="hidden" value="@ViewBag.Attraction.Id" asp-for="AttractionId" />
-            <input type="hidden" value="U001" asp-for="UserId" />
+            <input type="hidden" value="@Model.UserId" asp-for="UserId" />
             <div class="form-group">
                 <button type="submit">Submit Review</button>
             </div>
         </form>
     </div>
-
+    
 </body>
 </html>
 <script>

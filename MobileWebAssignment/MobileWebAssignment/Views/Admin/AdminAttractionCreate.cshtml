@@ -20,11 +20,11 @@
 
         <div class="content">
             <form method="post" enctype="multipart/form-data">
-                <div asp-validation-summary="All"></div>
+                <div asp-validation-summary="ModelOnly"></div>
 
                 <label asp-for="Photo.images">Attraction Image</label>
                 <label class="upload">
-                    <input asp-for="Photo.images" type="file" id="fileInput" accept="image/jpeg,image/png" multiple >
+                    <input asp-for="Photo.images" type="file" id="fileInput" accept="image/jpeg,image/png" multiple hidden >
                     <div id="errorMessage" class="error"></div>
 					<div id="preview"></div>
                     <img src="/images/photo.jpg" id="singleImage">
@@ -71,6 +71,13 @@
 
                 <div class="operating-hours">
                     <h3>Operating Hours</h3>
+                    <div class="button">
+                        <button type="button" id="syncStartTimeButton">Sync Start Times</button>
+                    </div>
+
+                    <div class="button">
+                        <button type="button" id="syncEndTimeButton">Sync End Times</button>
+                    </div>
                     <div class="day-hours">
                         @{
                             var days = new[] { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" };
@@ -105,21 +112,7 @@
     <script src="/js/jquery.validate.min.js"></script>
     <script src="/js/jquery.validate.unobtrusive.min.js"></script>
     <script src="~/js/app.js" asp-append-version="true"></script>
-    <script>
-                    $(document).ready(function () {
-            $(".day-status").on("change", function () {
-                const isClosed = $(this).val() === "closed";
-                const row = $(this).closest(".day-row");
-                row.find(".start-time, .end-time").prop("disabled", isClosed);
-            });
-
-            $(".day-status").each(function () {
-                const isClosed = $(this).val() === "closed";
-                const row = $(this).closest(".day-row");
-                row.find(".start-time, .end-time").prop("disabled", isClosed);
-            });
-        });
-    </script>
+    
     <script>
         const fileInput = document.getElementById('fileInput');
         const preview = document.getElementById('preview');
@@ -160,7 +153,11 @@
                 const removeBtn = document.createElement('span');
                 removeBtn.textContent = 'Remove';
                 removeBtn.classList.add('remove-btn');
-                removeBtn.onclick = () => {
+                removeBtn.onclick = (e) => {
+
+                    // Prevent the upload event from triggering
+                    e.stopPropagation();
+
                     // Remove the file from the fileArray
                     fileArray = fileArray.filter((f) => f !== file);
 
@@ -184,6 +181,7 @@
 
         });
     </script>
+    
 </body>
 
 </html>
