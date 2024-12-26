@@ -49,14 +49,23 @@ public class AttractionInsertVM
 
 public class PromotionInsertVM
 {
-    public string Id { get; set; } // PM0001
-    public string Title { get; set; } // Promotion Name
-    public string Code { get; set; } // PROMO2024
-    public decimal PriceDeduction { get; set; } // Discount Amount
+    [Required]
+    public string Id { get; set; }
+    [Required]
+    public string Title { get; set; }
+    [Required]
+    public string Code { get; set; }
+
+    // Ensure this field has appropriate data type and validation
+    [Range(0, double.MaxValue, ErrorMessage = "Price deduction must be a positive value.")]
+    public decimal PriceDeduction { get; set; }
+    [Required]
     public DateTime StartDate { get; set; }
+    [Required]
     public DateTime EndDate { get; set; }
-    public string PromoStatus { get; set; } // Active, Inactive, Expired
+    public string? PromoStatus { get; set; }
 }
+
 
 public class AttractionUpdateVM
 {
@@ -79,6 +88,7 @@ public class AttractionUpdateVM
 
     public string AttractionTypeId { get; set; }
     public ImageSet? Photo { get; set; }
+    public UpdateImageSet? Photo { get; set; }
 
     public List<OperatingHour>? operatingHours { get; set; }
     public List<OperatingTime>? operatingTimes { get; set; }
@@ -304,5 +314,84 @@ public class ImageSet
 
 }
 
+public class UpdateImageSet
+{
+    [Display(Name = "Browse File")]
+    public List<IFormFile>? images { get; set; }
+
+    public List<string>? imagePaths { get; set; }
+
+}
+
+//map
+public class Locations
+{
+    public string latitude { get; set; }
+    public string longitude { get; set; }
+    public Locations(string latitude, string longitude)
+    {
+        this.latitude = latitude;
+        this.longitude = longitude;
+    }
+}
 
 
+//-----------------------------------------
+//Payemnt
+//-----------------------------------------
+public class PaymentVM()
+{
+    [Required(ErrorMessage = "Email is required.")]
+    [EmailAddress(ErrorMessage = "Invalid Email Address format.")]
+    public string Email { get; set; }
+
+    [Required(ErrorMessage = "Card Number is required.")]
+    [RegularExpression(@"^(?:\d{4}[-\s]?){3}\d{4}$", ErrorMessage = "Invalid Card Number. Must be 16 digits with optional spaces or dashes.")]
+    public string CardNumber { get; set; }
+
+    [Required(ErrorMessage = "Cardholder Name is required.")]
+    [StringLength(50, ErrorMessage = "Cardholder Name cannot exceed 50 characters.")]
+    public string CardholderName { get; set; }
+
+    [Required(ErrorMessage = "Expiration Date is required.")]
+    [RegularExpression(@"^(0[1-9]|1[0-2])\/?([0-9]{2})$", ErrorMessage = "Invalid Expiration Date. Must be in MM/YY format.")]
+    public string ExpirationDate { get; set; }
+
+    [Required(ErrorMessage = "CVV is required.")]
+    [RegularExpression(@"^\d{3,4}$", ErrorMessage = "Invalid CVV. Must be 3 or 4 digits.")]
+    public string CVV { get; set; }
+}
+
+public class CartPVM()
+{
+    public Ticket Ticket { get; set; }
+    public int Quantit { get; set; }
+    public decimal Subtotal { get; set; }
+
+    public string imagepath { get; set; }
+}
+
+//---------------------------------------
+//Update Purchase Ticket
+//---------------------------------------
+
+public class PurchaseUpdateVM()
+{
+    public string Id { get; set; }
+    [Required(ErrorMessage = "Quantity is required.")]
+    [RegularExpression(@"^\d+$", ErrorMessage = "Only accept integers.")]
+    public int Quantity { get; set; }
+    [Required(ErrorMessage = "Date Time is required.")]
+    [DataType(DataType.DateTime)]
+    public DateTime validDate { get; set; }
+
+    //FK
+    public string TicketId { get; set; }
+}
+
+public class PurchaseViewModel
+{
+    public IEnumerable<Purchase> Purchases { get; set; } = new List<Purchase>();
+    public PurchaseUpdateVM PurchaseUpdate { get; set; }
+
+}

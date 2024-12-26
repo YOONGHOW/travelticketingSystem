@@ -1,6 +1,6 @@
 ﻿using MobileWebAssignment.Models;
 
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
 
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
@@ -19,7 +19,7 @@ public class Helper
     private readonly IHttpContextAccessor ct;
     private readonly IConfiguration cf;
 
-    public Helper(IWebHostEnvironment en, IHttpContextAccessor ct,IConfiguration cf)
+    public Helper(IWebHostEnvironment en, IHttpContextAccessor ct, IConfiguration cf)
     {
         this.en = en;
         this.ct = ct;
@@ -42,6 +42,26 @@ public class Helper
         else if (f.Length > 1 * 1024 * 1024)
         {
             return "Photo size cannot more than 1MB.";
+        }
+
+        return "";
+    }
+
+    public string ValidateMultiplePhoto(List<IFormFile> files)
+    {
+        var reType = new Regex(@"^image\/(jpeg|png)$", RegexOptions.IgnoreCase);
+        var reName = new Regex(@"^.+\.(jpeg|jpg|png)$", RegexOptions.IgnoreCase);
+
+        foreach (var f in files)
+        {
+            if (!reType.IsMatch(f.ContentType) || !reName.IsMatch(f.FileName))
+            {
+                return "Only JPG and PNG photo is allowed.";
+            }
+            else if (f.Length > 2 * 1024 * 1024)
+            {
+                return "Photo size cannot more than 2MB.";
+            }
         }
 
         return "";
@@ -78,13 +98,24 @@ public class Helper
         string imagePaths = "";
         string fileName = "";
 
-        foreach (var file in files)
+        if (files.Count > 1)
         {
-            fileName = SavePhoto(file, "attractionImages");
-            //DeletePhoto(file, "uploads");
-            imagePaths += fileName + "|";
-        }
+            foreach (var file in files)
+            {
+                fileName = SavePhoto(file, "attractionImages");
+                //DeletePhoto(file, "uploads");
+                imagePaths += fileName + "|";
+            }
 
+            imagePaths = imagePaths.Remove(imagePaths.Length - 1);
+        }
+        else
+        {
+
+            fileName = SavePhoto(files[0], "attractionImages");
+            imagePaths = fileName;
+
+        }
         return imagePaths;
     }
 
@@ -109,7 +140,6 @@ public class Helper
             imagePaths.Add(img.Trim());
         }
 
-        imagePaths.RemoveAt(imagePaths.Count() - 1);
 
         return imagePaths;
     }
@@ -415,5 +445,52 @@ public class Helper
         ct.HttpContext!.SignOutAsync();
     }
 
+
+    //------------------------------------
+    // Cart
+    //------------------------------------
+
+    public Dictionary<string, int> GetCart()
+    {
+        return ct.HttpContext!.Session.Get<Dictionary<string, int>>("Cart") ?? [];
+    }
+
+    public void SetCart(Dictionary<string, int>? dict = null)
+    {
+        if (dict == null)
+        {
+            // TODO
+            ct.HttpContext!.Session.Remove("Cart");
+        }
+        else
+        {
+            // TODO
+            ct.HttpContext!.Session.Set("Cart", dict);
+
+        }
+    }
+    // Get UserID from Session
+    public string GetUserID()
+    {
+        return ct.HttpContext?.Session.GetString("UserID") ?? string.Empty;
+    }
+
+    // Set UserID in Session
+    public void SetUserID(string userId)
+    {
+        if (ct.HttpContext != null)
+        {
+            ct.HttpContext.Session.SetString("UserID", userId);
+        }
+    }
+
+    // Remove UserID from Session
+    public void RemoveUserID()
+    {
+        if (ct.HttpContext != null)
+        {
+            ct.HttpContext.Session.Remove("UserID");
+        }
+    }
 
 }

@@ -7,6 +7,8 @@ using System.Net.Sockets;
 using X.PagedList.Extensions;
 using Microsoft.AspNetCore.Hosting.Server;
 using System.Media;
+using Microsoft.IdentityModel.Tokens;
+
 
 namespace MobileWebAssignment.Controllers;
 
@@ -242,9 +244,14 @@ public class AdminController : Controller
         if (ModelState.IsValid("Photo"))
         {
 
-            if(vm.Photo.images.Count == 0)
+            if (vm.Photo.images.Count == 0)
             {
                 ModelState.AddModelError("Photo", "Please upload the attraction image(s)");
+            }
+            else
+            {
+                var e = hp.ValidateMultiplePhoto(vm.Photo.images);
+                if (e != "") ModelState.AddModelError("Photo.images", e);
             }
         }
 
@@ -295,7 +302,7 @@ public class AdminController : Controller
             });
             db.SaveChanges();
 
-            TempData["Info"] = "Attraction inserted." + " " + vm.Photo.images.Count();
+            TempData["Info"] = "Attraction inserted.";
             return RedirectToAction("AdminAttraction");
         }
 
@@ -325,7 +332,7 @@ public class AdminController : Controller
             ImagePath = a.ImagePath,
             AttractionTypeId = a.AttractionTypeId,
             operatingHours = hp.ParseOperatingHours(a.OperatingHours),
-            Photo = new ImageSet(),
+            Photo = new UpdateImageSet(),
         };
 
         vm.Photo.imagePaths = hp.SplitImagePath(a.ImagePath);
@@ -337,8 +344,10 @@ public class AdminController : Controller
     [HttpPost]
     public IActionResult AdminAttractionUpdate(AttractionUpdateVM vm)
     {
+
         var a = db.Attraction.Find(vm.Id);
         ViewBag.AttractionTypes = db.AttractionType.ToList();
+        
 
         //check vm model
         if (a == null)
@@ -347,12 +356,17 @@ public class AdminController : Controller
         }
 
         //check photo if have
-        if (ModelState.IsValid("Photo"))
+        if (ModelState.IsValid("Photo.images"))
         {
 
             if (vm.Photo.images.Count == 0)
             {
                 ModelState.AddModelError("Photo", "Please upload the attraction image(s)");
+            }
+            else
+            {
+                var e = hp.ValidateMultiplePhoto(vm.Photo.images);
+                if (e != "") ModelState.AddModelError("Photo.images", e);
             }
         }
 
@@ -399,7 +413,7 @@ public class AdminController : Controller
             a.AttractionTypeId = vm.AttractionTypeId;
             if (vm.Photo != null)
             {
-                hp.DeletePhoto(a.ImagePath, "attractionImages");
+                hp.DeleteMultiplePhoto(a.ImagePath, "attractionImages");
                 a.ImagePath = hp.SaveMultiplePhoto(vm.Photo.images, "attractionImages");
             }
             db.SaveChanges();
@@ -408,6 +422,8 @@ public class AdminController : Controller
             return RedirectToAction("AdminAttraction");
 
         }
+        vm.Photo.imagePaths = hp.SplitImagePath(a.ImagePath);
+
 
         return View(vm);
     }
@@ -432,7 +448,10 @@ public class AdminController : Controller
             OperatingHours = a.OperatingHours,
             ImagePath = a.ImagePath,
             AttractionTypeId = a.AttractionTypeId,
+            Photo = new ImageSet(),
         };
+
+        vm.Photo.imagePaths = hp.SplitImagePath(a.ImagePath);
 
         return View(vm);
     }
@@ -445,7 +464,7 @@ public class AdminController : Controller
 
         if (a != null)
         {
-            hp.DeletePhoto(a.ImagePath, "attractionImages");
+            hp.DeleteMultiplePhoto(a.ImagePath, "attractionImages");
             db.Attraction.Remove(a);
             db.SaveChanges();
             TempData["Info"] = "Record Deleted.";
@@ -655,140 +674,189 @@ public class AdminController : Controller
         return View(vm);
     }
     //============================================ Feedback end =========================================================
-    
+
     //============================================ Promotion start =========================================================
-    private string GeneratePromotionId()
+    public IActionResult AdminDiscount()
     {
-        string lastId = db.Promotion.OrderByDescending(p => p.Id).Select(p => p.Id).FirstOrDefault() ?? "PM0000";
-        int idNum = int.Parse(lastId.Substring(2)) + 1;
-        return $"PM{idNum:D4}";
-    }
-    public IActionResult AdminDiscount(int page = 1)
-    {
-        if (page < 1) return RedirectToAction(nameof(AdminDiscount), new { page = 1 });
-
-        var promotions = db.Promotion.ToPagedList(page, 5);
-
-        if (page > promotions.PageCount && promotions.PageCount > 0)
+        var promotions = db.Promotion
+            .OrderBy(p => p.Id)
+            .ToList();
+        var promoVMs = promotions.Select(p => new PromotionInsertVM
         {
-            return RedirectToAction(nameof(AdminDiscount), new { page = promotions.PageCount });
-        }
+            Id = p.Id,
+            Title = p.Title,
+            Code = p.Code,
+            PriceDeduction = p.PriceDeduction,
+            StartDate = p.StartDate,
+            EndDate = p.EndDate,
+            PromoStatus = p.PromoStatus
+        }).ToList();
 
-        return View(promotions);
+        return View(promoVMs);
     }
 
+    // GET: Admin/AdminDiscountCreate
     public IActionResult AdminDiscountCreate()
     {
+        var autoGeneratedId = $"PM{(db.Promotion.Count() + 1).ToString("D4")}"; // Example of auto-generating ID
         var vm = new PromotionInsertVM
         {
-            Id = GeneratePromotionId(),
-            StartDate = DateTime.Today,
-            EndDate = DateTime.Today.AddDays(7),
-            PromoStatus = "Active"
+            Id = autoGeneratedId
         };
-
 
         return View(vm);
     }
 
+    // POST: Admin/AdminDiscountCreate
     [HttpPost]
     public IActionResult AdminDiscountCreate(PromotionInsertVM vm)
     {
-        if (vm.StartDate >= vm.EndDate)
+        // Check for duplicated Promotion ID
+        if (ModelState.IsValid("Id") && db.Promotion.Any(p => p.Id == vm.Id))
         {
-            ModelState.AddModelError("EndDate", "End Date must be later than Start Date.");
-
+            ModelState.AddModelError("Id", "Duplicated Promotion ID.");
         }
 
-
-        db.Promotion.Add(new Promotion
+        // Check for duplicated Promotion Code
+        if (ModelState.IsValid("Code") && db.Promotion.Any(p => p.Code == vm.Code))
         {
-            Id = vm.Id,
-            Title = vm.Title.Trim(),
-            Code = vm.Code.Trim(),
-            PriceDeduction = vm.PriceDeduction,
-            StartDate = vm.StartDate,
-            EndDate = vm.EndDate,
-            PromoStatus = vm.PromoStatus.Trim()
-        });
+            ModelState.AddModelError("Code", "Duplicated Promotion Code.");
+        }
 
-        db.SaveChanges();
-        TempData["Info"] = "Promotion added successfully.";
-        return RedirectToAction(nameof(AdminDiscount));
+        // Ensure Price Deduction is valid
+        if (ModelState.IsValid("PriceDeduction") && vm.PriceDeduction <= 0)
+        {
+            ModelState.AddModelError("PriceDeduction", "Price Deduction must be greater than 0.");
+        }
+
+        // Ensure Start Date is before End Date
+        if (ModelState.IsValid("StartDate") && ModelState.IsValid("EndDate"))
+        {
+            if (vm.StartDate >= vm.EndDate)
+            {
+                ModelState.AddModelError("EndDate", "End Date must be after Start Date.");
+            }
+        }
+
+        // If the model is valid, save the Promotion to the database
+        if (ModelState.IsValid)
+        {
+            db.Promotion.Add(new Promotion
+            {
+                Id = vm.Id.Trim().ToUpper(),
+                Title = vm.Title.Trim(),
+                Code = vm.Code.Trim().ToUpper(),
+                PriceDeduction = vm.PriceDeduction,
+                StartDate = vm.StartDate,
+                EndDate = vm.EndDate,
+                PromoStatus = "Active"
+            });
+            db.SaveChanges();
+
+            TempData["Info"] = "Promotion created successfully.";
+            return RedirectToAction("AdminDiscount");
+        }
+
+        // If there are validation errors, return the same view with the error messages
+        return View(vm);
     }
 
-
-    public IActionResult AdminDiscountUpdate(string id)
+    // GET: Admin/AdminDiscountDelete/{id}
+    public IActionResult AdminDiscountDelete(string id)
     {
-        var promo = db.Promotion.Find(id);
-        if (promo == null) return RedirectToAction(nameof(AdminDiscount));
+        if (string.IsNullOrEmpty(id))
+        {
+            TempData["Error"] = "Invalid ID.";
+            return RedirectToAction("AdminDiscount");
+        }
+
+        var promotion = db.Promotion.FirstOrDefault(p => p.Id == id);
+        if (promotion == null)
+        {
+            TempData["Error"] = "Promotion not found.";
+            return RedirectToAction("AdminDiscount");
+        }
 
         var vm = new PromotionInsertVM
         {
-            Id = promo.Id,
-            Title = promo.Title,
-            Code = promo.Code,
-            PriceDeduction = promo.PriceDeduction,
-            StartDate = promo.StartDate,
-            EndDate = promo.EndDate,
-            PromoStatus = promo.PromoStatus
+            Id = promotion.Id,
+            Title = promotion.Title,
+            Code = promotion.Code,
+            PriceDeduction = promotion.PriceDeduction,
+            StartDate = promotion.StartDate,
+            EndDate = promotion.EndDate,
+            PromoStatus = promotion.PromoStatus
         };
 
         return View(vm);
     }
 
+    // POST: Admin/AdminDiscountDelete
     [HttpPost]
-    public IActionResult AdminDiscountUpdate(PromotionInsertVM vm)
+    public IActionResult AdminDiscountDelete(PromotionInsertVM vm)
     {
-        var promo = db.Promotion.Find(vm.Id);
-        if (promo == null) return RedirectToAction(nameof(AdminDiscount));
+        var promotion = db.Promotion.FirstOrDefault(p => p.Id == vm.Id);
 
-        if (vm.StartDate >= vm.EndDate)
+        if (promotion == null)
         {
-            ModelState.AddModelError("EndDate", "End Date must be later than Start Date.");
+            TempData["Error"] = "Promotion not found.";
+            return RedirectToAction("AdminDiscount");
         }
 
-        if (ModelState.IsValid)
-        {
-            promo.Title = vm.Title.Trim();
-            promo.Code = vm.Code.Trim();
-            promo.PriceDeduction = vm.PriceDeduction;
-            promo.StartDate = vm.StartDate;
-            promo.EndDate = vm.EndDate;
-            promo.PromoStatus = vm.PromoStatus.Trim();
+        db.Promotion.Remove(promotion);
+        db.SaveChanges();
 
-            db.SaveChanges();
-            TempData["Info"] = "Promotion updated successfully.";
-            return RedirectToAction(nameof(AdminDiscount));
+        TempData["Info"] = "Promotion deleted successfully.";
+        return RedirectToAction("AdminDiscount");
+    }
+    // GET: Admin/DiscountUpdate
+    public IActionResult AdminDiscountUpdate(string? id)
+    {
+        var promotion = db.Promotion.Find(id);
+
+        if (promotion == null)
+        {
+            return RedirectToAction("AdminDiscount");
         }
+
+        var vm = new PromotionInsertVM
+        {
+            Id = promotion.Id,
+            Title = promotion.Title,
+            Code = promotion.Code,
+            PriceDeduction = promotion.PriceDeduction,
+            StartDate = promotion.StartDate,
+            EndDate = promotion.EndDate
+        };
 
         return View(vm);
     }
 
-    public IActionResult AdminDiscountDelete(string id)
-    {
-        var promo = db.Promotion.Find(id);
-        if (promo == null) return RedirectToAction(nameof(AdminDiscount));
-
-        return View(promo);
-    }
-
+    // POST: Admin/DiscountUpdate
     [HttpPost]
-    public IActionResult AdminDiscountDeleteConfirmed(string id)
+    public IActionResult AdminDiscountUpdate(PromotionInsertVM vm)
     {
-        var promo = db.Promotion.Find(id);
-        if (promo != null)
+        if (ModelState.IsValid)
         {
-            db.Promotion.Remove(promo);
-            db.SaveChanges();
-            TempData["Info"] = "Promotion deleted successfully.";
+            var promotion = db.Promotion.Find(vm.Id);
+
+            if (promotion != null)
+            {
+                promotion.Title = vm.Title;
+                promotion.Code = vm.Code;
+                promotion.PriceDeduction = vm.PriceDeduction;
+                promotion.StartDate = vm.StartDate;
+                promotion.EndDate = vm.EndDate;
+
+                db.SaveChanges();
+            }
+
+            return RedirectToAction("AdminDiscount");
         }
 
-        return RedirectToAction(nameof(AdminDiscount));
+        return View(vm);
     }
-
-
-
+    //============================================ Promotion End =========================================================
     //============================================ Member Maintenance =========================================================
 
     // Generate ID for create account
@@ -1001,6 +1069,304 @@ public class AdminController : Controller
             TempData["Info"] = "Image(s) uploaded.";
         }
         return View();
+    }
+
+    //------------------------------------------
+    //Admin purchase
+    //------------------------------------------
+    public List<Purchase> getAllPurcahse(List<Payment> payments)
+    {
+
+        var allPurchases = db.Purchase
+            .Include(p => p.PurchaseItems)
+                .ThenInclude(pi => pi.Ticket)
+                    .ThenInclude(at => at.Attraction)
+            .Include(us => us.User)
+            .OrderByDescending(p => p.PaymentDateTime)
+            .Where(p => p.Status == "S") // Compare p.Id with ap.PurchaseId
+            .ToList();
+        if (payments.IsNullOrEmpty())
+        {
+            return allPurchases;
+        }
+
+        allPurchases = allPurchases
+     .Where(p => payments.Select(ap => ap.PurchaseId).Contains(p.Id)) // Compare p.Id with Payment.PurchaseId
+     .ToList();
+
+
+        return allPurchases;
+    }
+    public IActionResult AdminPurchase(string? purchaseID, DateTime? validdate, string? payment)
+    {
+        // Retrieve all PurchaseItem records with related data
+        var payments = db.Payment
+       .Where(p => p.Status == "S")
+       .ToList();
+
+        var allPurchases = getAllPurcahse(payments);
+
+
+        IEnumerable<Purchase> purchaseItems;
+        //Purcahse fillter
+        if (validdate != null)
+        {
+            purchaseItems = allPurchases
+             .Where(pi => pi.PaymentDateTime.Date == validdate?.Date);
+        }
+        else if (payment != null)
+        {
+            purchaseItems = getAllPurcahse(null);
+        }
+        else
+        {
+            purchaseItems = allPurchases;  // If no validdate is provided, show all purchase items
+        }
+
+        var viewModel = new PurchaseViewModel();
+        if (Request.IsAjax())
+        {
+            viewModel = new PurchaseViewModel
+            {
+                Purchases = purchaseItems,
+                PurchaseUpdate = new PurchaseUpdateVM() // Initialize or fetch as required
+            };
+            return PartialView("PurchaseTable/_SharePurchaseTable1", viewModel);
+        }
+        viewModel = new PurchaseViewModel
+        {
+            Purchases = purchaseItems,
+            PurchaseUpdate = new PurchaseUpdateVM() // Initialize or fetch as required
+        };
+
+        //return view
+        return View(viewModel);
+
+    }
+    public ActionResult AdminPurchaseDetail(string purchaseID)
+    {
+        if (string.IsNullOrEmpty(purchaseID))
+        {
+            return Json(new { error = "Purchase ID cannot be null or empty." });
+        }
+
+        // Retrieve and group PurchaseItems by AttractionName and ValidDate (only the date part)
+        var groupedItems = db.PurchaseItem
+            .Where(pi => pi.PurchaseId == purchaseID)
+            .Include(pi => pi.Ticket)
+            .ThenInclude(at => at.Attraction)
+            .GroupBy(pi => new
+            {
+                pi.Ticket.Attraction.Name,
+                ValidDate = pi.validDate.Date  // Group by Date only, ignoring time
+            })
+            .Select(g => new
+            {
+                attractionName = g.Key.Name,
+                validDate = g.Key.ValidDate.ToString("yyyy-MM-dd"),  // Format DateTime to string in "yyyy-MM-dd" format
+                totalQuantity = g.Sum(pi => pi.Quantity),
+                totalAmount = g.Sum(pi => pi.Quantity * pi.Ticket.ticketPrice),
+                attractionImg = g.Select(pi => pi.Ticket.Attraction.ImagePath).FirstOrDefault(),
+                ticketType = g.Select(pi => pi.Ticket.ticketName).Count(),
+                purchaseId = g.Select(pi => pi.Purchase.Id).FirstOrDefault(),
+            })
+            .ToList();
+
+        if (!groupedItems.Any())
+        {
+            return Json(new { error = "No items found for the given Purchase ID." });
+        }
+
+        return Json(groupedItems);
+
+    }
+    public ActionResult AdminPurchaseTicket(string? purchaseId, DateTime validDate)
+    {
+        if (string.IsNullOrEmpty(purchaseId))
+        {
+            return Json(new { error = "Purchase ID cannot be null or empty." });
+        }
+
+        // Retrieve all the PurchaseItems related to the given PurchaseID
+        var purchaseItems = db.PurchaseItem
+            .Where(pi => pi.PurchaseId == purchaseId && pi.validDate.Date == validDate.Date)
+            .Include(pi => pi.Ticket)
+            .Select(pi => new
+            {
+                purchaseItemId = pi.Id,
+                ticketID = pi.TicketId,
+                quantity = pi.Quantity,
+                validDate = pi.validDate.ToString("yyyy/MM/dd"),
+                ticketName = pi.Ticket.ticketName,
+                attractionName = pi.Ticket.Attraction.Name,
+                attractionImg = pi.Ticket.Attraction.ImagePath,
+                amount = pi.Quantity * pi.Ticket.ticketPrice,
+                status = pi.validDate.Date >= DateTime.Now.Date // Compare the date part (ignores time)
+        ? "Valid"
+        : "Invalid",
+                purcahseid = pi.Purchase.Id,
+                ticketPrice = pi.Ticket.ticketPrice,
+            })
+            .ToList();
+
+        if (!purchaseItems.Any())
+        {
+            return Json(new { error = "No items found for the given Purchase ID." });
+        }
+        return Json(purchaseItems);
+    }
+
+    public IActionResult AdminPurchaseUpdate(string ticketID, string purcahseItemID)
+    {
+        if (string.IsNullOrEmpty(purcahseItemID) && string.IsNullOrEmpty(ticketID))
+        {
+            return Json(new { error = "Record Not found" });
+        }
+
+        // Retrieve all the PurchaseItems related to the given PurchaseID
+        var purchaseItems = db.PurchaseItem
+            .Where(pi => pi.Id == purcahseItemID && pi.TicketId == ticketID)
+            .Include(pi => pi.Ticket)
+            .Select(pi => new
+            {
+                purcahseItemID = pi.Id,
+                ticketID = pi.TicketId,
+                quantity = pi.Quantity,
+                validDate = pi.validDate.ToString("yyyy-MM-dd hh:mm tt"),
+                ticketName = pi.Ticket.ticketName,
+                ticketPrice = pi.Ticket.ticketPrice,
+                purcahseid = pi.Purchase.Id,
+            })
+             .FirstOrDefault();
+
+        if (purchaseItems == null)
+        {
+            return Json(new { error = "No items found for the given PurchaseItem ID." });
+        }
+        return Json(purchaseItems);
+    }
+    //-----------------------------
+    //update purcahse detail
+
+    //----------------------------------------
+    //get PurchaseItemsID
+    //-----------------------------------------
+    private string NextPurchaseItem_Id(int count)
+    {
+        // TODO
+        string max = db.PurchaseItem.Max(t => t.Id) ?? "PI0000";
+        int n = int.Parse(max[2..]);
+        return (n + count).ToString("'PI'0000");
+    }
+    [HttpPost]
+    public IActionResult AdminPurchase(PurchaseViewModel vm)
+    {
+        if (ModelState.IsValid)
+        {
+            var purchaseItems = db.PurchaseItem
+           .Where(pi => pi.Id == vm.PurchaseUpdate.Id && pi.TicketId == vm.PurchaseUpdate.TicketId)
+           .Include(pi => pi.Ticket)
+           .FirstOrDefault();
+
+            if (vm.PurchaseUpdate.Quantity > purchaseItems?.Quantity)
+            {
+                TempData["SuccessMessage"] = "Ticket updated Cancled (Ticket more than " + purchaseItems?.Quantity + " )!";
+                return Redirect("/Admin/AdminPurchase");
+            }
+
+            if (purchaseItems?.Quantity == vm.PurchaseUpdate.Quantity)
+            {
+                purchaseItems.validDate = vm.PurchaseUpdate.validDate;
+                db.SaveChanges();
+                TempData["SuccessMessage"] = "Ticket updated successfully!";
+                return Redirect("/Admin/AdminPurchase");
+            }
+
+            if (vm.PurchaseUpdate.Quantity < purchaseItems?.Quantity)
+            {
+                if (vm.PurchaseUpdate.validDate == purchaseItems?.validDate)
+                {
+                    TempData["SuccessMessage"] = "Ticket updated Cancled (Same valid date " + vm.PurchaseUpdate.validDate.ToString("yyyy-MM-dd") + " )!";
+                    return Redirect("/Admin/AdminPurchase");
+                }
+
+
+                if (purchaseItems?.validDate == vm.PurchaseUpdate.validDate)
+                {
+                    purchaseItems.Quantity += vm.PurchaseUpdate.Quantity;
+                    db.SaveChanges();
+                    TempData["SuccessMessage"] = "Ticket updated successfully!";
+                    return Redirect("/Admin/AdminPurchase");
+                }
+
+                purchaseItems.Quantity -= vm.PurchaseUpdate.Quantity;
+                db.SaveChanges();
+
+
+                var purcahseID = purchaseItems.PurchaseId;
+                var reAdd =
+                    new PurchaseItem
+                    {
+                        PurchaseId = purchaseItems.PurchaseId,
+                        Id = NextPurchaseItem_Id(1),
+                        validDate = vm.PurchaseUpdate.validDate,
+                        TicketId = vm.PurchaseUpdate.TicketId,
+                        Quantity = vm.PurchaseUpdate.Quantity,
+                    };
+
+
+                db.PurchaseItem.Add(reAdd);
+
+                db.SaveChanges();
+                TempData["SuccessMessage"] = "Ticket updated successfully!";
+                return Redirect("/Admin/AdminPurchase");
+            }
+
+
+
+        }
+        return Json(ModelState.IsValid);
+    }
+    //-------------------------------------
+    //change status
+    //-------------------------------------
+    [HttpPost]
+    public IActionResult ChangePurchseStatus(string? purchaseID)
+    {
+        if (purchaseID == null)
+        {
+            TempData["SuccessMessage"] = "Purchase Not found!" + purchaseID;
+            return Redirect("/Admin/AdminPurchase");
+        }
+
+        var purchaseItems = db.Purchase
+           .Where(pi => pi.Id == purchaseID)
+           .FirstOrDefault();
+
+        if (purchaseItems == null)
+        {
+            TempData["SuccessMessage"] = "Purchase Not found!";
+            return Redirect("/Admin/AdminPurchase");
+        }
+
+        var payment = db.Payment
+            .Where(pi => pi.PurchaseId == purchaseID)
+           .FirstOrDefault();
+
+        if (payment != null)
+        {
+            purchaseItems.Status = "R"; //refund
+            payment.Status = "R";
+            db.SaveChanges();
+            TempData["SuccessMessage"] = "Purchase cancle successfully!";
+            return Redirect("/Admin/AdminPurchase");
+
+        }
+
+        TempData["SuccessMessage"] = "Try again later !";
+        return Redirect("/Admin/AdminPurchase");
+
+
     }
 }
 

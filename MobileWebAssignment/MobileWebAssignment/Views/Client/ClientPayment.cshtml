@@ -1,4 +1,6 @@
-﻿@{
+﻿@model PaymentVM
+
+@{
     Layout = "_ClientLayout";
     ViewBag.Title = "Client | Payment";
 }
@@ -39,6 +41,20 @@
                 width: 100px;
                 margin-bottom: 15px;
             }
+
+        .orderContainer:hover {
+            background-color: black;
+        }
+
+        #productImage{
+            width:400px;
+            height:250px;
+        }
+
+        .text-danger{
+            margin-top:0;
+            padding-top:0;
+        }
     </style>
 </head>
 <body>
@@ -58,21 +74,30 @@
 
                 <div class="productDetail mb-4">
                     <div class="mb-3">
-                        <p>Product Name</p>
-                        <p>Product Price</p>
+                        <p id="productName">Product Name</p>
+                        <p id="productPrice">Product Price</p>
                     </div>
                     <div>
-                        <img src="https://picsum.photos/400/250" alt="Product Image" class="img-fluid rounded">
+                        <img id="productImage" src="https://picsum.photos/400/250" alt="Product Image" class="img-fluid rounded">
                     </div>
                 </div>
 
                 <div class="overflow-auto" style="max-height: 230px;">
-                    <div class="orderContainer p-3 rounded mb-2" style="background-color:#b6b6b6">
-                        <input type="text" class="form-control-plaintext fw-bold" value="Product Name" readonly>
-                        <input type="text" class="form-control-plaintext text-end" value="RM 00.00" readonly>
-                        <input type="text" class="form-control-plaintext" value="1x"  >
-                        <input type="text" class="form-control-plaintext" value="RM 00.00" readonly>
-                    </div>
+                    @{
+                        int count = 1;
+                    }
+                    @foreach (var s in ViewBag.CartItems)
+                    {
+
+                        <div class="orderContainer@(count) orderContainer p-3 rounded mb-2" style="background-color:#b6b6b6;cursor: pointer"
+                             onclick="updateProductDetail(this,'@s.Ticket.ticketName', 'RM @s.Ticket.ticketPrice', '@s.imagepath')">
+                            <p class="form-control-plaintext fw-bold">@s.Ticket.ticketName</p>
+                            <p class="form-control-plaintext text-end">RM @s.Subtotal</p>
+                            <p class="form-control-plaintext">x @s.Quantit</p>
+                            <input type="hidden" value="@s.imagepath" />
+                            <p class="form-control-plaintext">RM @s.Ticket.ticketPrice</p>
+                        </div>
+                    }
                 </div>
             </div>
 
@@ -81,10 +106,12 @@
                 <h5>Payment Details</h5>
                 <p class="text-muted">Complete your purchase by providing your payment details</p>
 
-                <form method="POST" action="PaymentPage.php">
+                <form method="post">
+                    <div asp-validation-summary="ModelOnly"></div>
                     <div class="mb-3">
-                        <label for="paymentEmail" class="form-label">Email Address</label>
-                        <input type="email" id="paymentEmail" class="form-control" placeholder="e.g. user@example.com" required>
+                        <label asp-for="Email" class="form-label">Email Address</label>
+                        <input asp-for="Email"  type="email" id="paymentEmail" class="form-control" placeholder="e.g. user@example.com" autofocus>
+                        <span asp-validation-for="Email" class="text-danger form-control " style="background:none"></span>
                     </div>
 
                     <div class="mb-3">
@@ -96,17 +123,25 @@
                     </div>
 
                     <div class="mb-3">
-                        <label for="cardNumber" class="form-label">Card Details</label>
-                        <input type="text" id="cardNumber" class="form-control mb-2" placeholder="Card Number" required>
+                        <label asp-for="CardNumber" for="cardNumber" class="form-label">Card Details</label>
+                        <input asp-for="CardNumber" type="text" id="cardNumber" class="form-control" placeholder="Card Number">
+                        <span asp-validation-for="CardNumber" class="text-danger form-control " style="background:none"></span>
                         <div class="d-flex">
-                            <input type="text" id="expDate" class="form-control me-2" placeholder="MM/YY" maxlength="5" required>
-                            <input type="password" id="cvv" class="form-control" placeholder="CVV" maxlength="3" required>
+                            <input asp-for="ExpirationDate" type="text" id="expDate" class="form-control me-2" placeholder="MM/YY" maxlength="5">
+                          
+                            <input asp-for="CVV" type="password" id="cvv" class="form-control" placeholder="CVV" maxlength="3">
+                            
+                        </div>
+                        <div class="d-flex" >
+                            <span asp-validation-for="ExpirationDate" class="text-danger form-control me-2 " style="background:none"></span>
+                            <span asp-validation-for="CVV" class="text-danger  form-control " style="background:none"></span>
                         </div>
                     </div>
 
                     <div class="mb-3">
-                        <label for="cardHolderName" class="form-label">Cardholder Name</label>
-                        <input type="text" id="cardHolderName" class="form-control" placeholder="Cardholder Name" required>
+                        <label asp-for="CardholderName" for="cardHolderName" class="form-label">Cardholder Name</label>
+                        <input asp-for="CardholderName"  type="text" id="cardHolderName" class="form-control" placeholder="Cardholder Name">
+                        <span asp-validation-for="CardholderName" class="text-danger form-control " style="background:none"></span>
                     </div>
 
                     <div class="paymentCalculation mb-3">
@@ -123,14 +158,64 @@
                             <input type="text" id="totalcal" class="form-control-plaintext text-end" value="RM 00.00" readonly>
                         </div>
                     </div>
+                    @{
+                        // Safely get the item count from ViewBag.CartItems
+                        int itemCount = (ViewBag.CartItems as List<CartVM>)?.Count ?? 0;
 
-                    <button type="submit" class="btn btn-primary w-100">Pay RM 00.00</button>
+                        // Determine if the button should be disabled
+                        var isDisabled = itemCount == 0; // Disable if no items in the cart
+                    }
+                    <button class="btn btn-primary w-100" disabled="@isDisabled">Pay RM 00.00 </button>
                 </form>
             </div>
         </div>
     </div>
+    <script>
+                document.addEventListener('DOMContentLoaded', () => {
+            // Select the first container
+            const firstContainer = document.querySelector('.orderContainer1');
 
+            // If a container exists, simulate a click event
+            if (firstContainer) {
+                updateProductDetail(
+                    firstContainer,
+                    firstContainer.querySelector('.fw-bold').textContent, // Assuming name is in this class
+                    firstContainer.querySelector('.text-end').textContent, // Assuming price is in this class
+                    firstContainer.querySelector('input[type="hidden"]').value // Assuming image path is stored here
+                );
+
+                // Apply the border to indicate it's selected
+                firstContainer.style.border = '2px solid black';
+            }
+        });
+
+              function updateProductDetail(container, name, price, imagePath) {
+            // Remove border from all containers
+            var containers = document.querySelectorAll('.orderContainer');
+            console.log(containers);
+            containers.forEach(function (el) {
+               el.style.border = '';
+            });
+
+            // Update product name
+            document.getElementById('productName').textContent = name;
+
+            // Update product price
+            document.getElementById('productPrice').textContent = price;
+
+            // Update product image
+            document.getElementById('productImage').src = imagePath;
+                productImage.onerror = function () {
+            this.src = '/images/error.png';  // Set a default image if the original fails
+        };
+            // Add border to the clicked container
+            container.style.border = '2px solid black';
+        }
+
+
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+
 </body>
 </html>
 

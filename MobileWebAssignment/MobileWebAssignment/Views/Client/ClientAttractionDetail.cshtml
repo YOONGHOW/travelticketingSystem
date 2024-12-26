@@ -1,82 +1,39 @@
 ﻿@{
     Layout = "_ClientLayout";
+    ViewBag.Title = "Client | Attraction";
 }
-
-@model AttractionUpdateVM
-
 
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/css/ClientCss/ClientAttraction.css" asp-append-version="true">
 </head>
 <body>
 </body>
 </html>
 
 <main style="min-height: 500px;">
-    <div class="attaraction_details">
-        <h1>@Model.Name</h1><br />
-        <p style="font-size:18px;">@Model.Description<br /> <br />
-            @if (ViewBag.Feedbacks.Count == 0)
-        {
-            <p>No review yet.</p>
-        }
-        else
-        {
-
-            int total = 0;
-            double averageRating = 0.0;
-            foreach (var f in ViewBag.Feedbacks)
-            {
-                total += f.Rating;
-            }
-
-            averageRating = (double)total / ViewBag.Feedbacks.Count;
-
-            <div class="review-container">
-                <p class="review-head">⭐@averageRating.ToString("F1") (@ViewBag.Feedbacks.Count reviews)</p>
-                <p class="location">📍@Model.Location</p>
-                
-            </div>
-            }
+   <section>
+    <nav class="image_side">
+        <img src="/images/afamosa.jpeg" alt="afamosa">
+    </nav>
+    <div class="details_side">
+       <h1>A-Famosa</h1>
+        <p style="font-size:22px;">
+            <b>
+                RM120.00 | <span style="font-size:17px;">Remaining Ticket: 100</span>
+            </b>
+        </p>
         <br />
-        <div class="details-container">
-        <img src="/attractionImages/@Model.ImagePath" alt="@Model.Name" class="detailsImg">
-        <br />
-
-            <div class="operating-hours">   
-                <h4><b>Operating Hours</b></h4>
-                <br />
-                <p>
-                    <table style="text-align:left;">
-                        @foreach (var op in Model.operatingTimes)
-                        {
-                            string operateDetail = "";
-
-                            if (op.Status.Equals("open"))
-                            {
-                                operateDetail += " " + op.StartTime + " - " + op.EndTime;
-                            }
-                            else
-                            {
-                                operateDetail += " Closed";
-                            }
-
-                            <tr>
-                                <th>@op.Day</th>
-                                <td style="padding-left:50px;">@operateDetail</td>
-                            </tr>
-                            
-                        }
-                    </table>
-                    </div>
-        </div>
-                </p>
-
-            <!-- Add to Cart Section -->
+        <article>
+            <ul>
+                <li>If water fun is on your mind, splash over to Water Theme Park, just 1.5 hours from Kuala Lumpur, with an optional meal or Safari Wonderland access.</li>
+                <li>Rides: Discover Kids, Family, and Adventure Zones, with attractions like Arabian Village, Wave Pool, Lazy River, High Speed, Big Ice Cream, and more.</li>
+                <li>Options: Upgrade for a hearty meal with veg and non-veg choices or access Safari Wonderland for wildlife fun and up-close encounters with animals.</li>
+                <li>Facilities: Enjoy hassle-free fun with rental lockers, changing rooms, wheelchair accessibility, and cabanas for rent - convenient for everyone.</li>
+            </ul>
+        </article>
         
             <h2>Package Option</h2>
                 <br />
@@ -121,70 +78,6 @@
             
 </form>
 
-        
-           
     </div>
-    <!-- Review Section -->
-    <section class="review-section">
-        <h2>Most Recent Reviews</h2>
-        @if (ViewBag.Feedbacks.Count == 0)
-        {
-            <button id="add-review-btn" data-get="/Client/ClientFeedbackForm?attractionId=@Model.Id">Add Review</button>
-
-            <p>No review yet.</p>
-        }
-        else
-        {
-
-            int total = 0;
-            double averageRating = 0.0;
-            foreach (var f in ViewBag.Feedbacks)
-            {
-                total += f.Rating;
-            }
-
-            averageRating = (double)total / ViewBag.Feedbacks.Count;
-
-            <p class="review-summary">@averageRating.ToString("F1") / 5 <span class="stars" data-rating="@averageRating.ToString("F1")" style="width: @averageRating.ToString("F1") * 20%;"></span> Based on @ViewBag.Feedbacks.Count review(s)</p>
-
-            <!-- Add Review Button -->
-            <button id="add-review-btn" data-get="/Client/ClientFeedbackForm?attractionId=@Model.Id">Add Review</button>
-
-            <div class="review-cards">
-                @foreach (var f in ViewBag.Feedbacks)
-                {
-                    <div class="review-card">
-                        <div class="review-score">
-                            <div class="stars" data-rating="@f.Rating"></div>
-                            <span class="score-label">@f.Rating.0 / 5</span>
-                        </div>
-                        <div class="review-details">
-                            <div class="review-user">
-                                <strong>Siti</strong>
-                            </div>
-                            <ul class="review-meta">
-                                <li>👪 @f.commentDetail.Partner</li>
-                                <li>🎫 Two Adults Ticket</li>
-                                <li>🎚️ Premium Ticket</li>
-                                <li>🤷‍♂ @f.commentDetail.Reason</li>
-                            </ul>
-                            <div class="review-comment">
-                                <h4>"@f.commentDetail.Title"</h4>
-                                <p>@f.commentDetail.Review</p>
-                                <span class="review-date">Written @f.SubmitDate</span>
-                            </div>
-                        </div>
-                    </div>
-                }
-
-            </div>
-        }
     </section>
 </main>
-<script>
-        document.querySelectorAll('.stars').forEach(function(starElement) {
-        let rating = starElement.getAttribute('data-rating');
-        let ratingRounded = Math.round(rating);
-        starElement.setAttribute('data-rating', ratingRounded); // round to nearest integer (1-5)
-    });
-</script>

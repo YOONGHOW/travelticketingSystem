@@ -9,9 +9,9 @@
     font-family: "Poppins", sans-serif;
 }
 
-.navbar {
+.navbarMain {
     position: fixed;
-    width: 4.8%;
+    width: 5.5%;
     height: 100vh;
     padding: 0 1%;
     color: white;
@@ -23,7 +23,7 @@
     z-index: 999;
 }
 
-    .navbar:hover {
+    .navbarMain:hover {
         width: 15%;
         transition: 0.5s;
     }
@@ -107,7 +107,7 @@
     }
 
 @media (max-width: 768px) {
-    .navbar {
+    .navbarMain {
         width: 10%;
     }
 
@@ -118,47 +118,5 @@
 
     .main a i {
         font-size: 18px; 
-    }
-}
-
-/* Flash Message -------------------------------------------------------------- */
-
-.info {
-    position: fixed;
-    background: #666;
-    color: #fff;
-    border: 1px solid #333;
-    border-radius: 5px;
-    padding: 10px 20px;
-    max-width: 500px;
-    left: 50%;
-    transform: translate(-50%, 0);
-    top: -100px;
-    opacity: 0;
-}
-
-    .info:not(:empty) {
-        animation: fade 5s;
-    }
-
-@keyframes fade {
-    0% {
-        top: -100px;
-        opacity: 0;
-    }
-
-    10% {
-        top: 100px;
-        opacity: 1;
-    }
-
-    90% {
-        top: 100px;
-        opacity: 1;
-    }
-
-    100% {
-        top: -100px;
-        opacity: 0;
     }
 }
