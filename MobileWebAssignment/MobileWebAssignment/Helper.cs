@@ -1,6 +1,6 @@
 ﻿using MobileWebAssignment.Models;
 
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
 
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
@@ -18,7 +18,10 @@ public class Helper
     private readonly IWebHostEnvironment en;
     private readonly IHttpContextAccessor ct;
     private readonly IConfiguration cf;
-    public Helper(IWebHostEnvironment en, IHttpContextAccessor ct,IConfiguration cf)
+
+
+    public Helper(IWebHostEnvironment en, IHttpContextAccessor ct, IConfiguration cf)
+
     {
         this.en = en;
         this.ct = ct;
@@ -46,6 +49,26 @@ public class Helper
         return "";
     }
 
+    public string ValidateMultiplePhoto(List<IFormFile> files)
+    {
+        var reType = new Regex(@"^image\/(jpeg|png)$", RegexOptions.IgnoreCase);
+        var reName = new Regex(@"^.+\.(jpeg|jpg|png)$", RegexOptions.IgnoreCase);
+
+        foreach (var f in files)
+        {
+            if (!reType.IsMatch(f.ContentType) || !reName.IsMatch(f.FileName))
+            {
+                return "Only JPG and PNG photo is allowed.";
+            }
+            else if (f.Length > 2 * 1024 * 1024)
+            {
+                return "Photo size cannot more than 2MB.";
+            }
+        }
+
+        return "";
+    }
+
     public string SavePhoto(IFormFile f, string folder)
     {
         var file = Guid.NewGuid().ToString("n") + ".jpg";
@@ -53,7 +76,7 @@ public class Helper
 
         var options = new ResizeOptions
         {
-            Size = new(300, 300),
+            Size = new(800, 700),
             Mode = ResizeMode.Crop,
         };
 
@@ -70,6 +93,57 @@ public class Helper
         file = Path.GetFileName(file);
         var path = Path.Combine(en.WebRootPath, folder, file);
         File.Delete(path);
+    }
+
+    public string SaveMultiplePhoto(List<IFormFile> files, string folder)
+    {
+        string imagePaths = "";
+        string fileName = "";
+
+        if (files.Count > 1)
+        {
+            foreach (var file in files)
+            {
+                fileName = SavePhoto(file, "attractionImages");
+                //DeletePhoto(file, "uploads");
+                imagePaths += fileName + "|";
+            }
+
+            imagePaths = imagePaths.Remove(imagePaths.Length - 1);
+        }
+        else
+        {
+
+            fileName = SavePhoto(files[0], "attractionImages");
+            imagePaths = fileName;
+
+        }
+        return imagePaths;
+    }
+
+    public void DeleteMultiplePhoto(string files, string folder)
+    {
+        List<string> imagePaths = SplitImagePath(files);
+
+        foreach (var imagePath in imagePaths)
+        {
+            string imagepath = Path.GetFileName(imagePath);
+            var path = Path.Combine(en.WebRootPath, folder, imagepath);
+            File.Delete(path);
+        }
+    }
+
+    public List<string> SplitImagePath(string imagePath)
+    {
+        string[] imgs = imagePath.Split('|');
+        List<string> imagePaths = new List<string>();
+        foreach (var img in imgs)
+        {
+            imagePaths.Add(img.Trim());
+        }
+
+
+        return imagePaths;
     }
 
     // ------------------------------------------------------------------------

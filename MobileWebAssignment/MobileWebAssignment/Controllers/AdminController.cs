@@ -1,12 +1,12 @@
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-
-using Azure;
 using Microsoft.EntityFrameworkCore;
 using MobileWebAssignment.Models;
 using System.Net.Sockets;
 using X.PagedList.Extensions;
+using Microsoft.AspNetCore.Hosting.Server;
+
 
 namespace MobileWebAssignment.Controllers;
 public class AdminController : Controller
@@ -15,6 +15,7 @@ public class AdminController : Controller
     private readonly IWebHostEnvironment en;
     private readonly Helper hp;
 
+
     public AdminController(DB db, IWebHostEnvironment en, Helper hp)
     {
         this.db = db;
@@ -22,7 +23,9 @@ public class AdminController : Controller
         this.hp = hp;
     }
 
-//==================================== Attraction Type start =========================================================
+
+
+    //==================================== Attraction Type start =========================================================
     public IActionResult AdminAttraction(string? Aname, int ATpage = 1, int Apage = 1)
     {
         //page list for Attraction Types
@@ -90,7 +93,7 @@ public class AdminController : Controller
         {
             ModelState.AddModelError("Name", "This attraction type already added before, please change other name");
         }
-        
+
         if (ModelState.IsValid)
         {
             db.AttractionType.Add(new()
@@ -120,7 +123,7 @@ public class AdminController : Controller
         var vm = new AttractionTypeInsertVM
         {
             Id = at.Id,
-            Name= at.Name,
+            Name = at.Name,
         };
 
         return View(vm);
@@ -137,7 +140,7 @@ public class AdminController : Controller
             return RedirectToAction("AdminAttraction");
         }
 
-       
+
 
         if (ModelState.IsValid)
         {
@@ -180,7 +183,7 @@ public class AdminController : Controller
     {
         var at = db.AttractionType.Find(vm.Id);
 
-        if (at != null) 
+        if (at != null)
         {
             db.AttractionType.Remove(at);
             db.SaveChanges();
@@ -220,7 +223,7 @@ public class AdminController : Controller
     {
 
         ViewBag.AttractionTypes = db.AttractionType.ToList();
-        
+
 
         //check name
         if (ModelState.IsValid("Name") && db.Attraction.Any(a => a.Name == vm.Name))
@@ -237,8 +240,16 @@ public class AdminController : Controller
         //check photo
         if (ModelState.IsValid("Photo"))
         {
-            var e = hp.ValidatePhoto(vm.Photo);
-            if (e != "") ModelState.AddModelError("Photo", e);
+
+            if (vm.Photo.images.Count == 0)
+            {
+                ModelState.AddModelError("Photo", "Please upload the attraction image(s)");
+            }
+            else
+            {
+                var e = hp.ValidateMultiplePhoto(vm.Photo.images);
+                if (e != "") ModelState.AddModelError("Photo.images", e);
+            }
         }
 
         //perform validation
@@ -246,12 +257,13 @@ public class AdminController : Controller
         int i = 0;
         foreach (var operateTime in vm.operatingHours)
         {
-            if(operateTime.Status == "open")
+            if (operateTime.Status == "open")
             {
                 if (operateTime.StartTime == null || operateTime.EndTime == null)
                 {
                     ModelState.AddModelError("operatingHours[" + i + "]", $"Operating hours for {operateTime.Day} are incomplete.");
-                }else if(operateTime.StartTime > operateTime.EndTime)
+                }
+                else if (operateTime.StartTime > operateTime.EndTime)
                 {
                     ModelState.AddModelError("operatingHours[" + i + "]", $"End Time cannot less than Start Time for {operateTime.Day} .");
                 }
@@ -260,29 +272,29 @@ public class AdminController : Controller
         }
 
         string operateHours = "";
-        if(errorCount == 0)
-        { 
+        if (errorCount == 0)
+        {
             //combine and get the complete operating hours
-            for (i = 0; i < 7 ; i++)
+            for (i = 0; i < 7; i++)
             {
                 operateHours += vm.operatingHours[i].Day + " " + vm.operatingHours[i].Status + " " + vm.operatingHours[i].StartTime + " " + vm.operatingHours[i].EndTime + " | ";
             }
         }
 
         vm.OperatingHours = operateHours;
-        
+
         //all attribute in view model is correct, then insert new record
         if (ModelState.IsValid)
-        { 
+        {
 
             db.Attraction.Add(new()
-            {   
+            {
                 Id = vm.Id,
                 Name = vm.Name.Trim(),
                 Description = vm.Description.Trim(),
                 Location = vm.Location.Trim(),
                 OperatingHours = vm.OperatingHours,
-                ImagePath = hp.SavePhoto(vm.Photo, "attractionImages"),
+                ImagePath = hp.SaveMultiplePhoto(vm.Photo.images, "attractionImages"),
                 AttractionTypeId = vm.AttractionTypeId,
             });
             db.SaveChanges();
@@ -307,8 +319,6 @@ public class AdminController : Controller
             return RedirectToAction("AdminAttraction");
         }
 
-        
-
         var vm = new AttractionUpdateVM
         {
             Id = a.Id,
@@ -319,7 +329,10 @@ public class AdminController : Controller
             ImagePath = a.ImagePath,
             AttractionTypeId = a.AttractionTypeId,
             operatingHours = hp.ParseOperatingHours(a.OperatingHours),
+            Photo = new UpdateImageSet(),
         };
+
+        vm.Photo.imagePaths = hp.SplitImagePath(a.ImagePath);
 
         return View(vm);
     }
@@ -328,8 +341,10 @@ public class AdminController : Controller
     [HttpPost]
     public IActionResult AdminAttractionUpdate(AttractionUpdateVM vm)
     {
+
         var a = db.Attraction.Find(vm.Id);
         ViewBag.AttractionTypes = db.AttractionType.ToList();
+        
 
         //check vm model
         if (a == null)
@@ -338,10 +353,18 @@ public class AdminController : Controller
         }
 
         //check photo if have
-        if (vm.Photo != null)
+        if (ModelState.IsValid("Photo.images"))
         {
-            var e = hp.ValidatePhoto(vm.Photo);
-            if (e != "") ModelState.AddModelError("Photo", e);
+
+            if (vm.Photo.images.Count == 0)
+            {
+                ModelState.AddModelError("Photo", "Please upload the attraction image(s)");
+            }
+            else
+            {
+                var e = hp.ValidateMultiplePhoto(vm.Photo.images);
+                if (e != "") ModelState.AddModelError("Photo.images", e);
+            }
         }
 
         //perform validation
@@ -387,8 +410,8 @@ public class AdminController : Controller
             a.AttractionTypeId = vm.AttractionTypeId;
             if (vm.Photo != null)
             {
-                hp.DeletePhoto(a.ImagePath, "attractionImages");
-                a.ImagePath = hp.SavePhoto(vm.Photo, "attractionImages");
+                hp.DeleteMultiplePhoto(a.ImagePath, "attractionImages");
+                a.ImagePath = hp.SaveMultiplePhoto(vm.Photo.images, "attractionImages");
             }
             db.SaveChanges();
 
@@ -396,6 +419,8 @@ public class AdminController : Controller
             return RedirectToAction("AdminAttraction");
 
         }
+        vm.Photo.imagePaths = hp.SplitImagePath(a.ImagePath);
+
 
         return View(vm);
     }
@@ -420,7 +445,10 @@ public class AdminController : Controller
             OperatingHours = a.OperatingHours,
             ImagePath = a.ImagePath,
             AttractionTypeId = a.AttractionTypeId,
+            Photo = new ImageSet(),
         };
+
+        vm.Photo.imagePaths = hp.SplitImagePath(a.ImagePath);
 
         return View(vm);
     }
@@ -433,7 +461,7 @@ public class AdminController : Controller
 
         if (a != null)
         {
-            hp.DeletePhoto(a.ImagePath, "attractionImages");
+            hp.DeleteMultiplePhoto(a.ImagePath, "attractionImages");
             db.Attraction.Remove(a);
             db.SaveChanges();
             TempData["Info"] = "Record Deleted.";
@@ -468,146 +496,190 @@ public class AdminController : Controller
 
         return View(vm);
     }
-
-
-
     //============================================ Feedback end =========================================================
 
-
-    
-
-    private string GeneratePromotionId()
+    //============================================ Promotion start =========================================================
+    public IActionResult AdminDiscount()
     {
-        string lastId = db.Promotion.OrderByDescending(p => p.Id).Select(p => p.Id).FirstOrDefault() ?? "PM0000";
-        int idNum = int.Parse(lastId.Substring(2)) + 1;
-        return $"PM{idNum:D4}";
-    }
-    public IActionResult AdminDiscount(int page = 1)
-    {
-        if (page < 1) return RedirectToAction(nameof(AdminDiscount), new { page = 1 });
-
-        var promotions = db.Promotion.ToPagedList(page, 5);
-
-        if (page > promotions.PageCount && promotions.PageCount > 0)
+        var promotions = db.Promotion
+            .OrderBy(p => p.Id)
+            .ToList();
+        var promoVMs = promotions.Select(p => new PromotionInsertVM
         {
-            return RedirectToAction(nameof(AdminDiscount), new { page = promotions.PageCount });
-        }
+            Id = p.Id,
+            Title = p.Title,
+            Code = p.Code,
+            PriceDeduction = p.PriceDeduction,
+            StartDate = p.StartDate,
+            EndDate = p.EndDate,
+            PromoStatus = p.PromoStatus
+        }).ToList();
 
-        return View(promotions);
+        return View(promoVMs);
     }
 
+    // GET: Admin/AdminDiscountCreate
     public IActionResult AdminDiscountCreate()
     {
+        var autoGeneratedId = $"PM{(db.Promotion.Count() + 1).ToString("D4")}"; // Example of auto-generating ID
         var vm = new PromotionInsertVM
         {
-            Id = GeneratePromotionId(),
-            StartDate = DateTime.Today,
-            EndDate = DateTime.Today.AddDays(7),
-            PromoStatus = "Active"
+            Id = autoGeneratedId
         };
-        
-        
+
         return View(vm);
     }
 
+    // POST: Admin/AdminDiscountCreate
     [HttpPost]
     public IActionResult AdminDiscountCreate(PromotionInsertVM vm)
     {
-        if (vm.StartDate >= vm.EndDate)
+        // Check for duplicated Promotion ID
+        if (ModelState.IsValid("Id") && db.Promotion.Any(p => p.Id == vm.Id))
         {
-            ModelState.AddModelError("EndDate", "End Date must be later than Start Date.");
-            
+            ModelState.AddModelError("Id", "Duplicated Promotion ID.");
+        }
+
+        // Check for duplicated Promotion Code
+        if (ModelState.IsValid("Code") && db.Promotion.Any(p => p.Code == vm.Code))
+        {
+            ModelState.AddModelError("Code", "Duplicated Promotion Code.");
+        }
+
+        // Ensure Price Deduction is valid
+        if (ModelState.IsValid("PriceDeduction") && vm.PriceDeduction <= 0)
+        {
+            ModelState.AddModelError("PriceDeduction", "Price Deduction must be greater than 0.");
+        }
+
+        // Ensure Start Date is before End Date
+        if (ModelState.IsValid("StartDate") && ModelState.IsValid("EndDate"))
+        {
+            if (vm.StartDate >= vm.EndDate)
+            {
+                ModelState.AddModelError("EndDate", "End Date must be after Start Date.");
             }
-            
-          
+        }
+
+        // If the model is valid, save the Promotion to the database
+        if (ModelState.IsValid)
+        {
             db.Promotion.Add(new Promotion
             {
-                Id = vm.Id,
+                Id = vm.Id.Trim().ToUpper(),
                 Title = vm.Title.Trim(),
-                Code = vm.Code.Trim(),
+                Code = vm.Code.Trim().ToUpper(),
                 PriceDeduction = vm.PriceDeduction,
                 StartDate = vm.StartDate,
                 EndDate = vm.EndDate,
-                PromoStatus = vm.PromoStatus.Trim()
+                PromoStatus = "Active"
             });
-
             db.SaveChanges();
-            TempData["Info"] = "Promotion added successfully.";
-            return RedirectToAction(nameof(AdminDiscount));
-}
 
+            TempData["Info"] = "Promotion created successfully.";
+            return RedirectToAction("AdminDiscount");
+        }
 
-    public IActionResult AdminDiscountUpdate(string id)
+        // If there are validation errors, return the same view with the error messages
+        return View(vm);
+    }
+
+    // GET: Admin/AdminDiscountDelete/{id}
+    public IActionResult AdminDiscountDelete(string id)
     {
-        var promo = db.Promotion.Find(id);
-        if (promo == null) return RedirectToAction(nameof(AdminDiscount));
+        if (string.IsNullOrEmpty(id))
+        {
+            TempData["Error"] = "Invalid ID.";
+            return RedirectToAction("AdminDiscount");
+        }
+
+        var promotion = db.Promotion.FirstOrDefault(p => p.Id == id);
+        if (promotion == null)
+        {
+            TempData["Error"] = "Promotion not found.";
+            return RedirectToAction("AdminDiscount");
+        }
 
         var vm = new PromotionInsertVM
         {
-            Id = promo.Id,
-            Title = promo.Title,
-            Code = promo.Code,
-            PriceDeduction = promo.PriceDeduction,
-            StartDate = promo.StartDate,
-            EndDate = promo.EndDate,
-            PromoStatus = promo.PromoStatus
+            Id = promotion.Id,
+            Title = promotion.Title,
+            Code = promotion.Code,
+            PriceDeduction = promotion.PriceDeduction,
+            StartDate = promotion.StartDate,
+            EndDate = promotion.EndDate,
+            PromoStatus = promotion.PromoStatus
         };
 
         return View(vm);
     }
 
+    // POST: Admin/AdminDiscountDelete
     [HttpPost]
-    public IActionResult AdminDiscountUpdate(PromotionInsertVM vm)
+    public IActionResult AdminDiscountDelete(PromotionInsertVM vm)
     {
-        var promo = db.Promotion.Find(vm.Id);
-        if (promo == null) return RedirectToAction(nameof(AdminDiscount));
+        var promotion = db.Promotion.FirstOrDefault(p => p.Id == vm.Id);
 
-        if (vm.StartDate >= vm.EndDate)
+        if (promotion == null)
         {
-            ModelState.AddModelError("EndDate", "End Date must be later than Start Date.");
+            TempData["Error"] = "Promotion not found.";
+            return RedirectToAction("AdminDiscount");
         }
 
-        if (ModelState.IsValid)
-        {
-            promo.Title = vm.Title.Trim();
-            promo.Code = vm.Code.Trim();
-            promo.PriceDeduction = vm.PriceDeduction;
-            promo.StartDate = vm.StartDate;
-            promo.EndDate = vm.EndDate;
-            promo.PromoStatus = vm.PromoStatus.Trim();
+        db.Promotion.Remove(promotion);
+        db.SaveChanges();
 
-            db.SaveChanges();
-            TempData["Info"] = "Promotion updated successfully.";
-            return RedirectToAction(nameof(AdminDiscount));
+        TempData["Info"] = "Promotion deleted successfully.";
+        return RedirectToAction("AdminDiscount");
+    }
+    // GET: Admin/DiscountUpdate
+    public IActionResult AdminDiscountUpdate(string? id)
+    {
+        var promotion = db.Promotion.Find(id);
+
+        if (promotion == null)
+        {
+            return RedirectToAction("AdminDiscount");
         }
+
+        var vm = new PromotionInsertVM
+        {
+            Id = promotion.Id,
+            Title = promotion.Title,
+            Code = promotion.Code,
+            PriceDeduction = promotion.PriceDeduction,
+            StartDate = promotion.StartDate,
+            EndDate = promotion.EndDate
+        };
 
         return View(vm);
     }
 
-    public IActionResult AdminDiscountDelete(string id)
-    {
-        var promo = db.Promotion.Find(id);
-        if (promo == null) return RedirectToAction(nameof(AdminDiscount));
-
-        return View(promo);
-    }
-
+    // POST: Admin/DiscountUpdate
     [HttpPost]
-    public IActionResult AdminDiscountDeleteConfirmed(string id)
+    public IActionResult AdminDiscountUpdate(PromotionInsertVM vm)
     {
-        var promo = db.Promotion.Find(id);
-        if (promo != null)
+        if (ModelState.IsValid)
         {
-            db.Promotion.Remove(promo);
-            db.SaveChanges();
-            TempData["Info"] = "Promotion deleted successfully.";
+            var promotion = db.Promotion.Find(vm.Id);
+
+            if (promotion != null)
+            {
+                promotion.Title = vm.Title;
+                promotion.Code = vm.Code;
+                promotion.PriceDeduction = vm.PriceDeduction;
+                promotion.StartDate = vm.StartDate;
+                promotion.EndDate = vm.EndDate;
+
+                db.SaveChanges();
+            }
+
+            return RedirectToAction("AdminDiscount");
         }
 
-        return RedirectToAction(nameof(AdminDiscount));
+        return View(vm);
     }
-
-
-
+    //============================================ Promotion End =========================================================
     //============================================ Member Maintenance =========================================================
 
     // Generate ID for create account
@@ -665,7 +737,7 @@ public class AdminController : Controller
         return View(vm);
     }
 
-//GET Admin/MemberList
+    //GET Admin/MemberList
     public IActionResult MemberList(int page = 1)
     {
         // Ensure the page number is at least 1
@@ -740,7 +812,7 @@ public class AdminController : Controller
 
     //POST Admin/AdminUpdateMember 
     [HttpPost("Admin/AdminUpdateMember/{Id?}")]
-    public IActionResult AdminUpdateMember(UpdateProfileVm vm,string? Id)
+    public IActionResult AdminUpdateMember(UpdateProfileVm vm, string? Id)
     {
         var user = db.Members.Find(Id);
 
@@ -792,8 +864,8 @@ public class AdminController : Controller
     //============================================ Member Maintenance End =========================================================
 
 
-    
- //============================================ Ticket start =========================================================
+
+    //============================================ Ticket start =========================================================
 
     public IActionResult AdminTicket()
     {
@@ -806,8 +878,8 @@ public class AdminController : Controller
     private string NextTicketId()
     {
         string max = db.Ticket.Max(s => s.Id) ?? "TK0000";
-        int n = int.Parse(max[2..]); 
-        return (n + 1).ToString("'TK'0000"); 
+        int n = int.Parse(max[2..]);
+        return (n + 1).ToString("'TK'0000");
     }
     // Insert ticket
     [HttpGet]
@@ -821,7 +893,7 @@ public class AdminController : Controller
 
         var vm = new TicketVM
         {
-            AttractionId = id 
+            AttractionId = id
         };
 
         return View(vm);
@@ -883,12 +955,13 @@ public class AdminController : Controller
     {
         var t = db.Ticket.Find(vm.Id);
 
-        if(t == null)
+        if (t == null)
         {
             return RedirectToAction("AdminTicketDetails");
         }
 
-        if (ModelState.IsValid) {
+        if (ModelState.IsValid)
+        {
             t.ticketName = vm.ticketName.Trim();
             t.stockQty = vm.stockQty;
             t.ticketPrice = vm.ticketPrice;
@@ -965,8 +1038,32 @@ public class AdminController : Controller
         return RedirectToAction("AdminTicketDetails", new { id = vm.AttractionId });
     }
 
-    
 
+
+    //multiple photo upload
+    public IActionResult MultiplePhotoUpload(IFormFile[] images)
+    {
+
+        //Ensure model state is valid  
+        if (ModelState.IsValid)
+        {   //iterating through multiple file collection   
+            foreach (IFormFile image in images)
+            {
+                //Checking file is available to save.  
+                if (image != null)
+                {
+                    var saveImage = Path.Combine(en.WebRootPath, "uploads", image.FileName);
+                    //Save file to server folder  
+                    using var stream = System.IO.File.Create(saveImage);
+                    image.CopyTo(stream);
+
+                }
+
+            }
+            TempData["Info"] = "Image(s) uploaded.";
+        }
+        return View();
+    }
 }
 
 

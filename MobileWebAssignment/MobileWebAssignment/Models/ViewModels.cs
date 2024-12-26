@@ -1,4 +1,4 @@
-
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -41,7 +41,7 @@ public class AttractionInsertVM
 
     public string AttractionTypeId { get; set; }
 
-    public IFormFile Photo { get; set; }
+    public ImageSet Photo { get; set; }
 
     public List<OperatingHour>? operatingHours { get; set; }
 
@@ -49,14 +49,23 @@ public class AttractionInsertVM
 
 public class PromotionInsertVM
 {
-    public string Id { get; set; } // PM0001
-    public string Title { get; set; } // Promotion Name
-    public string Code { get; set; } // PROMO2024
-    public decimal PriceDeduction { get; set; } // Discount Amount
+    [Required]
+    public string Id { get; set; }
+    [Required]
+    public string Title { get; set; }
+    [Required]
+    public string Code { get; set; }
+
+    // Ensure this field has appropriate data type and validation
+    [Range(0, double.MaxValue, ErrorMessage = "Price deduction must be a positive value.")]
+    public decimal PriceDeduction { get; set; }
+    [Required]
     public DateTime StartDate { get; set; }
+    [Required]
     public DateTime EndDate { get; set; }
-    public string PromoStatus { get; set; } // Active, Inactive, Expired
+    public string? PromoStatus { get; set; }
 }
+
 
 public class AttractionUpdateVM
 {
@@ -78,10 +87,8 @@ public class AttractionUpdateVM
     public string? ImagePath { get; set; }
 
     public string AttractionTypeId { get; set; }
+    public UpdateImageSet? Photo { get; set; }
 
-    public IFormFile? Photo { get; set; }
-
-    public List<TicketVM> Tickets { get; set; }
     public List<OperatingHour>? operatingHours { get; set; }
     public List<OperatingTime>? operatingTimes { get; set; }
 
@@ -276,11 +283,49 @@ public class TicketVM {
     public string AttractionId { get; set; }
 }
 
+public class CartVM
+{
+    public string Id { get; set; }
+    public string TicketId { get; set; }
+    public string UserId { get; set; }
+    public int quantity { get; set; }
+}
+
+
 public class AdminTicketDetails
 {
     public Attraction Attraction { get; set; }
     public List<Ticket> Tickets { get; set; }
 }
 
+public class ImageSet
+{
+    [Required(ErrorMessage = "Please select file.")]
+    [Display(Name = "Browse File")]
+    public List<IFormFile> images { get; set; }
 
+    public List<string>? imagePaths { get; set; }
+
+}
+
+public class UpdateImageSet
+{
+    [Display(Name = "Browse File")]
+    public List<IFormFile>? images { get; set; }
+
+    public List<string>? imagePaths { get; set; }
+
+}
+
+//map
+public class Locations
+{
+    public string latitude { get; set; }
+    public string longitude { get; set; }
+    public Locations(string latitude, string longitude)
+    {
+        this.latitude = latitude;
+        this.longitude = longitude;
+    }
+}
 

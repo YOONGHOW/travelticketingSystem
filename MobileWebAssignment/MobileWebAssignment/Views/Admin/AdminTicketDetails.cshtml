@@ -1,0 +1,77 @@
+﻿@{
+    Layout = "_AdminLayout";
+    ViewBag.Title = "Admin | Ticket";
+}
+
+@model AdminTicketDetails
+
+<html>
+    <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <link rel="stylesheet" href="/css/AdminCss/AdminTicket.css" asp-append-version="true">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="~/js/app.js"></script>
+    </head>
+<body>
+    <div class="content">
+    <h1>Ticket Details for @Model.Attraction.Name</h1>
+
+    <h2>Attraction Information</h2>
+    <p><strong>Attraction ID:</strong> @Model.Attraction.Id</p>
+    <p><strong>Attraction Name:</strong> @Model.Attraction.Name</p>
+    <p><strong>Attraction Type:</strong> @Model.Attraction.AttractionType?.Name</p>
+    <p><strong>Location:</strong> @Model.Attraction.Location</p>
+
+    <h2>Tickets for this Attraction</h2> 
+    <button class="clickable-row" data-href="@Url.Action("AdminTicketInsert", "Admin", new { id = Model.Attraction.Id })">Add</button>
+    <br />
+    @if (Model.Tickets.Any())
+    {
+        <table class="ticketTable">
+            <thead>
+                <tr>
+                    <th>Ticket ID</th>
+                    <th>Ticket Name</th>
+                    <th>Price</th>
+                    <th>Stock Quantity</th>
+                    <th>Status</th>
+                    <th>Ticket Type</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var ticket in Model.Tickets)
+                {
+                    <tr>
+                        <td>@ticket.Id</td>
+                        <td>@ticket.ticketName</td>
+                        <td>RM @ticket.ticketPrice</td>
+                        <td>@ticket.stockQty</td>
+                        <td>@ticket.ticketStatus</td>
+                        <td>@ticket.ticketType</td>
+                        <td>
+                                <button class="clickable-row" data-href="@Url.Action("AdminTicketUpdate", "Admin", new { id = ticket.Id }) ">Edit</button>
+                                <button class="clickable-row" data-href="@Url.Action("AdminTicketDelete", "Admin", new { id = ticket.Id }) ">Delete</button>
+                        </td>  
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <p>No tickets found for this attraction.</p>
+    }
+   </div>
+    <script>
+        $(document).ready(function () {
+            $(".clickable-row").click(function () {
+                window.location = $(this).data("href");
+            });
+        });
+
+
+    </script>
+</body>
+
+</html>

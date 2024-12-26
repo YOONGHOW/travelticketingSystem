@@ -433,12 +433,27 @@ namespace MobileWebAssignment.Controllers
                 });
             }
 
+            
+
+            foreach (var a in attractFeedback)
+            {
+                if (hp.SplitImagePath(a.attraction.ImagePath).Count > 0)
+                a.attraction.ImagePath = hp.SplitImagePath(a.attraction.ImagePath)[0];
+            }
+
             return View(attractFeedback);
         }
 
         //GET: AttractionDetail
         public IActionResult ClientAttractionDetail(string? AttractionId)
         {
+            // Retrieve the logged-in user's email
+            var email = User.Identity!.Name;
+
+            // Find the user by email
+            var user = db.Members.SingleOrDefault(member => member.Email == email);
+
+            ViewBag.User = user;
 
             var a = db.Attraction.Find(AttractionId);
             var feedbacks = db.Feedback.Where(f => f.AttractionId == AttractionId).ToList();
@@ -461,6 +476,8 @@ namespace MobileWebAssignment.Controllers
                     commentDetail = hp.ConvertComment(f.Comment),
                 });
             }
+
+
 
             var tickets = db.Ticket.Where(t => t.AttractionId == AttractionId).ToList();
             ViewBag.Tickets = tickets.Select(t => new TicketVM
@@ -486,12 +503,93 @@ namespace MobileWebAssignment.Controllers
                 ImagePath = a.ImagePath,
                 AttractionTypeId = a.AttractionTypeId,
                 operatingTimes = hp.ConvertOperatingTimes(a.OperatingHours),
+                Photo = new UpdateImageSet(),
             };
 
-            
+            vm.Photo.imagePaths = hp.SplitImagePath(a.ImagePath);
+
             return View(vm);
         }
+        //------------------------------------------ Cart start ----------------------------------------------
+        //Auto generate id
+        private string NextCartId()
+        {
+            string max = db.Cart.Max(s => s.Id) ?? "C0000";
+            int n = int.Parse(max[2..]);
+            return (n + 1).ToString("'C'0000");
+        }
 
+        [HttpPost]
+        public IActionResult AddToCart(string ticketId, int quantity)
+        {
+            var userId = "U001";
+            //var userId = User.Identity!.Name;
+            //if (userId == null)
+            //{
+            //    TempData["Error"] = "You must log in to add items to the cart.";
+            //    return RedirectToAction("Login");
+            //}
+
+            var ticket = db.Ticket.SingleOrDefault(t => t.Id == ticketId);
+            if (ticket == null || ticket.stockQty < quantity)
+            {
+                TempData["Error"] = "Invalid ticket or insufficient stock.";
+                return RedirectToAction("ClientAttractionDetail", new { AttractionId = ticket?.AttractionId });
+            }
+
+            var existingCart = db.Cart.SingleOrDefault(c => c.UserId == userId && c.TicketId == ticketId);
+            if (existingCart != null)
+            {
+                existingCart.Quantity += quantity;
+            }
+            else
+            {
+                db.Cart.Add(new Cart
+                {
+                    Id = NextCartId(),
+                    UserId = userId,
+                    TicketId = ticketId,
+                    Quantity = quantity,
+                });
+            }
+
+            db.SaveChanges();
+            TempData["Info"] = "Item added to cart successfully.";
+            return RedirectToAction("ClientAttractionDetail", new { AttractionId = ticket.AttractionId });
+        }
+
+
+
+      //  [Authorize(Roles = "Member")] 
+        public IActionResult ClientCart()
+        {
+            //var userId = User.Identity!.Name;
+            var userId = "U001";
+            //if (userId == null)
+            //{
+            //    TempData["Error"] = "You must log in to view your cart.";
+            //    return RedirectToAction("Login");
+            //}
+
+            var cartItems = db.Cart
+                              .Include(c => c.Ticket)
+                              .Where(c => c.UserId == userId)
+                              .Select(c => new
+                              {
+                                  c.Id,
+                                  TicketName = c.Ticket.ticketName,
+                                  Quantity = c.Quantity,
+                                  Price = c.Ticket.ticketPrice,
+                                  TotalPrice = c.Quantity * c.Ticket.ticketPrice,
+                                  StockAvailable = c.Ticket.stockQty
+                              })
+                              .ToList();
+
+            ViewBag.CartItems = cartItems;
+            ViewBag.TotalPrice = cartItems.Sum(c => c.TotalPrice);
+
+            return View();
+        }
         //------------------------------------------ FeedBack start ----------------------------------------------
 
         // Manually generate next id for feedback
@@ -508,6 +606,12 @@ namespace MobileWebAssignment.Controllers
         {
             ViewBag.Attraction = db.Attraction.Find(attractionId);
 
+            // Retrieve the logged-in user's email
+            var email = User.Identity!.Name;
+
+            // Find the user by email
+            var user = db.Members.SingleOrDefault(member => member.Email == email);
+
             if (ViewBag.Attraction == null)
             {
                 return RedirectToAction("ClientAttractionDetail");
@@ -517,8 +621,16 @@ namespace MobileWebAssignment.Controllers
             {
                 Id = NextFeedbackId(),
                 AttractionId = attractionId,
-                UserId = "U001",
             };
+
+            if (user != null)
+            {
+                vm.UserId = user.Id;
+            }
+            else
+            {
+                vm.UserId = "none";
+            }
 
             return View(vm);
         }

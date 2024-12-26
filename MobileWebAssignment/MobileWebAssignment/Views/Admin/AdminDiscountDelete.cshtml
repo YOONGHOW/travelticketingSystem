@@ -1,0 +1,44 @@
+﻿@model MobileWebAssignment.Models.PromotionInsertVM
+
+@{
+    ViewBag.Title = "Admin | Delete Discount";
+}
+<head>
+    <link rel="stylesheet" href="/css/AdminCss/AdminDiscountDelete.css" asp-append-version="true">
+</head>
+<div style="margin-left: 250px; padding: 20px;">
+    <h2>Delete Discount</h2>
+
+    <p>Are you sure you want to delete the following discount?</p>
+
+    <div>
+        <dl class="row">
+            <dt class="col-sm-2">Discount ID</dt>
+            <dd class="col-sm-10">@Model.Id</dd>
+
+            <dt class="col-sm-2">Title</dt>
+            <dd class="col-sm-10">@Model.Title</dd>
+
+            <dt class="col-sm-2">Code</dt>
+            <dd class="col-sm-10">@Model.Code</dd>
+
+            <dt class="col-sm-2">Discount Amount</dt>
+            <dd class="col-sm-10">@Model.PriceDeduction</dd>
+
+            <dt class="col-sm-2">Start Date</dt>
+            <dd class="col-sm-10">@Model.StartDate.ToString("yyyy-MM-dd")</dd>
+
+            <dt class="col-sm-2">End Date</dt>
+            <dd class="col-sm-10">@Model.EndDate.ToString("yyyy-MM-dd")</dd>
+
+            <dt class="col-sm-2">Status</dt>
+            <dd class="col-sm-10">@Model.PromoStatus</dd>
+        </dl>
+    </div>
+
+    <form method="post">
+        <input type="hidden" asp-for="Id" />
+        <button type="submit" class="btn btn-danger">Delete</button>
+        <a href="@Url.Action("AdminDiscount", "Admin")" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>

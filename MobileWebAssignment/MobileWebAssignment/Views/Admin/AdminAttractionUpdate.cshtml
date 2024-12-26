@@ -4,120 +4,225 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/css/AdminCss/AdminAttractionTypeLayout.css">
-    <title>Update Attraction Information</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="/css/AdminCss/AdminAttractionTypeLayout.css">
+	<title>Update Attraction Information</title>
 
 </head>
 
 <body>
-    <div class="container">
-        <div class="header">
-            <a href="/Admin/AdminAttraction" class="back-arrow"><img src="/images/back-arrow.png" alt="Back"></a>
-            <div class="title">Update Attraction</div>
-        </div>
+	<div class="container">
+		<div class="header">
+			<a href="/Admin/AdminAttraction" class="back-arrow"><img src="/images/back-arrow.png" alt="Back"></a>
+			<div class="title">Update Attraction</div>
+		</div>
 
-        <div class="content">
-            <form method="post" enctype="multipart/form-data">
-                <div asp-validation-summary="All"></div>
+		<div class="content">
+			<form method="post" enctype="multipart/form-data">
+				<div asp-validation-summary="ModelOnly"></div>
 
-                <label asp-for="Photo">Attraction Image</label>
-                <label class="upload">
-                    <input asp-for="Photo" accept="image/jpeg,image/png" hidden>
-                    <img src="/attractionImages/@Model.ImagePath">
-                </label>
-                <span asp-validation-for="Photo" class="err" style="text-align:center;"></span>
+				<label asp-for="Photo.images">Attraction Image</label>
+				<label class="upload">
+					<input asp-for="Photo.images" id="fileInput" accept="image/jpeg,image/png" multiple hidden>
+					<div id="imageList">
+						@foreach (var imagePath in Model.Photo.imagePaths)
+						{
+							<div>
+								<img src="/attractionImages/@imagePath" class="drag">
+								@* <button type="button" name="imagePath" class="delete-btn" data-post="@imagePath">Remove</button> *@
+							</div>
+						}
+					</div>
+					<div id="preview"></div>
+					<div id="errorMessage" class="error"></div>
+				</label>
+				<span asp-validation-for="Photo.images" class="err" style="text-align:center;"></span>
 
-                <div class="product-details">
-                    <div class="input-box">
-                        <label class="details" asp-for="Id">Attraction Id</label>
-                        <input asp-for="Id" readonly style="caret-color: transparent;color:#797777">
-                        <span asp-validation-for="Id"></span>
-                    </div>
-                    <div class="input-box"></div>
-                    <div class="input-box">
-                        <label class="details" asp-for="Name">Attraction Name</label>
-                        <input asp-for="Name">
-                        <span asp-validation-for="Name"></span>
-                    </div>
+				<div class="product-details">
+					<div class="input-box">
+						<label class="details" asp-for="Id">Attraction Id</label>
+						<input asp-for="Id" readonly style="caret-color: transparent;color:#797777">
+						<span asp-validation-for="Id"></span>
+					</div>
+					<div class="input-box"></div>
+					<div class="input-box">
+						<label class="details" asp-for="Name">Attraction Name</label>
+						<input asp-for="Name">
+						<span asp-validation-for="Name"></span>
+					</div>
 
-                    <div class="input-box">
-                        <label class="details" asp-for="AttractionTypeId">Attraction Type Name</label>
-                        <select id="attraction-type" asp-for="AttractionTypeId">
-                            <option value="none">-- Select Attraction Type --</option>
-                            @foreach (var at in ViewBag.AttractionTypes)
-                            {
-                                <option value="@at.Id">@at.Name</option>
-                            }
-                        </select>
-                        <span asp-validation-for="AttractionTypeId"></span>
-                    </div>
+					<div class="input-box">
+						<label class="details" asp-for="AttractionTypeId">Attraction Type Name</label>
+						<select id="attraction-type" asp-for="AttractionTypeId">
+							<option value="none">-- Select Attraction Type --</option>
+							@foreach (var at in ViewBag.AttractionTypes)
+							{
+								<option value="@at.Id">@at.Name</option>
+								<span>Remove</span>
+							}
+						</select>
+						<span asp-validation-for="AttractionTypeId"></span>
+					</div>
 
-                    <div class="input-box">
-                        <label class="details" asp-for="Description">Description</label>
-                        <textarea asp-for="Description" rows="5"></textarea>
-                        <span asp-validation-for="Description"></span>
-                    </div>
+					<div class="input-box">
+						<label class="details" asp-for="Description">Description</label>
+						<textarea asp-for="Description" rows="5"></textarea>
+						<span asp-validation-for="Description"></span>
+					</div>
 
-                    <div class="input-box">
-                        <label class="details" asp-for="Location">Location</label>
-                        <textarea asp-for="Location" rows="3"></textarea>
-                        <span asp-validation-for="Location"></span>
-                    </div>
-                </div>
+					<div class="input-box">
+						<label class="details" asp-for="Location">Location</label>
+						<textarea asp-for="Location" rows="3"></textarea>
+						<span asp-validation-for="Location"></span>
+					</div>
+				</div>
 
-                <div class="operating-hours">
-                    <h3>Operating Hours</h3>
-                    <div class="day-hours">
-                        @{
-                            var days = new[] { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" };
-                        }
+				<div class="operating-hours">
+					<h3>Operating Hours</h3>
+					<div class="button">
+						<button type="button" id="syncStartTimeButton">Sync Start Times</button>
+					</div>
+					<div class="button">
+						<button type="button" id="syncEndTimeButton">Sync End Times</button>
+					</div>
+					<div class="day-hours">
+						@{
+							var days = new[] { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" };
+						}
 
-                        @for (int i = 0; i < days.Length; i++)
-                        {
-                            <div class="day-row">
-                                <span>@days[i]</span>
-                                <input type="hidden" asp-for="operatingHours[@i].Day" value="@days[i]" class="day-status" />
-                                <select asp-for="operatingHours[@i].Status" class="day-status">
-                                    <option value="open">Open</option>
-                                    <option value="closed">Closed</option>
-                                </select>
-                                <input type="time" asp-for="operatingHours[@i].StartTime" class="time-input start-time" placeholder="Start Time">
-                                <input type="time" asp-for="operatingHours[@i].EndTime" class="time-input end-time" placeholder="End Time">
-                            </div>
-                            <span class="err" asp-validation-for="operatingHours[@i]"></span>
-                        }
-                    </div>
-                </div>
+						@for (int i = 0; i < days.Length; i++)
+						{
+							<div class="day-row">
+								<span>@days[i]</span>
+								<input type="hidden" asp-for="operatingHours[@i].Day" value="@days[i]" class="day-status" />
+								<select asp-for="operatingHours[@i].Status" class="day-status">
+									<option value="open">Open</option>
+									<option value="closed">Closed</option>
+								</select>
+								<input type="time" asp-for="operatingHours[@i].StartTime" class="time-input start-time" placeholder="Start Time">
+								<input type="time" asp-for="operatingHours[@i].EndTime" class="time-input end-time" placeholder="End Time">
+							</div>
+							<span class="err" asp-validation-for="operatingHours[@i]"></span>
+						}
+					</div>
+				</div>
 
-                <div class="button">
-                    <button id="addCategoryButton">Update Attraction</button>
-                </div>
-            </form>
-        </div>
-    </div>
+				<div class="button">
+					<button id="addCategoryButton">Update Attraction</button>
+				</div>
+			</form>
+		</div>
+	</div>
 
-    <script src="/js/jquery.min.js"></script>
-    <script src="/js/jquery.unobtrusive-ajax.min.js"></script>
-    <script src="/js/jquery.validate.min.js"></script>
-    <script src="/js/jquery.validate.unobtrusive.min.js"></script>
-    <script src="~/js/app.js" asp-append-version="true"></script>
-    <script>
-                    $(document).ready(function () {
-            $(".day-status").on("change", function () {
-                const isClosed = $(this).val() === "closed";
-                const row = $(this).closest(".day-row");
-                row.find(".start-time, .end-time").prop("disabled", isClosed);
-            });
+	<script src="/js/jquery.min.js"></script>
+	<script src="/js/jquery.unobtrusive-ajax.min.js"></script>
+	<script src="/js/jquery.validate.min.js"></script>
+	<script src="/js/jquery.validate.unobtrusive.min.js"></script>
+	<script src="~/js/app.js" asp-append-version="true"></script>
 
-            $(".day-status").each(function () {
-                const isClosed = $(this).val() === "closed";
-                const row = $(this).closest(".day-row");
-                row.find(".start-time, .end-time").prop("disabled", isClosed);
-            });
-        });
-    </script>
+	<script>
+		const fileInput = document.getElementById('fileInput');
+		const preview = document.getElementById('preview');
+		const errorMessage = document.getElementById('errorMessage');
+		const maxFileSize = 2 * 1024 * 1024; // 2MB
+		const maxImages = 5;
+
+		fileInput.addEventListener('change', () => {
+			preview.innerHTML = ''; // Clear previous previews
+			errorMessage.innerHTML = ''; // Clear error message
+			const files = fileInput.files;
+
+			// Create an array to hold the files excluding the ones that are removed
+			let fileArray = Array.from(files);
+
+			// Check number of images validation
+			if (fileArray.length > maxImages) {
+				errorMessage.innerHTML = `You can only upload up to ${maxImages} images.`;
+				return;
+			}else if(fileArray.length >= 1){
+				document.getElementById("imageList").style.display = "none";
+
+						fileArray.forEach((file) => {
+			// Check file size validation
+			if (file.size > maxFileSize) {
+				errorMessage.innerHTML = `File "${file.name}" is too large. Maximum allowed size is 2MB.`;
+				return;
+			}
+
+			const reader = new FileReader();
+			reader.onload = (e) => {
+				const div = document.createElement('div');
+				const img = document.createElement('img');
+				img.src = e.target.result;
+				div.appendChild(img);
+
+				// Create a remove button
+				const removeBtn = document.createElement('span');
+				removeBtn.textContent = 'Remove';
+				removeBtn.classList.add('remove-btn');
+				removeBtn.onclick = (e) => {
+
+					// Prevent the upload event from triggering
+					e.preventDefault();
+					e.stopPropagation();
+
+					// Remove the file from the fileArray
+					fileArray = fileArray.filter((f) => f !== file);
+
+					// Update the file input element with the remaining files
+					const dataTransfer = new DataTransfer();
+					fileArray.forEach((file) => dataTransfer.items.add(file));
+					fileInput.files = dataTransfer.files;
+
+					// Remove the preview from the UI
+					preview.removeChild(div);
+				};
+				div.appendChild(removeBtn);
+
+				preview.appendChild(div);
+			};
+			reader.readAsDataURL(file);
+		});
+			 }else{
+				document.getElementById("imageList").style.display = "block";
+			}
+
+		});
+
+	</script>
+	@* <script> *@
+	@* 		document.addEventListener('DOMContentLoaded', () => { *@
+	@* 		const imageList = document.getElementById('imageList'); *@
+
+	@* 		imageList.addEventListener('click', (event) => { *@
+	@* 			if (event.target.classList.contains('delete-btn')) { *@
+	@* 				const imagePath = event.target.getAttribute('data-id'); *@
+
+	@* 				if (confirm('Are you sure you want to delete this image?')) { *@
+	@* 					fetch(`AdminController`, { *@
+	@* 						method: 'POST', *@
+	@* 						headers: { *@
+	@* 							'Content-Type': 'application/json', *@
+	@* 							'X-CSRF-TOKEN': document.querySelector('input[name="__RequestVerificationToken"]').value *@
+	@* 						}, *@
+	@* 						body: JSON.stringify({ imagePath: imagePath }) *@
+	@* 					}) *@
+	@* 						.then(response => { *@
+	@* 							if (response.ok) { *@
+	@* 								// Remove the element from the DOM *@
+	@* 								event.target.closest('.image-item').remove(); *@
+	@* 							} else { *@
+	@* 								alert('Failed to delete the image.'); *@
+	@* 							} *@
+	@* 						}) *@
+	@* 						.catch(error => console.error('Error:', error)); *@
+	@* 				} *@
+	@* 			} *@
+	@* 		}); *@
+	@* 	}); *@
+	@* </script> *@
+
 </body>
 
 </html>

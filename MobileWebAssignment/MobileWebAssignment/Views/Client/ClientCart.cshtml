@@ -1,0 +1,41 @@
+﻿@{
+    ViewBag.Title = "My Cart";
+    var totalPrice = ViewBag.TotalPrice;
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<h2>My Cart</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Ticket Name</th>
+                <th>Quantity</th>
+                <th>Price</th>
+                <th>Total</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in ViewBag.CartItems)
+            {
+                <tr>
+                    <td>@item.TicketName</td>
+                    <td>@item.Quantity</td>
+                    <td>@item.Price.ToString("C")</td>
+                    <td>@item.TotalPrice.ToString("C")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <h3>Total: @totalPrice.ToString("C")</h3>
+    <button onclick="location.href='@Url.Action("Checkout", "Client")'">Proceed to Checkout</button>
+
+</body>
+</html>
