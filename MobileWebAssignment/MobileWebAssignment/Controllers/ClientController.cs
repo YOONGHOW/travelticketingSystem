@@ -1,6 +1,8 @@
 
 using System.Globalization;
 using System.Net.Mail;
+using System.Net.Sockets;
+using Azure.Core;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -491,47 +493,50 @@ namespace MobileWebAssignment.Controllers
         }
 
         [HttpPost]
-        public IActionResult AddToCart(string ticketId, int quantity)
+        public IActionResult AddMultipleToCart(List<CartItem> tickets)
         {
-            var userId = "U001";
-            //var userId = User.Identity!.Name;
-            //if (userId == null)
-            //{
-            //    TempData["Error"] = "You must log in to add items to the cart.";
-            //    return RedirectToAction("Login");
-            //}
+            var userId = "U001"; // Replace with actual user ID retrieval logic.
+            string attractionId = null; // Initialize AttractionId.
 
-            var ticket = db.Ticket.SingleOrDefault(t => t.Id == ticketId);
-            if (ticket == null || ticket.stockQty < quantity)
+            foreach (var ticket in tickets)
             {
-                TempData["Error"] = "Invalid ticket or insufficient stock.";
-                return RedirectToAction("ClientAttractionDetail", new { AttractionId = ticket?.AttractionId });
-            }
+                if (ticket.Quantity <= 0) continue; // Skip tickets with zero or negative quantities.
 
-            var existingCart = db.Cart.SingleOrDefault(c => c.UserId == userId && c.TicketId == ticketId);
-            if (existingCart != null)
-            {
-                existingCart.Quantity += quantity;
-            }
-            else
-            {
-                db.Cart.Add(new Cart
+                var dbTicket = db.Ticket.SingleOrDefault(t => t.Id == ticket.TicketId);
+                if (dbTicket == null || dbTicket.stockQty < ticket.Quantity)
                 {
-                    Id = NextCartId(),
-                    UserId = userId,
-                    TicketId = ticketId,
-                    Quantity = quantity,
-                });
+                    TempData["Error"] = $"Invalid ticket or insufficient stock for ticket {ticket.TicketId}.";
+                    continue;
+                }
+
+                attractionId = dbTicket.AttractionId; // Capture the AttractionId from a valid ticket.
+
+                var existingCart = db.Cart.SingleOrDefault(c => c.UserId == userId && c.TicketId == ticket.TicketId);
+                if (existingCart != null)
+                {
+                    existingCart.Quantity += ticket.Quantity;
+                }
+                else
+                {
+                    db.Cart.Add(new Cart
+                    {
+                        Id = NextCartId(),
+                        UserId = userId,
+                        TicketId = ticket.TicketId,
+                        Quantity = ticket.Quantity,
+                    });
+                }
             }
 
             db.SaveChanges();
-            TempData["Info"] = "Item added to cart successfully.";
-            return RedirectToAction("ClientAttractionDetail", new { AttractionId = ticket.AttractionId });
+
+            TempData["Info"] = "Selected items added to cart successfully.";
+            return RedirectToAction("ClientAttractionDetail", new { AttractionId = attractionId });
         }
 
 
 
-      //  [Authorize(Roles = "Member")] 
+        //  [Authorize(Roles = "Member")] 
         public IActionResult ClientCart()
         {
             //var userId = User.Identity!.Name;

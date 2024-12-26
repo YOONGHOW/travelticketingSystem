@@ -158,7 +158,7 @@ public class Cart
 
     // Navigation
     public User User { get; set; }
-    public Ticket Ticket { get; set; } 
+    public Ticket Ticket { get; set; }
 }
 //end of cart
 

@@ -35,16 +35,49 @@
             </ul>
         </article>
         
+            <h2>Package Option</h2>
+                <br />
+       <form asp-action="AddMultipleToCart" method="post">
+    @{var loopIndex = 0;}
+    @foreach (var ticket in ViewBag.Tickets as List<TicketVM>)
+    {
+        <div class="ticket-box">
+            <p style="font-size:18px;">@ticket.ticketName</p>
+            <table class="tableTicketDetails">
+                <tr>
+                    <td>@ticket.ticketType</td>
+                    <td><span>RM</span>@ticket.ticketPrice</td>
+                    <td>
+                        <label for="quantity_@ticket.Id" class="qty">Quantity:</label>
+                        <input type="number" id="quantity_@ticket.Id" name="tickets[@loopIndex].Quantity" value="0" min="0" max="100" />
+                        <input type="hidden" name="tickets[@loopIndex].TicketId" value="@ticket.Id" />
+                    </td>
+                </tr>
+            </table>
+        </div>
+        loopIndex++;
+            }        
+            <audio id="myAudio" preload="auto">
+                <source src="/sound/button.wav" type="audio/wav">
+            </audio>
+            <button onclick="handleButtonClick(event)" type="submit">Add All to Cart</button>
 
-        <form method="POST" action="ClientAttractionDetail">
-            <br>
-            <label for="quantity" class="qty">Quantity :</label>
-            <input type="number" id="quantity" name="quantity" value="1" min="1" max="<?= $product->product_stock ?>"><br>
-            @* <input type="hidden" name="product_id" value="<?= $product->product_id ?>"> *@
-            @* <input type="hidden" name="product_name" value="<?= $product->product_name ?>"> *@
-            @* <input type="hidden" name="product_price" value="<?= $product->product_price ?>"> *@
-            <input type="submit" id="addCartBtn" name="addCart" value="Add to Cart" /><br>    
-        </form>
+            <script>
+                function handleButtonClick(event) {
+                    event.preventDefault(); 
+                    var audio = document.getElementById("myAudio");
+                    var form = event.target.closest('form'); 
+                    audio.playbackRate = 2;
+                    audio.play();
+
+                    audio.onended = function () {
+                        form.submit(); 
+                    };
+                }
+            </script>
+            
+</form>
+
     </div>
     </section>
 </main>
