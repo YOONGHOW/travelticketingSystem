@@ -1,14 +1,11 @@
 ﻿
 @{
     Layout = "_AdminLayout";
-    ViewBag.Title = "Admin | Member";
 }
 
 @using X.PagedList
 @using X.PagedList.Mvc.Core
 @model IPagedList<User>
-
-
 
 <html>
 <head>
@@ -46,9 +43,9 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @if (ViewBag.Users != null)
+                        @if (Model.Count != 0)
                         {
-                            foreach (var user in ViewBag.Users)
+                            foreach (var user in Model)
                             {
                                 <tr>
                                     <td>@user.Id</td>
@@ -95,7 +92,7 @@
                 }
 
                 @Html.PagedListPager(
-                         (IPagedList)ViewBag.Users,
+                         (IPagedList)Model,
                          page => Url.Action("MemberList", new { page = page }),
                          options
                          )

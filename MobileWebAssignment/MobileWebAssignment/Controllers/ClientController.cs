@@ -1,4 +1,7 @@
-﻿using System.Net.Mail;
+
+using System.Globalization;
+using System.Net.Mail;
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -14,14 +17,17 @@ namespace MobileWebAssignment.Controllers
 
         private readonly DB db;
         private readonly IWebHostEnvironment en;
+        private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly Helper hp;
 
-        public ClientController(DB db, IWebHostEnvironment en, Helper hp)
+        public ClientController(DB db, IWebHostEnvironment en, Helper hp, IHttpContextAccessor _httpContextAccessor)
         {
             this.db = db;
             this.en = en;
             this.hp = hp;
+            this._httpContextAccessor = _httpContextAccessor;
         }
+
 
         // GET: Home/Index
         public IActionResult Index()
@@ -66,11 +72,38 @@ namespace MobileWebAssignment.Controllers
                 ModelState.AddModelError("Email", "Duplicated Email.");
             }
 
-            //check photo
-            if (ModelState.IsValid("Photo"))
+
+            string photoPath = null;
+
+            // Handle Base64 photo (Webcam)
+            if (!string.IsNullOrEmpty(vm.PhotoBase64))
             {
-                var e = hp.ValidatePhoto(vm.Photo);
-                if (e != "") ModelState.AddModelError("Photo", e);
+                var base64Data = Regex.Match(vm.PhotoBase64, @"data:image/(?<type>.+?);base64,(?<data>.+)").Groups["data"].Value;
+                var bytes = Convert.FromBase64String(base64Data);
+
+                string fileName = $"{Guid.NewGuid():N}.jpg";
+                string filePath = Path.Combine("wwwroot/User", fileName);
+                System.IO.File.WriteAllBytes(filePath, bytes);
+
+                photoPath = fileName;
+            }
+            // Handle uploaded file
+            else if (vm.Photo != null && vm.Photo.Length > 0)
+            {
+                var photoError = hp.ValidatePhoto(vm.Photo);
+                if (!string.IsNullOrEmpty(photoError))
+                {
+                    ModelState.AddModelError("Photo", photoError);
+                }
+                else
+                {
+                    photoPath = hp.SavePhoto(vm.Photo, "User");
+                }
+            }
+
+            if (string.IsNullOrEmpty(photoPath))
+            {
+                ModelState.AddModelError("Photo", "Please provide a profile photo by uploading or capturing one.");
             }
 
             if (ModelState.IsValid)
@@ -85,7 +118,7 @@ namespace MobileWebAssignment.Controllers
                     PhoneNumber = vm.PhoneNumber,
                     Gender = vm.Gender,
                     Freeze = false,
-                    PhotoURL = hp.SavePhoto(vm.Photo, "User")
+                    PhotoURL = photoPath,
                 });
                 db.SaveChanges();
                 TempData["Info"] = "Register successfully. Please login.";
@@ -94,6 +127,7 @@ namespace MobileWebAssignment.Controllers
 
             return View(vm);
         }
+
 
         //GET : Client/Login
         public IActionResult Login()
@@ -105,6 +139,7 @@ namespace MobileWebAssignment.Controllers
         [HttpPost]
         public IActionResult Login(LoginVm vm, string? returnURL)
         {
+
             if (string.IsNullOrEmpty(vm.Email) )
             {
                 ModelState.AddModelError("", "Email are required.");
@@ -119,15 +154,15 @@ namespace MobileWebAssignment.Controllers
 
             var u = db.User.SingleOrDefault(user => user.Email == vm.Email);
 
-            if(u.Freeze == true)
-            {
-                ModelState.AddModelError("", "Account already block by Admin.");
-                return View(vm);
-            }
-
             if (u == null || string.IsNullOrEmpty(u.Password) || !hp.VerifyPassword(u.Password, vm.PasswordCurrent))
             {
                 ModelState.AddModelError("", "Login credentials not matched.");
+                return View(vm);
+            }
+
+            if (u.Freeze == true)
+            {
+                ModelState.AddModelError("", "Account already block by Admin.");
                 return View(vm);
             }
 
@@ -383,8 +418,22 @@ namespace MobileWebAssignment.Controllers
         public IActionResult ClientAttraction()
         {
             ViewBag.AttractionTypes = db.AttractionType.ToList();
-            ViewBag.Attractions = db.Attraction.Include(a => a.AttractionType);
-            return View();
+
+            var attractions = db.Attraction.Include(a => a.AttractionType).ToList();
+            ViewBag.Attractions = attractions;
+
+            var attractFeedback = new List<AttractFeedback>(); 
+
+            foreach(var a in attractions)
+            {
+                attractFeedback.Add(new AttractFeedback
+                {
+                    attraction = a,
+                    feedbacks = db.Feedback.Where(f => f.AttractionId == a.Id).ToList(),
+                });
+            }
+
+            return View(attractFeedback);
         }
 
         //GET: AttractionDetail
@@ -399,7 +448,7 @@ namespace MobileWebAssignment.Controllers
                 return RedirectToAction("ClientAttractionDetail");
             }
 
-           ViewBag.Feedbacks = new List<FeedbackInsertVM>();
+            ViewBag.Feedbacks = new List<FeedbackInsertVM>();
             foreach (var f in feedbacks)
             {
                 ViewBag.Feedbacks.Add(new FeedbackInsertVM
@@ -413,6 +462,20 @@ namespace MobileWebAssignment.Controllers
                 });
             }
 
+            var tickets = db.Ticket.Where(t => t.AttractionId == AttractionId).ToList();
+            ViewBag.Tickets = tickets.Select(t => new TicketVM
+            {
+                Id = t.Id,
+                ticketName = t.ticketName,
+                stockQty = t.stockQty,
+                ticketPrice = t.ticketPrice,
+                ticketStatus = t.ticketStatus,
+                ticketDetails = t.ticketDetails,
+                ticketType = t.ticketType,
+                AttractionId = t.AttractionId,             
+
+            }).ToList();
+
             var vm = new AttractionUpdateVM
             {
                 Id = a.Id,
@@ -425,6 +488,7 @@ namespace MobileWebAssignment.Controllers
                 operatingTimes = hp.ConvertOperatingTimes(a.OperatingHours),
             };
 
+            
             return View(vm);
         }
 
@@ -439,6 +503,7 @@ namespace MobileWebAssignment.Controllers
         }
 
         //GET: Feedback/Insert
+        [Authorize (Roles = "Member")]
         public IActionResult ClientFeedbackForm(string attractionId)
         {
             ViewBag.Attraction = db.Attraction.Find(attractionId);
@@ -511,7 +576,7 @@ namespace MobileWebAssignment.Controllers
             return View(vm);
         }
 
-
+        [Authorize(Roles = "Member")]
         public IActionResult ClientFeedback(string? userId)
         {
             var feedbacks = db.Feedback.Include(a => a.Attraction).Include(u => u.User).Where(f => f.UserId == userId).ToList();
@@ -556,6 +621,7 @@ namespace MobileWebAssignment.Controllers
 
             return View(vm);
         }
+
 
         public IActionResult ClientFeedbackUpdate(string? Id)
         {
@@ -618,17 +684,39 @@ namespace MobileWebAssignment.Controllers
             return View(vm);
         }
 
-       
+
 
 
 
         //------------------------------------------ FeedBack end ----------------------------------------------
 
 
+        [Authorize(Roles = "Member")]
         public IActionResult ClientPayment()
         {
+            List<Ticket> ticketList = new List<Ticket>();
+            Ticket ticket = new Ticket { };
+
+
             return View();
         }
 
+        [Authorize(Roles = "Member")]
+        public IActionResult ClientPaymentHIS()
+        {
+            var session = _httpContextAccessor.HttpContext.Session;
+            session.SetString("UserName", "U0001");
+            var trySession = session.GetString("UserName");
+            {
+                var m = db.PurchaseItem
+                    .Include(re => re.Ticket)
+                    .Include(re => re.Purchase)
+                    .Where(re=>re.Purchase.UserId==trySession).ToList();
+                   
+
+                return View(m);
+            }
+            
+        }
     }
 }

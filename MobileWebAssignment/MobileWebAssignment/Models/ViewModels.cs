@@ -1,5 +1,6 @@
-﻿
+
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -46,6 +47,17 @@ public class AttractionInsertVM
 
 }
 
+public class PromotionInsertVM
+{
+    public string Id { get; set; } // PM0001
+    public string Title { get; set; } // Promotion Name
+    public string Code { get; set; } // PROMO2024
+    public decimal PriceDeduction { get; set; } // Discount Amount
+    public DateTime StartDate { get; set; }
+    public DateTime EndDate { get; set; }
+    public string PromoStatus { get; set; } // Active, Inactive, Expired
+}
+
 public class AttractionUpdateVM
 {
     public string Id { get; set; }
@@ -69,6 +81,7 @@ public class AttractionUpdateVM
 
     public IFormFile? Photo { get; set; }
 
+    public List<TicketVM> Tickets { get; set; }
     public List<OperatingHour>? operatingHours { get; set; }
     public List<OperatingTime>? operatingTimes { get; set; }
 
@@ -89,6 +102,15 @@ public class OperatingTime
     public string Status { get; set; }
     public string StartTime { get; set; }
     public string EndTime { get; set; }
+}
+
+//get average feedback
+public class AttractFeedback
+{
+    public Attraction attraction { get; set; }
+
+    public List<Feedback> feedbacks { get; set; }
+
 }
 
 
@@ -173,8 +195,8 @@ public class RegisterVM
     [DataType(DataType.Password)]
     public string ConfirmPassword { get; set; }
 
-    public IFormFile Photo { get; set; }
-
+    public IFormFile? Photo { get; set; }
+    public string? PhotoBase64 { get; set; }
 }
 
 public class UpdateProfileVm
@@ -233,5 +255,32 @@ public class ResetPassword
 
 }
 
-
 //================================== USER Account End ===========================================================
+
+
+public class TicketVM {
+
+    public string Id { get; set; }
+    [StringLength(200)]
+    [Required(ErrorMessage = "Ticket Name is required.")]
+    public string ticketName { get; set; }
+    public int stockQty { get; set; }
+    [Precision(4, 2)]
+    public decimal ticketPrice { get; set; }
+    public string ticketStatus { get; set; }
+    [StringLength(1000)]
+    [Required(ErrorMessage = "Ticket details is required.")]
+    public string ticketDetails { get; set; }
+    public string ticketType { get; set; }
+    //FK
+    public string AttractionId { get; set; }
+}
+
+public class AdminTicketDetails
+{
+    public Attraction Attraction { get; set; }
+    public List<Ticket> Tickets { get; set; }
+}
+
+
+
