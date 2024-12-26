@@ -524,10 +524,10 @@ public class AdminController : Controller
                 ticketDetails = vm.ticketDetails,
                 ticketType = vm.ticketType,
                 AttractionId = vm.AttractionId,
-            });
+            }); 
             db.SaveChanges();
 
-            TempData["Info"] = "Record Insert";
+            TempData["Info"] = "A ticket for " + vm.AttractionId + "  is inserted.";
             return RedirectToAction("AdminTicketDetails", new { id = vm.AttractionId });
         }
         return View(vm);
@@ -581,7 +581,7 @@ public class AdminController : Controller
             t.AttractionId = vm.AttractionId;
             db.SaveChanges();
 
-            TempData["Info"] = "Record updated.";
+            TempData["Info"] = "Ticket " + vm.Id + " has been updated.";
             return RedirectToAction("AdminTicketDetails", new { id = vm.AttractionId });
 
         };
@@ -627,6 +627,8 @@ public class AdminController : Controller
             ticketStatus = t.ticketStatus,
             ticketDetails = t.ticketDetails,
             ticketType = t.ticketType,
+            AttractionId = t.AttractionId,
+
         };
         return View(vm);
     }
@@ -641,7 +643,7 @@ public class AdminController : Controller
             string attractionId = t.AttractionId;
             db.Ticket.Remove(t);
             db.SaveChanges();
-            TempData["Info"] = "Record Deleted.";
+            TempData["Info"] = "A ticket for " + t.AttractionId + " has been deleted.";
 
             return RedirectToAction("AdminTicketDetails", new { id = attractionId });
         }

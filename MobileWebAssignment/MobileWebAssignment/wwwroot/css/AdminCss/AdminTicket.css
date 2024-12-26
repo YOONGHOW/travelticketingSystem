@@ -92,3 +92,37 @@ th {
     background-color: #3e3e3e;
     color: white;
 }
+
+.actionBox {
+    display: flex;
+}
+
+.actionBox > div {
+   width: 50%;
+}
+
+#actionLabel{
+    font-size:18px;
+}
+
+#errorMsg{
+    color:red;
+    font-size:13px;
+}
+
+#inputBox{
+    border:1px solid #ababab;
+    width:300px;
+    padding:10px;
+    border-radius:5px;
+}
+
+    #inputBox:hover {
+        border-bottom: 2px solid #8100be;
+        border-color: #8100be;
+    }
+
+#selectBox {
+    padding: 10px;
+    font-size:17px;
+}
