@@ -6,10 +6,6 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 using System.Globalization;
 using System.Text.RegularExpressions;
-using System.Security.Claims;
-using Microsoft.AspNetCore.Authentication;
-using System.Net.Mail;
-using System.Net;
 
 namespace MobileWebAssignment;
 
@@ -17,13 +13,11 @@ public class Helper
 {
     private readonly IWebHostEnvironment en;
     private readonly IHttpContextAccessor ct;
-    private readonly IConfiguration cf;
 
-    public Helper(IWebHostEnvironment en, IHttpContextAccessor ct, IConfiguration cf)
+    public Helper(IWebHostEnvironment en, IHttpContextAccessor ct)
     {
         this.en = en;
         this.ct = ct;
-        this.cf = cf;
     }
 
     // ------------------------------------------------------------------------
@@ -47,26 +41,6 @@ public class Helper
         return "";
     }
 
-    public string ValidateMultiplePhoto(List<IFormFile> files)
-    {
-        var reType = new Regex(@"^image\/(jpeg|png)$", RegexOptions.IgnoreCase);
-        var reName = new Regex(@"^.+\.(jpeg|jpg|png)$", RegexOptions.IgnoreCase);
-
-        foreach (var f in files)
-        {
-            if (!reType.IsMatch(f.ContentType) || !reName.IsMatch(f.FileName))
-            {
-                return "Only JPG and PNG photo is allowed.";
-            }
-            else if (f.Length > 2 * 1024 * 1024)
-            {
-                return "Photo size cannot more than 2MB.";
-            }
-        }
-
-        return "";
-    }
-
     public string SavePhoto(IFormFile f, string folder)
     {
         var file = Guid.NewGuid().ToString("n") + ".jpg";
@@ -74,7 +48,7 @@ public class Helper
 
         var options = new ResizeOptions
         {
-            Size = new(800, 700),
+            Size = new(300, 300),
             Mode = ResizeMode.Crop,
         };
 
@@ -93,60 +67,6 @@ public class Helper
         File.Delete(path);
     }
 
-    public string SaveMultiplePhoto(List<IFormFile> files, string folder)
-    {
-        string imagePaths = "";
-        string fileName = "";
-
-        if (files.Count > 1)
-        {
-            foreach (var file in files)
-            {
-                fileName = SavePhoto(file, "attractionImages");
-                //DeletePhoto(file, "uploads");
-                imagePaths += fileName + "|";
-            }
-
-            imagePaths = imagePaths.Remove(imagePaths.Length - 1);
-        }
-        else
-        {
-
-            fileName = SavePhoto(files[0], "attractionImages");
-            imagePaths = fileName;
-
-        }
-        return imagePaths;
-    }
-
-    public void DeleteMultiplePhoto(string files, string folder)
-    {
-        List<string> imagePaths = SplitImagePath(files);
-
-        foreach (var imagePath in imagePaths)
-        {
-            string imagepath = Path.GetFileName(imagePath);
-            var path = Path.Combine(en.WebRootPath, folder, imagepath);
-            File.Delete(path);
-        }
-    }
-
-    public List<string> SplitImagePath(string imagePath)
-    {
-        string[] imgs = imagePath.Split('|');
-        List<string> imagePaths = new List<string>();
-        foreach (var img in imgs)
-        {
-            imagePaths.Add(img.Trim());
-        }
-
-
-        return imagePaths;
-    }
-
-    // ------------------------------------------------------------------------
-    // Calculation Helper Functions
-    // ------------------------------------------------------------------------
 
     public List<OperatingHour> ParseOperatingHours(string operatingHoursText)
     {
@@ -335,61 +255,6 @@ public class Helper
         return commentDetails;
     }
 
-    public static string ConvertIcToBirthDate(string icNumber)
-    {
-        // Extract the first 6 characters of the IC number (YYMMDD format)
-        string birthDatePart = icNumber.Substring(0, 6);
-
-        // Parse the year, month, and day
-        string yearPart = birthDatePart.Substring(0, 2);
-        string monthPart = birthDatePart.Substring(2, 2);
-        string dayPart = birthDatePart.Substring(4, 2);
-
-        // Determine the full year (1900s or 2000s)
-        int year = int.Parse(yearPart);
-        if (year <= DateTime.Now.Year % 100)
-        {
-            year += 2000; // Assume 2000s
-        }
-        else
-        {
-            year += 1900; // Assume 1900s
-        }
-
-        DateTime birthDate;
-        if (!DateTime.TryParse($"{year}-{monthPart}-{dayPart}", out birthDate))
-        {
-            throw new ArgumentException("Invalid birthdate in IC number.");
-        }
-
-        return birthDate.ToString("yyyy-MM-dd");
-    }
-
-    // ------------------------------------------------------------------------
-    // Email Helper Functions
-    // ------------------------------------------------------------------------
-
-    public void SendEmail(MailMessage mail)
-    {
-        string user = cf["Smtp:User"] ?? "";
-        string pass = cf["Smtp:Pass"] ?? "";
-        string name = cf["Smtp:Name"] ?? "";
-        string host = cf["Smtp:Host"] ?? "";
-        int port = cf.GetValue<int>("Smtp:Port");
-
-        mail.From = new MailAddress(user, name);
-
-        using var smtp = new SmtpClient()
-        {
-            Host = host,
-            Port = port,
-            EnableSsl = true,
-            Credentials = new NetworkCredential(user, pass),
-        };
-
-        smtp.Send(mail);
-    }
-
     // ------------------------------------------------------------------------
     // Security Helper Functions
     // ------------------------------------------------------------------------
@@ -401,49 +266,60 @@ public class Helper
         return ph.HashPassword(0, password);
     }
 
-    public bool VerifyPassword(string Password, string PasswordCurrent)
+    public bool VerifyPassword(string hash, string password)
     {
-        return ph.VerifyHashedPassword(0, Password, PasswordCurrent) == PasswordVerificationResult.Success;
+        return ph.VerifyHashedPassword(0, hash, password) == PasswordVerificationResult.Success;
     }
 
-    public string RandomPassword()
+    //------------------------------------
+    // Cart
+    //------------------------------------
+
+    public Dictionary<string, int> GetCart()
     {
-        string s = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        string password = "";
+        return ct.HttpContext!.Session.Get<Dictionary<string, int>>("Cart") ?? [];
+    }
 
-        Random r = new();
-
-        for (int i = 1; i <= 10; i++)
+    public void SetCart(Dictionary<string, int>? dict = null)
+    {
+        if (dict == null)
         {
-            password += s[r.Next(s.Length)];
+            // TODO
+            ct.HttpContext!.Session.Remove("Cart");
         }
+        else
+        {
+            // TODO
+            ct.HttpContext!.Session.Set("Cart", dict);
 
-        return password;
+        }
     }
-
-    public void SignIn(string email, string role)
+    // Get UserID from Session
+    public string GetUserID()
     {
-        // (1) Claim, identity and principal
-        List<Claim> claims = [
-            new(ClaimTypes.Name,email),
-            new(ClaimTypes.Role,role)
-            ];
-
-        ClaimsIdentity identity = new(claims, "Cookies");
-
-        ClaimsPrincipal principal = new(identity);
-
-        // (2) Sign in
-        ct.HttpContext!.SignInAsync(principal);
-
-
+        return ct.HttpContext?.Session.GetString("UserID") ?? string.Empty;
     }
 
-    public void SignOut()
+    // Set UserID in Session
+    public void SetUserID(string userId)
     {
-        // Sign out
-        ct.HttpContext!.SignOutAsync();
+        if (ct.HttpContext != null)
+        {
+            ct.HttpContext.Session.SetString("UserID", userId);
+        }
     }
+
+    // Remove UserID from Session
+    public void RemoveUserID()
+    {
+        if (ct.HttpContext != null)
+        {
+            ct.HttpContext.Session.Remove("UserID");
+        }
+    }
+
+
+
 
 
 }

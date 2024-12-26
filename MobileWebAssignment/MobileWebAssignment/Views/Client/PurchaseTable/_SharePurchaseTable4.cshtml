@@ -1,0 +1,90 @@
+﻿@model PurchaseViewModel
+@{
+    string min = DateTime.Today.AddDays(+1).ToString("yyyy-MM-dd HH:mm");
+    string max = DateTime.Today.AddDays(+1).AddYears(+1).ToString("yyyy-MM-dd HH:mm");
+}
+<div class="modal fade" id="updateTicketModel" tabindex="-1" aria-labelledby="updateTicketModelLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form method="post" id="updateTicketForm">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="updateTicketModellLabel">Modify Purchase</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body4">
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <div asp-validation-summary="ModelOnly"></div>
+
+                            <!-- Ticket Name and other details are dynamically inserted -->
+                            <h5 class="card-title" id="ticketName">Ticket Name: </h5>
+                            <p id="ticketValidDate">Ticket On: </p>
+                            <p id="ticketPrice">Ticket Price: </p>
+
+                            <h6 class="card-title">Modify Ticket To Date</h6>
+
+                            <!-- Dynamically populated input fields -->
+                            <label asp-for="PurchaseUpdate.Quantity" class="card-text">Ticket Quantity:</label>
+                            <input asp-for="PurchaseUpdate.Quantity" style="background-color:#d3d8de; border-radius:4px;padding-left:5px" type="number" id="Quantity" name="PurchaseUpdate.Quantity" min="1" max=""/>
+                            <span asp-validation-for="PurchaseUpdate.Quantity" class="text-danger" id="QuantityValidation"></span>
+                            <br />
+                            <br />
+                            <label asp-for="PurchaseUpdate.validDate" class="card-text">Update To:</label>
+                            <input asp-for="PurchaseUpdate.validDate" style="background-color:#d3d8de; border-radius:4px;padding-left:5px" type="datetime-local" id="validDate" name="PurchaseUpdate.validDate" min="@min" max="@max" value="@min" />
+                            <span asp-validation-for="PurchaseUpdate.validDate" class="text-danger" id="validDateValidation"></span>
+                           
+                            
+                            <input asp-for="PurchaseUpdate.Id" type="hidden" value="" id="purcahseItemID" />
+                            <input asp-for="PurchaseUpdate.TicketId" type="hidden" value="" id="ticketID" />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="backToTicketModalButton" data-bs-dismiss="modal">Back</button>
+                    <button class="btn btn-primary" data-purchaseid="" data-validdate="">Submit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const detailModal = document.getElementById('updateTicketModel');
+
+        // Event listener for when the modal is shown
+        detailModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget; // Button that triggered the modal
+            const purchaseItemID = button.getAttribute('data-purchaseItemID'); // Extract purchaseItemID from data attribute
+            const ticketID = button.getAttribute('data-ticketID'); // Extract ticketID from data attribute
+
+            if (purchaseItemID && ticketID) {
+                // Fetch the purchase details from the server
+                fetch(`/Client/ClientPurchaseUpdate?purcahseItemID=${purchaseItemID}&ticketID=${ticketID}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            document.querySelector('.modal-body4').innerHTML = `<p>${data.error}</p>`;
+                        } else {
+                            // Inject the fetched data into the modal content
+                            document.getElementById('ticketName').innerText = `Ticket Name: ${data.ticketName}`;
+                            document.getElementById('ticketValidDate').innerText = `Ticket On: ${data.validDate}`;
+                            document.getElementById('ticketPrice').innerText = `Ticket Price: ${data.ticketPrice}`;
+                            document.getElementById('Quantity').value = data.quantity;
+                            document.getElementById('purcahseItemID').value = data.purcahseItemID;
+                            document.getElementById('ticketID').value = data.ticketID;
+                             document.getElementById('Quantity').setAttribute('max', data.quantity);
+                            
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching details:', error);
+                        document.querySelector('.modal-body4').innerHTML = '<p>Error loading details. Please try again.</p>';
+                    });
+            } else {
+                document.querySelector('.modal-body4').innerHTML = '<p>Record Not found</p>';
+            }
+        });
+
+    });
+</script>
