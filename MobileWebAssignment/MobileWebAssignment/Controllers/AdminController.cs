@@ -6,7 +6,7 @@ using MobileWebAssignment.Models;
 using System.Net.Sockets;
 using X.PagedList.Extensions;
 using Microsoft.AspNetCore.Hosting.Server;
-
+using System.Media;
 
 namespace MobileWebAssignment.Controllers;
 
@@ -456,6 +456,178 @@ public class AdminController : Controller
 
 
     //============================================ Attraction end =========================================================
+    //============================================ Ticket start =========================================================
+
+    public IActionResult AdminTicket()
+    {
+        ViewBag.AttractionTypes = db.AttractionType;
+        var attractions = db.Attraction.Include(a => a.AttractionType);
+
+        return View(attractions);
+    }
+    //Auto generate id
+    private string NextTicketId()
+    {
+        string max = db.Ticket.Max(s => s.Id) ?? "TK0000";
+        int n = int.Parse(max[2..]);
+        return (n + 1).ToString("'TK'0000");
+    }
+    // Insert ticket
+    [HttpGet]
+    public IActionResult AdminTicketInsert(string id)
+    {
+        var attraction = db.Attraction.FirstOrDefault(a => a.Id == id);
+        if (attraction == null)
+        {
+            return NotFound();
+        }
+
+        var vm = new TicketVM
+        {
+            AttractionId = id
+        };
+
+        return View(vm);
+    }
+
+    [HttpPost]
+    public IActionResult AdminTicketInsert(TicketVM vm)
+    {
+        if (ModelState.IsValid)
+        {
+            db.Ticket.Add(new()
+            {
+                Id = NextTicketId(),
+                ticketName = vm.ticketName,
+                stockQty = vm.stockQty,
+                ticketPrice = vm.ticketPrice,
+                ticketStatus = vm.ticketStatus,
+                ticketDetails = vm.ticketDetails,
+                ticketType = vm.ticketType,
+                AttractionId = vm.AttractionId,
+            });
+            db.SaveChanges();
+
+            TempData["Info"] = "Record Insert";
+            return RedirectToAction("AdminTicketDetails", new { id = vm.AttractionId });
+        }
+        return View(vm);
+    }
+
+    //Update ticket
+
+    //Get ticket
+    public IActionResult AdminTicketUpdate(string? Id)
+    {
+        var t = db.Ticket.Find(Id);
+
+        if (t == null)
+        {
+            return RedirectToAction("Index");
+        }
+        var vm = new TicketVM
+        {
+            Id = t.Id,
+            ticketName = t.ticketName,
+            stockQty = t.stockQty,
+            ticketPrice = t.ticketPrice,
+            ticketStatus = t.ticketStatus,
+            ticketDetails = t.ticketDetails,
+            ticketType = t.ticketType,
+            AttractionId = t.AttractionId,
+        };
+
+        ViewBag.ProgramList = new SelectList(db.Ticket, "Id", "Name");
+        return View(vm);
+    }
+
+    [HttpPost]
+    public IActionResult AdminTicketUpdate(TicketVM vm)
+    {
+        var t = db.Ticket.Find(vm.Id);
+
+        if (t == null)
+        {
+            return RedirectToAction("AdminTicketDetails");
+        }
+
+        if (ModelState.IsValid)
+        {
+            t.ticketName = vm.ticketName.Trim();
+            t.stockQty = vm.stockQty;
+            t.ticketPrice = vm.ticketPrice;
+            t.ticketStatus = vm.ticketStatus;
+            t.ticketDetails = vm.ticketDetails;
+            t.ticketType = vm.ticketType;
+            t.AttractionId = vm.AttractionId;
+            db.SaveChanges();
+
+            TempData["Info"] = "Record updated.";
+            return RedirectToAction("AdminTicketDetails", new { id = vm.AttractionId });
+
+        };
+        ViewBag.ProgramList = new SelectList(db.Ticket, "Id", "Name");
+        return View(vm);
+    }
+
+    //display attraction and ticket details
+    public IActionResult AdminTicketDetails(string id)
+    {
+        var attraction = db.Attraction.Include(a => a.AttractionType)
+                                       .FirstOrDefault(a => a.Id == id);
+
+        if (attraction == null)
+        {
+            return NotFound();
+        }
+
+        var tickets = db.Ticket.Where(t => t.AttractionId == id).ToList();
+        var vm = new AdminTicketDetails
+        {
+            Attraction = attraction,
+            Tickets = tickets
+        };
+        return View(vm);
+    }
+
+    //Delete ticket
+    public ActionResult AdminTicketDelete(string? Id)
+    {
+        var t = db.Ticket.Find(Id);
+
+        if (t == null)
+        {
+            return RedirectToAction("AdminTicketDetails");
+        }
+        var vm = new TicketVM
+        {
+            Id = t.Id,
+            ticketName = t.ticketName,
+            stockQty = t.stockQty,
+            ticketPrice = t.ticketPrice,
+            ticketStatus = t.ticketStatus,
+            ticketDetails = t.ticketDetails,
+            ticketType = t.ticketType,
+        };
+        return View(vm);
+    }
+
+    [HttpPost]
+    public IActionResult AdminTicketDelete(TicketVM vm)
+    {
+        var t = db.Ticket.Find(vm.Id);
+
+        if (t != null)
+        {
+            string attractionId = t.AttractionId;
+            db.Ticket.Remove(t);
+            db.SaveChanges();
+            TempData["Info"] = "Record Deleted.";
+
+            return RedirectToAction("AdminTicketDetails", new { id = attractionId });
+        }
+        return RedirectToAction("AdminTicketDetails", new { id = vm.AttractionId });
+    }
     //============================================ Feedback start =========================================================
     public IActionResult AdminFeedback()
     {
@@ -800,178 +972,7 @@ public class AdminController : Controller
 
 
 
-    //============================================ Ticket start =========================================================
-
-    public IActionResult AdminTicket()
-    {
-        ViewBag.AttractionTypes = db.AttractionType;
-        var attractions = db.Attraction.Include(a => a.AttractionType);
-
-        return View(attractions);
-    }
-    //Auto generate id
-    private string NextTicketId()
-    {
-        string max = db.Ticket.Max(s => s.Id) ?? "TK0000";
-        int n = int.Parse(max[2..]);
-        return (n + 1).ToString("'TK'0000");
-    }
-    // Insert ticket
-    [HttpGet]
-    public IActionResult AdminTicketInsert(string id)
-    {
-        var attraction = db.Attraction.FirstOrDefault(a => a.Id == id);
-        if (attraction == null)
-        {
-            return NotFound();
-        }
-
-        var vm = new TicketVM
-        {
-            AttractionId = id
-        };
-
-        return View(vm);
-    }
-
-    [HttpPost]
-    public IActionResult AdminTicketInsert(TicketVM vm)
-    {
-        if (ModelState.IsValid)
-        {
-            db.Ticket.Add(new()
-            {
-                Id = NextTicketId(),
-                ticketName = vm.ticketName,
-                stockQty = vm.stockQty,
-                ticketPrice = vm.ticketPrice,
-                ticketStatus = vm.ticketStatus,
-                ticketDetails = vm.ticketDetails,
-                ticketType = vm.ticketType,
-                AttractionId = vm.AttractionId,
-            });
-            db.SaveChanges();
-
-            TempData["Info"] = "Record Insert";
-            return RedirectToAction("AdminTicketDetails", new { id = vm.AttractionId });
-        }
-        return View(vm);
-    }
-
-    //Update ticket
-
-    //Get ticket
-    public IActionResult AdminTicketUpdate(string? Id)
-    {
-        var t = db.Ticket.Find(Id);
-
-        if (t == null)
-        {
-            return RedirectToAction("Index");
-        }
-        var vm = new TicketVM
-        {
-            Id = t.Id,
-            ticketName = t.ticketName,
-            stockQty = t.stockQty,
-            ticketPrice = t.ticketPrice,
-            ticketStatus = t.ticketStatus,
-            ticketDetails = t.ticketDetails,
-            ticketType = t.ticketType,
-            AttractionId = t.AttractionId,
-        };
-
-        ViewBag.ProgramList = new SelectList(db.Ticket, "Id", "Name");
-        return View(vm);
-    }
-
-    [HttpPost]
-    public IActionResult AdminTicketUpdate(TicketVM vm)
-    {
-        var t = db.Ticket.Find(vm.Id);
-
-        if (t == null)
-        {
-            return RedirectToAction("AdminTicketDetails");
-        }
-
-        if (ModelState.IsValid)
-        {
-            t.ticketName = vm.ticketName.Trim();
-            t.stockQty = vm.stockQty;
-            t.ticketPrice = vm.ticketPrice;
-            t.ticketStatus = vm.ticketStatus;
-            t.ticketDetails = vm.ticketDetails;
-            t.ticketType = vm.ticketType;
-            t.AttractionId = vm.AttractionId;
-            db.SaveChanges();
-
-            TempData["Info"] = "Record updated.";
-            return RedirectToAction("AdminTicketDetails", new { id = vm.AttractionId });
-
-        };
-        ViewBag.ProgramList = new SelectList(db.Ticket, "Id", "Name");
-        return View(vm);
-    }
-
-    //display attraction and ticket details
-    public IActionResult AdminTicketDetails(string id)
-    {
-        var attraction = db.Attraction.Include(a => a.AttractionType)
-                                       .FirstOrDefault(a => a.Id == id);
-
-        if (attraction == null)
-        {
-            return NotFound();
-        }
-
-        var tickets = db.Ticket.Where(t => t.AttractionId == id).ToList();
-        var vm = new AdminTicketDetails
-        {
-            Attraction = attraction,
-            Tickets = tickets
-        };
-        return View(vm);
-    }
-
-    //Delete ticket
-    public ActionResult AdminTicketDelete(string? Id)
-    {
-        var t = db.Ticket.Find(Id);
-
-        if (t == null)
-        {
-            return RedirectToAction("AdminTicketDetails");
-        }
-        var vm = new TicketVM
-        {
-            Id = t.Id,
-            ticketName = t.ticketName,
-            stockQty = t.stockQty,
-            ticketPrice = t.ticketPrice,
-            ticketStatus = t.ticketStatus,
-            ticketDetails = t.ticketDetails,
-            ticketType = t.ticketType,
-        };
-        return View(vm);
-    }
-
-    [HttpPost]
-    public IActionResult AdminTicketDelete(TicketVM vm)
-    {
-        var t = db.Ticket.Find(vm.Id);
-
-        if (t != null)
-        {
-            string attractionId = t.AttractionId;
-            db.Ticket.Remove(t);
-            db.SaveChanges();
-            TempData["Info"] = "Record Deleted.";
-
-            return RedirectToAction("AdminTicketDetails", new { id = attractionId });
-        }
-        return RedirectToAction("AdminTicketDetails", new { id = vm.AttractionId });
-    }
+    
 
 
 

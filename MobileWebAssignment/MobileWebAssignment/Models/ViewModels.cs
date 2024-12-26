@@ -78,9 +78,6 @@ public class AttractionUpdateVM
     public string? ImagePath { get; set; }
 
     public string AttractionTypeId { get; set; }
-
-
-    public IFormFile? Photo { get; set; }
     public ImageSet? Photo { get; set; }
 
     public List<OperatingHour>? operatingHours { get; set; }
@@ -285,6 +282,11 @@ public class CartVM
     public int quantity { get; set; }
 }
 
+public class CartItem
+{
+    public string TicketId { get; set; }
+    public int Quantity { get; set; }
+}
 
 public class AdminTicketDetails
 {
