@@ -1,0 +1,122 @@
+﻿﻿
+<!DOCTYPE html>
+<html lang="en">
+@model UpdateProfileVm
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/ClientCss/UpdateProfile.css" asp-append-version="true">
+    <title>User Profile</title>
+
+    <style>
+        html {
+            background-image: url('/images/login_background.jpg');
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            background-size: cover;
+            position: relative;
+        }
+
+            html::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.5);
+                filter: blur(5px);
+                z-index: -1;
+            }
+
+        body {
+            position: relative;
+            z-index: 1;
+        }
+    </style>
+</head>
+
+<body>
+
+
+    <div class="container">
+        <div class="title">Profile</div>
+        <div class="content">
+            <form method="POST" id="state" enctype="multipart/form-data">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <div class="user-details">
+
+                    <!--Profile Photo -->
+                    <div class="input-address">
+                        <label class="upload" tabindex="0">
+                            <input class="form-control" type="file" accept="image/jpg,image/png" name="Photo" asp-for="Photo" hidden>
+                            <img src="@Model.PhotoURL" id="drag">
+                            <span asp-validation-for="Photo" class="text-danger"></span>
+                        </label>
+                    </div>
+
+                    <!-- Full Name -->
+                    <div class="input-box">
+                        <label class="details">Full Name</label>
+                        <input class="form-control" asp-for="Name" placeholder="Enter your name" />
+                        <span asp-validation-for="Name" class="text-danger"></span>
+
+                    </div>
+
+                    <!-- Email -->
+                    <div class="input-box">
+                        <label class="details">Email</label>
+                        <input class="form-control" asp-for="Email" placeholder="e.g. xxx@gmail.com" readonly />
+                    </div>
+
+                    <!--Phone Number -->
+                    <div class="input-box">
+                        <label class="details" asp-for="PhoneNumber">Phone Number</label>
+                        <input asp-for="PhoneNumber" class="form-control" placeholder="e.g. 0121234567" />
+                        <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+
+                    </div>
+
+                    <!-- IC Number -->
+                    <div class="input-box">
+                        <label class="details">IC Number</label>
+                        <input class="form-control" asp-for="IC" placeholder="010203020321" />
+                        <span asp-validation-for="IC" class="text-danger"></span>
+                    </div>
+
+                    <!-- Birth Date -->
+                    <div class="input-box">
+                        <label class="details">Birth Date</label>
+                        <input class="form-control" asp-for="BirthDate" readonly />
+                    </div>
+
+                    <!-- Gender -->
+                    <div class="input-box">
+                        <label class="details" asp-for="Gender">Gender</label>
+                        <select asp-for="Gender" class="form-control">
+                            <option value="none">Select Gender</option>
+                            <option value="M">Male</option>
+                            <option value="F">Female</option>
+                        </select>
+                        <span asp-validation-for="Gender" class="text-danger"></span>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="button-container">
+                        <input type="submit" value="Update Profile">
+                        <a href="Homepage">Cancel</a>
+                    </div>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</body>
+</html>
+
+<script src="/js/jquery.min.js"></script>
+<script src="/js/jquery.unobtrusive-ajax.min.js"></script>
+<script src="/js/jquery.validate.min.js"></script>
+<script src="/js/jquery.validate.unobtrusive.min.js"></script>
+<script src="/js/app.js" asp-append-version="true"></script>

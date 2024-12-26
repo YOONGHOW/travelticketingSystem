@@ -68,7 +68,7 @@ public class Attraction //A0001
     public string Location { get; set; }
     [MaxLength(500)]
     public string OperatingHours { get; set; }
-    [MaxLength(200)]
+    [MaxLength(800)]
     public string ImagePath { get; set; }
 
     //FK
@@ -140,23 +140,25 @@ public class Ticket //TK0001
     //navigation 
     public Attraction Attraction { get; set; }
     public List<PurchaseItem> PurchaseItems { get; set; } = [];
-    public List<Cart> Carts { get; set; } = [];
 
 }//end of ticket
 
 public class Cart
 {
-    [Key, MaxLength(8)] //CART0001
-    public string CartID { get; set; }
-    //FK USER ID
+    [Key, MaxLength(8)] // Example: CART0001
+    public string Id { get; set; }
+
+    // FK USER ID
     public string UserId { get; set; }
-    //FK ticketID
+
+    // FK Ticket ID
     public string TicketId { get; set; }
-    public int quantity { get; set; }
-    
-    //navigation
-    public Ticket Ticket { get; set; }
+
+    public int Quantity { get; set; }
+
+    // Navigation
     public User User { get; set; }
+    public Ticket Ticket { get; set; } 
 }
 //end of cart
 
@@ -250,7 +252,7 @@ public class User //U0001
     [Required, MaxLength(30)]
     public string Name { get; set; }
 
-    [Required, MaxLength(50)]
+    [Required, MaxLength(500)]
     public string Password { get; set; }
 
     [MaxLength(15)]

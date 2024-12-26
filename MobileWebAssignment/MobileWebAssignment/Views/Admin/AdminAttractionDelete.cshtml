@@ -24,7 +24,13 @@
 
                 <label asp-for="Photo">Attraction Image</label>
                 <label class="upload">
-                    <img src="/attractionImages/@Model.ImagePath">
+                    <div id="preview">
+                        @foreach (var imagePath in Model.Photo.imagePaths)
+                        {
+                            <img src="/attractionImages/@imagePath">
+
+                        }
+                    </div>
                 </label>
                 <span asp-validation-for="Photo" class="err" style="text-align:center;"></span>
 

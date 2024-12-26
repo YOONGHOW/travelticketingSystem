@@ -1,5 +1,4 @@
-﻿
-* {
+﻿* {
     box-sizing: border-box;
     font-family: 'Poppins', sans-serif;
 }
@@ -56,7 +55,7 @@ form .input-box label.details {
     display: block;
     font-weight: 500;
     margin-bottom: 5px;
-    font-weight:bold;
+    font-weight: bold;
 }
 
 .user-details .input-box input,
@@ -133,83 +132,35 @@ form input[type="radio"] {
     display: none;
 }
 
-form .button {
-    height: 45px;
-    margin: 35px 0;
+form .button-container {
+    display: flex;
+    justify-content: flex-end; 
+    gap: 10px; 
 }
 
-    form .button input {
-        height: 100%;
-        width: 100%;
+    form .button-container input,
+    form .button-container a {
+        width: auto;
+        display: inline-block;
         border-radius: 5px;
-        border: none;
-        color: #fff;
-        font-size: 18px;
+        padding: 10px 15px;
+        font-size: 16px;
         font-weight: 500;
-        letter-spacing: 1px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        background: linear-gradient(135deg, #71b7e6, #9b59b6);
-        display: block;
-    }
-
-        form .button input:hover {
-            background: linear-gradient(-135deg, #71b7e6, #9b59b6);
-        }
-
-    form .button a {
-        height: 100%;
-        width: 100%;
-        border-radius: 5px;
-        padding: 0.5em;
         text-decoration: none;
-        border: none;
-        color: #fff;
-        font-size: 18px;
-        font-weight: 500;
-        letter-spacing: 1px;
+        text-align: center;
         cursor: pointer;
-        transition: all 0.3s ease;
+        color: #fff;
         background: linear-gradient(135deg, #71b7e6, #9b59b6);
-        display: block;
+        transition: all 0.3s ease;
+        border: none;
     }
 
-        form .button a:hover {
+        form .button-container input:hover,
+        form .button-container a:hover {
             background: linear-gradient(-135deg, #71b7e6, #9b59b6);
         }
-
-@media(max-width: 584px) {
-    .container {
-        max-width: 100%;
-    }
-
-    form .user-details .input-box {
-        margin-bottom: 15px;
-        width: 100%;
-    }
-
-    form .category {
-        width: 100%;
-    }
-
-    .content form .user-details {
-        max-height: 300px;
-        overflow-y: scroll;
-    }
-
-    .user-details::-webkit-scrollbar {
-        width: 5px;
-    }
-}
-
-@media(max-width: 459px) {
-    .container .content .category {
-        flex-direction: column;
-    }
-}
 
 /* Flash Message ----------------------------------------------------------- */
-
 #info {
     position: fixed;
     color: #fff;
@@ -250,7 +201,7 @@ form .button {
     }
 }
 
-/*error message*/
+/* Error message */
 .text-danger {
     color: red;
     font-size: 13px;
@@ -271,11 +222,53 @@ label.upload {
         cursor: pointer;
     }
 
-/* password validation */
-.valid {
-    color: green;
+/* Responsive Design ------------------------------------------------------- */
+@media(max-width: 584px) {
+    .container {
+        max-width: 100%;
+    }
+
+    form .user-details .input-box {
+        margin-bottom: 15px;
+        width: 100%;
+    }
+
+    form .category {
+        width: 100%;
+    }
+
+    .content form .user-details {
+        max-height: 300px;
+        overflow-y: scroll;
+    }
+
+    .user-details::-webkit-scrollbar {
+        width: 5px;
+    }
 }
 
-.invalid {
-    color: red;
+@media(max-width: 459px) {
+    .container .content .category {
+        flex-direction: column;
+    }
 }
+
+/*Webcam design*/
+.photo-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.webcam-container, .upload {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+    .upload img {
+        max-width: 150px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+    }
