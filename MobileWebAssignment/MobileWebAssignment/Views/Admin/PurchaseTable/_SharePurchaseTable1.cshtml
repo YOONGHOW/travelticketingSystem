@@ -1,0 +1,81 @@
+﻿@model PurchaseViewModel
+
+
+<div class="container my-4 col-md-8 @((Model.Purchases.Count() < 3) ? "custom-width" : "")" style="max-width:1000px">
+    @if (Model.Purchases.Count() == 0 || Model == null)
+    {
+        <div class="card mb-2">
+            <div class="card-body">
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="w-25 me-3">
+                        <img src="~/images/no-order.png" alt="Product Image" class="img-fluid rounded"
+                             onerror="this.onerror=null; this.src='~/images/error.png';">
+                    </div>
+                    <div>
+                        <h2 class="card-title">No Purchases for Days</h2>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    }
+
+    @foreach (var s in Model.Purchases)
+    {
+        <!-- Order Card Example -->
+        <div class="card mb-3">
+
+            <div class="card-body">
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="w-25 me-3">@*userImage*@
+                        <img src="@Url.Content(s.User.ImagePath ?? "~/images/error.png")"
+                             alt="Product Image"
+                             class="img-fluid rounded"
+                             onerror="this.onerror=null; this.src='@Url.Content("~/images/error.png")';">
+                    </div>
+                    <div>
+                        <h5 class="card-title"> @s.User.Name (@s.User.Id) : @s.User.Email </h5>
+                        <p class="card-text text-muted">Payment Date-Time:  @s.PaymentDateTime.ToString("yyyy/MM/dd HH:mm:ss") </p>
+                        <p class="card-text"> Purchase Amount RM @(s.Amount)</p>
+                    </div>
+                    <div class="text-end ">
+                        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#detailModal" data-purchaseid="@s.Id">Detail</button>
+                        <button class="btn btn-primary btn-sm btn-danger cancel-purchase" data-purchaseid="@s.Id">Cancel</button>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    }
+
+
+
+</div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+       $(document).on("click", ".cancel-purchase", function () {
+        const purchaseId = $(this).data("purchaseid");
+
+        if (!purchaseId) {
+            alert("Invalid Purchase ID!");
+            return;
+        }
+
+        $.ajax({
+            url: '/Admin/ChangePurchseStatus',
+            type: 'POST',
+            data: { purchaseID: purchaseId },
+            success: function (response) {
+                alert(response.message || "Purchase cancelled successfully!");
+                location.reload(); // Reload the page or update the DOM as needed
+            },
+            error: function () {
+                alert("An error occurred while processing the request.");
+            }
+        });
+    });
+</script>

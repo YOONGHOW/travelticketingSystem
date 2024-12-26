@@ -1,0 +1,93 @@
+﻿
+
+@* ----------------------------------------------- *@
+@* //Modal Windown Ticket Traker*@
+@* ----------------------------------------------- *@
+<div class="modal fade" id="trackTicketModal" tabindex="-1" aria-labelledby="trackTicketModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="trackTicketModalLabel">Track Ticket</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" style="background-color:#F0F0F0">
+               
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="backToDetailButton">Back</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+         document.addEventListener('DOMContentLoaded', function () {
+        const trackTicketModal = document.getElementById('trackTicketModal');
+
+        // Event listener for when the modal is shown
+        trackTicketModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget; // Button that triggered the modal
+            const purchaseId = button.getAttribute('data-purchaseid'); // Extract purchaseId from data attribute
+             const validDate = button.getAttribute('data-validdate');
+            if (purchaseId) {
+                // Fetch ticket details from the server
+                fetch(`/Client/ClientPurchaseTicket?purchaseId=${purchaseId}&validDate=${validDate}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        // Update modal content
+                        if (data.error) {
+                            trackTicketModal.querySelector('.modal-body').innerHTML = `<p>${data.error}</p>`;
+                        } else {
+                            // Iterate over the response array
+                            let content = '';
+                            data.forEach((item, index) => {
+                                content += `
+                                    <div class="ticket">
+                                        <div class="stub">
+                                            <div class="top">
+                                                <span class="admit">Ticket Name</span>
+                                                <span class="line"></span>
+                                                <span class="num">${item.ticketName}</span>
+                                            </div>
+                                            <div class="number">${index + 1}</div> <!-- Loop index as the count -->
+                                        </div>
+                                        <div class="check">
+                                            <div class="big">
+                                                Status :<br /> ${item.status}
+                                            </div>
+                                            <div class="number"># ${item.quantity}</div>
+                                            <div class="info">
+                                                <section>
+                                                    <div class="title">Valid Date</div>
+                                                    <div>${item.validDate}</div>
+                                                </section>
+                                                <section>
+                                                    <div class="title">Ticket Price (RM)</div>
+                                                    <div>${item.ticketPrice}</div>
+                                                </section>
+                                                <section>
+                                                    <div class="title">Total Price (RM)</div>
+                                                    <div>${item.amount}</div>
+                                                </section>
+                                                <button class="button-78" role="button" data-bs-toggle="modal" data-bs-target="#updateTicketModel"  data-purchaseItemID="${item.purchaseItemId}" data-ticketID="${item.ticketID}" >Update detail</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+                            });
+
+                            trackTicketModal.querySelector('.modal-body').innerHTML = content;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching ticket details:', error);
+                        trackTicketModal.querySelector('.modal-body').innerHTML = '<p>Error loading details. Please try again later.</p>';
+                    });
+            } else {
+                trackTicketModal.querySelector('.modal-body').innerHTML = '<p>Purchase ID is missing.</p>';
+            }
+        });
+    });
+
+</script>
