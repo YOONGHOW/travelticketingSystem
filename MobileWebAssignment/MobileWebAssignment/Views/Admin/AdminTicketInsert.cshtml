@@ -8,55 +8,61 @@
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <link rel="stylesheet" href="/css/AdminCss/AdminTicket.css  " asp-append-version="true">
+    <link rel="stylesheet" href="/css/AdminCss/AdminTicket.css" asp-append-version="true">
 
 </head>
 <body>
     <div class="content">
-    <h1>Insert ticket</h1>
-    <form method="post" class="form">
-        <div asp-validation-summary="ModelOnly"></div>
+        <h1>Insert ticket</h1>
+        <form method="post" class="form">
+            <div asp-validation-summary="ModelOnly"></div>
+            <div class="actionBox">
 
-        <input asp-for="AttractionId" type="hidden" value="@Model.AttractionId" />
-        <input asp-for="Id" type="hidden">
+            <div>
+            <input asp-for="AttractionId" type="hidden" value="@Model.AttractionId" />
+            <input asp-for="Id" type="hidden">
 
-            <lable asp-for="ticketName">Ticket Name: </lable><br />
-        <input asp-for="ticketName" data-upper autofocus />
-            <span asp-validation-for="ticketName"></span><br />
+            <lable asp-for="ticketName" id="actionLabel">Ticket Name: </lable><br />
+                    <input id="inputBox" asp-for="ticketName" data-upper autofocus /><br />
+            <span asp-validation-for="ticketName" id="errorMsg"></span><br />
 
-            <lable asp-for="stockQty">Stock Quantity</lable><br />
-        <input asp-for="stockQty" type="number" min="1" />
-            <span asp-validation-for="stockQty"></span><br />
+                    <lable asp-for="stockQty" id="actionLabel">Stock Quantity:</lable><br />
+                    <input id="inputBox" asp-for="stockQty" type="number" min="1" /><br />
+                    <span asp-validation-for="stockQty" id="errorMsg"></span><br />
 
-            <lable asp-for="ticketPrice">Ticket Price: </lable><br />
-        <input asp-for="ticketPrice" type="number" min="0.01" />
-            <span asp-validation-for="ticketPrice"></span><br />
+                    <lable asp-for="ticketPrice" id="actionLabel">Ticket Price: </lable><br />
+                    <input id="inputBox" asp-for="ticketPrice" type="number" min="0.01" /><br />
+                    <span asp-validation-for="ticketPrice" id="errorMsg"></span><br />
+                </div>
 
-            <lable asp-for="ticketStatus">Ticket Status</lable><br />
-        <div>
-            <label><input asp-for="ticketStatus" type="radio" value="Good" />Available</label>
-            <label><input asp-for="ticketStatus" type="radio" value="Fail" />Non-available</label>
-        </div>
-            <span asp-validation-for="ticketStatus"></span><br />
+                <div>
+                    <lable asp-for="ticketStatus" id="actionLabel">Ticket Status:</lable><br />
+                    <div id="selectBox">
+                <label><input asp-for="ticketStatus" type="radio" value="Good" />Available</label>
+                <label><input asp-for="ticketStatus" type="radio" value="Fail" />Non-available</label><br />
+                    </div>
+                    <span asp-validation-for="ticketStatus" id="errorMsg"></span><br />
 
-            <lable asp-for="ticketDetails">Ticket Details: </lable><br />
-        <input asp-for="ticketDetails" type="text" />
-            <span asp-validation-for="ticketDetails"></span><br />
+                    <lable asp-for="ticketDetails" id="actionLabel">Ticket Details: </lable><br />
+                    <input id="inputBox" asp-for="ticketDetails" type="text" size="50"/><br />
+                    <span asp-validation-for="ticketDetails" id="errorMsg"></span><br />
 
-            <lable asp-for="ticketType">Ticket Type: </lable><br />
-        <div>
-            <label><input asp-for="ticketType" type="radio" value="Adult" />Adult</label>
-            <label><input asp-for="ticketType" type="radio" value="Child" />Child</label>
-            <label><input asp-for="ticketType" type="radio" value="OKU" />OKU</label>
-        </div>
-            <span asp-validation-for="ticketType"></span><br />
+                    <lable asp-for="ticketType" id="actionLabel">Ticket Type: </lable><br />
+                    <div id="selectBox">
+                <label><input asp-for="ticketType" type="radio" value="Adult" />Adult</label>
+                <label><input asp-for="ticketType" type="radio" value="Child" />Child</label>
+                    <label><input asp-for="ticketType" type="radio" value="OKU" />OKU</label><br />
+                 </div>
+                    <span asp-validation-for="ticketType" id="errorMsg"></span><br />
 
-        <section>
-                <button id="ticketAddBtn">Submit</button>
-            <button type="reset">Reset</button>
-        </section>
+                </div>
+            </div>
+            <section>
+                <button id="ticketBtnEdit">Submit</button>
+                <button id="ticketBtnDelete" type="reset">Reset</button>
+            </section>
 
-    </form>
+        </form>
     </div>
 </body>
 </html>
