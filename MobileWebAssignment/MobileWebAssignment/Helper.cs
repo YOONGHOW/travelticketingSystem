@@ -19,7 +19,9 @@ public class Helper
     private readonly IHttpContextAccessor ct;
     private readonly IConfiguration cf;
 
+
     public Helper(IWebHostEnvironment en, IHttpContextAccessor ct, IConfiguration cf)
+
     {
         this.en = en;
         this.ct = ct;

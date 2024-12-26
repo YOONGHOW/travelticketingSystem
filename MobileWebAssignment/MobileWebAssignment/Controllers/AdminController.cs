@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Hosting.Server;
 
 
 namespace MobileWebAssignment.Controllers;
-
 public class AdminController : Controller
 {
     private readonly DB db;
@@ -746,18 +745,18 @@ public class AdminController : Controller
         {
             return RedirectToAction(null, new { page = 1 });
         }
-
+                
         // Get paged list of users from the database
-        ViewBag.Users = db.User.ToPagedList(page, 5);
+        var users = db.User.ToPagedList(page, 5);
 
         // Ensure the page number does not exceed the total page count
-        if (page > ViewBag.Users.PageCount && ViewBag.Users.PageCount > 0)
+        if (page >users.PageCount && users.PageCount > 0)
         {
-            return RedirectToAction(null, new { page = ViewBag.Users.PageCount });
+            return RedirectToAction(null, new { page = users.PageCount });
         }
 
         // Return the view with the paged list
-        return View(ViewBag.Users);
+        return View(users);
     }
 
 

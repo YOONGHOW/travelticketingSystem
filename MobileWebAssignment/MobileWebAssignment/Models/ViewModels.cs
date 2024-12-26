@@ -202,8 +202,8 @@ public class RegisterVM
     [DataType(DataType.Password)]
     public string ConfirmPassword { get; set; }
 
-    public IFormFile Photo { get; set; }
-
+    public IFormFile? Photo { get; set; }
+    public string? PhotoBase64 { get; set; }
 }
 
 public class UpdateProfileVm

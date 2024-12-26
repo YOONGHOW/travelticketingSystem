@@ -28,22 +28,24 @@
                     <li><a href="/Client/HomePage">Home</a></li>
                     <li><a href="/Client/ClientAttraction">Attraction</a></li>
 
-                    <li><a href="/Client/ClientPaymentHIS">Order History</a></li>
-
-                    <li><a href="/Client/ClientFeedback?userId=U001">Feedback</a></li>
-
-                    <li>
-                        <a href="/Client/ClientCart">
-                            Cart
-                            <span style="background-color:red; border:none; border-radius:50%; padding:4px;font-size:10px;"><?= $total_item ?></span>
-                        </a>
-                    </li>
 
 
                    
                     @if(User.Identity!.IsAuthenticated)
                     {
+
+                        <li><a href="/Client/ClientPaymentHIS">Order History</a></li>
+
+                        <li><a href="/Client/ClientFeedback?userId=U001">Feedback</a></li>
+
+                        <li>
+                            <a href="cart.php">
+                                Cart
+                                <span style="background-color:red; border:none; border-radius:50%; padding:4px;font-size:10px;"><?= $total_item ?></span>
+                            </a>
+                        </li>
                         <li><a href="/Client/Logout">Logout</a></li>
+
 
                     }else{
                         <li><a href="/Client/Login">Login</a></li>
