@@ -9,8 +9,10 @@
 
                 <div class="d-flex justify-content-between align-items-center">
                     <div class="w-25 me-3">
-                        <img src="~/images/no-order.png" alt="Product Image" class="img-fluid rounded"
-                             onerror="this.onerror=null; this.src='~/images/error.png';">
+                        <img src="~/images/@Model.PhotoURL"
+                             alt="Product Image"
+                             class="img-fluid rounded"
+                             onerror="this.onerror=null; this.src='@Url.Content("~/images/error.png")';">
                     </div>
                     <div>
                         <h2 class="card-title">No Purchases for Days</h2>
@@ -30,10 +32,10 @@
 
                 <div class="d-flex justify-content-between align-items-center">
                     <div class="w-25 me-3">@*userImage*@
-                        @* <img src="@Url.Content(s.User.ImagePath ?? "~/images/error.png")" *@
-                        @*      alt="Product Image" *@
-                        @*      class="img-fluid rounded" *@
-                        @*      onerror="this.onerror=null; this.src='@Url.Content("~/images/error.png")';"> *@
+                         @* <img src="@Url.Content(s.User.a ?? "~/images/error.png")" 
+                              alt="Product Image" 
+                              class="img-fluid rounded" 
+                              onerror="this.onerror=null; this.src='@Url.Content("~/images/error.png")';"> *@
                     </div>
                     <div>
                         <h5 class="card-title"> @s.User.Name (@s.User.Id) : @s.User.Email </h5>

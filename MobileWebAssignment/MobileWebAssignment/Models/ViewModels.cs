@@ -393,4 +393,6 @@ public class PurchaseViewModel
     public IEnumerable<Purchase> Purchases { get; set; } = new List<Purchase>();
     public PurchaseUpdateVM PurchaseUpdate { get; set; }
 
+    public string? PhotoURL { get; set; }
+
 }
