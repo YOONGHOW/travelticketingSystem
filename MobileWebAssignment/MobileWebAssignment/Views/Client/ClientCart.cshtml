@@ -1,5 +1,6 @@
 ﻿@{
     ViewBag.Title = "My Cart";
+    Layout = "_ClientLayout";
     var totalPrice = ViewBag.TotalPrice;
 }
 <!DOCTYPE html>
@@ -7,10 +8,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="~/css/clientcss/cart.css" rel="stylesheet" asp-append-version="true" />
 </head>
 <body>
 
-<h2>My Cart</h2>
+<h2 class="cartName">My Cart</h2>
     <table>
         <thead>
             <tr>
@@ -35,7 +37,7 @@
     </table>
 
     <h3>Total: @totalPrice.ToString("C")</h3>
-    <button onclick="location.href='@Url.Action("CientPayment", "Client")'">Proceed to Checkout</button>
+    <button onclick="location.href='@Url.Action("Checkout", "Client")'">Proceed to Checkout</button>
 
 </body>
 </html>

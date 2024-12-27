@@ -66,7 +66,7 @@
 
 					<div class="input-box">
 						<label class="details" asp-for="Location">Location</label>
-						<textarea asp-for="Location" id="Location" rows="3"></textarea>
+						<textarea asp-for="Location" rows="3"></textarea>
 						<button type="button" id="searchButton">Search Location</button>
 						<span asp-validation-for="Location"></span>
 					</div>
@@ -166,32 +166,23 @@
 		});
 
 		// Function to geocode the address entered by the user
-				function geocodeAddress(address) {
-			if (!address.trim()) {
-				alert('Please enter an address.');
-				return;
-			}
-
-			const searchURL = `https://atlas.microsoft.com/search/address/json?subscription-key=${subscriptionKey}&api-version=1.0&query=${encodeURIComponent(address)}`;
-
-			fetch(searchURL)
-				.then(response => response.json())
-				.then(data => {
-					if (data.results && data.results.length > 0) {
-						const coordinates = data.results[0].position;
-						map.setCamera({ center: [coordinates.lon, coordinates.lat], zoom: 15 });
-						addMarker({ longitude: coordinates.lon, latitude: coordinates.lat });
-						displayCoordinates([coordinates.lon, coordinates.lat]);
-					} else {
-						alert('Address not found.');
-					}
-				})
-				// .catch(err => {
-				// 	console.error('Error during geocoding: ', err);
-				// 	alert('An error occurred while searching for the address.');
-				// });
+		function geocodeAddress(address) {
+			var geocoder = new atlas.service.GeocodeClient(subscriptionKey);
+			geocoder.geocode(address).then(function (response) {
+				if (response && response.results && response.results.length > 0) {
+					const result = response.results[0];
+					const coordinates = result.position;
+					map.setCamera({ center: coordinates, zoom: 15 });
+					addMarker(coordinates);
+					displayCoordinates(coordinates);
+				} else {
+					alert('Address not found!');
+				}
+			}).catch(function (err) {
+				console.error('Error geocoding address: ', err);
+				alert('An error occurred while geocoding the address.');
+			});
 		}
-
 	</script>
 </body>
 

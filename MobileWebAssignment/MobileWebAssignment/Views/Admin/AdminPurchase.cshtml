@@ -1,0 +1,132 @@
+﻿@{
+    Layout = "_AdminLayout";
+    ViewBag.Title = "Admin | Purchase";
+    
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div id="info" class="fade-in">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+}
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order List with Barcode</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="~/css/AdminCss/AdminPurchase.css" rel="stylesheet" />
+</head>
+
+<body>
+   
+    <!-- Navbar Section -->
+    <div style="margin-left:220px">
+        <nav class="navbar navbar-expand-lg navbar-light bg-light col-xl-11 mx-auto ms-6 my-3" style="height: 70px;overflow: hidden;">
+            <div class="container col-md-7">
+
+                <!-- Toggle Button for Mobile View -->
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <!-- Navbar Links -->
+                <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+                    <ul class="navbar-nav">
+                        <li class="nav-item mx-3">
+                            <a data-ajax="true"
+                            data-ajax-update="#target"
+                            data-ajax-loading="#loader"
+                            class="nav-link active" href="?">All</a>
+                        </li>
+                        <li class="nav-item mx-3">
+                            <a data-ajax="true"
+                               data-ajax-update="#target"
+                               data-ajax-loading="#loader" class="nav-link" href="?validDate=@DateTime.Now.ToString("yyyy-MM-dd")">Purchase Today</a>
+                        </li>
+                        <li class="nav-item mx-3">
+                            <a data-ajax="true"
+                               data-ajax-update="#target"
+                               data-ajax-loading="#loader" class="nav-link" href="#">Purchase Cancel Request</a>
+                        </li>
+                        <li class="nav-item mx-3">
+                            <a data-ajax="true"
+                               data-ajax-update="#target"
+                               data-ajax-loading="#loader" class="nav-link" href="?payment=unpaid">Purchase Unpaid</a>
+                        </li>
+
+
+                    </ul>
+                </div>
+
+            </div>
+        </nav>
+        <div id="target" >
+            <partial name="PurchaseTable/_SharePurchaseTable1" />
+        </div>
+    </div>
+    <partial name="PurchaseTable/_SharePurchaseTable2" />
+    <partial name="PurchaseTable/_SharePurchaseTable3" />
+    <partial name="PurchaseTable/_SharePurchaseTable4" />
+
+
+
+<script>
+                document.addEventListener('DOMContentLoaded', function () {
+            // Handle "Back to Detail" button
+            const backToDetailButton = document.getElementById('backToDetailButton');
+            if (backToDetailButton) {
+                backToDetailButton.addEventListener('click', function () {
+                    // Close the Track Ticket modal
+                    const trackTicketModalElement = document.getElementById('trackTicketModal');
+                    const trackTicketModal = bootstrap.Modal.getInstance(trackTicketModalElement);
+                    trackTicketModal.hide();
+
+                    // Open the Detail modal
+                    const detailModalElement = document.getElementById('detailModal');
+                    const detailModal = new bootstrap.Modal(detailModalElement);
+                    detailModal.show();
+                });
+            }
+
+            // Handle "Back to Ticket Model" button
+            const backToTicketModalButton = document.getElementById('backToTicketModalButton');
+            if (backToTicketModalButton) {
+                backToTicketModalButton.addEventListener('click', function () {
+                  
+                    // Close the Update Ticket modal
+                    const updateTicketModalElement = document.getElementById('updateTicketModel');
+                    const updateTicketModal = bootstrap.Modal.getInstance(updateTicketModalElement);
+                    updateTicketModal.hide();
+
+                    // Open the Track Ticket modal
+                    const trackTicketModalElement = document.getElementById('trackTicketModal');
+                    const trackTicketModal = new bootstrap.Modal(trackTicketModalElement);
+                    trackTicketModal.show();
+                });
+            }
+
+        });
+
+
+             document.addEventListener("DOMContentLoaded", function() {
+            // Check if the success message is visible on the page
+            var infoElement = document.getElementById('info');
+            if (infoElement) {
+                // Add the 'fade-in' class after the page loads
+                infoElement.classList.add('fade-in');
+
+                setTimeout(function() {
+                    infoElement.classList.remove('fade-in');
+                },1000); 
+            }
+        });
+    </script>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>
