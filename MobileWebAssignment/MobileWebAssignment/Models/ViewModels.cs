@@ -291,6 +291,11 @@ public class CartVM
     public int quantity { get; set; }
 }
 
+public class CartItem
+{
+    public string TicketId { get; set; }
+    public int Quantity { get; set; }
+}
 
 public class AdminTicketDetails
 {
@@ -329,3 +334,63 @@ public class Locations
     }
 }
 
+
+//-----------------------------------------
+//Payemnt
+//-----------------------------------------
+public class PaymentVM()
+{
+    [Required(ErrorMessage = "Email is required.")]
+    [EmailAddress(ErrorMessage = "Invalid Email Address format.")]
+    public string Email { get; set; }
+
+    [Required(ErrorMessage = "Card Number is required.")]
+    [RegularExpression(@"^(?:\d{4}[-\s]?){3}\d{4}$", ErrorMessage = "Invalid Card Number. Must be 16 digits with optional spaces or dashes.")]
+    public string CardNumber { get; set; }
+
+    [Required(ErrorMessage = "Cardholder Name is required.")]
+    [StringLength(50, ErrorMessage = "Cardholder Name cannot exceed 50 characters.")]
+    public string CardholderName { get; set; }
+
+    [Required(ErrorMessage = "Expiration Date is required.")]
+    [RegularExpression(@"^(0[1-9]|1[0-2])\/?([0-9]{2})$", ErrorMessage = "Invalid Expiration Date. Must be in MM/YY format.")]
+    public string ExpirationDate { get; set; }
+
+    [Required(ErrorMessage = "CVV is required.")]
+    [RegularExpression(@"^\d{3,4}$", ErrorMessage = "Invalid CVV. Must be 3 or 4 digits.")]
+    public string CVV { get; set; }
+}
+
+public class CartPVM()
+{
+    public Ticket Ticket { get; set; }
+    public int Quantit { get; set; }
+    public decimal Subtotal { get; set; }
+
+    public string imagepath { get; set; }
+}
+
+//---------------------------------------
+//Update Purchase Ticket
+//---------------------------------------
+
+public class PurchaseUpdateVM()
+{
+    public string Id { get; set; }
+    [Required(ErrorMessage = "Quantity is required.")]
+    [RegularExpression(@"^\d+$", ErrorMessage = "Only accept integers.")]
+    public int Quantity { get; set; }
+    [Required(ErrorMessage = "Date Time is required.")]
+    [DataType(DataType.DateTime)]
+    public DateTime validDate { get; set; }
+
+    //FK
+    public string TicketId { get; set; }
+}
+
+public class PurchaseViewModel
+{
+    public IEnumerable<Purchase> Purchases { get; set; } = new List<Purchase>();
+    public PurchaseUpdateVM PurchaseUpdate { get; set; }
+
+}

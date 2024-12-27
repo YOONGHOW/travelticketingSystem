@@ -1,0 +1,118 @@
+﻿/* General Styles */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f9f9f9;
+}
+
+.content {
+    margin: 20px;
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* Page Title */
+.pageTitle {
+    text-align: center;
+    font-size: 1.8em;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+/* Form Styles */
+.form-container {
+    width: 100%;
+}
+
+    .form-container label {
+        display: block;
+        margin-bottom: 5px;
+        font-size: 1em;
+        font-weight: bold;
+        color: #333;
+    }
+
+    .form-container input,
+    .form-container select,
+    .form-container textarea {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 15px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        font-size: 1em;
+        box-sizing: border-box;
+    }
+
+        .form-container input:focus,
+        .form-container select:focus,
+        .form-container textarea:focus {
+            border-color: #007bff;
+            outline: none;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+        }
+
+    /* Action Buttons */
+    .form-container .action-buttons {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 20px;
+    }
+
+    .form-container .submit-button {
+        background-color: #28a745;
+        color: #fff;
+        border: none;
+        padding: 10px 20px;
+        font-size: 1em;
+        border-radius: 5px;
+        cursor: pointer;
+        text-align: center;
+    }
+
+        .form-container .submit-button:hover {
+            background-color: #218838;
+        }
+
+    .form-container .cancel-button {
+        background-color: #dc3545;
+        color: #fff;
+        border: none;
+        padding: 10px 20px;
+        font-size: 1em;
+        border-radius: 5px;
+        cursor: pointer;
+        text-align: center;
+    }
+
+        .form-container .cancel-button:hover {
+            background-color: #c82333;
+        }
+
+/* Error Message */
+.error-message {
+    color: #dc3545;
+    font-size: 0.9em;
+    margin-bottom: 15px;
+    font-weight: bold;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .form-container .action-buttons {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .form-container .submit-button,
+    .form-container .cancel-button {
+        width: 100%;
+    }
+}
