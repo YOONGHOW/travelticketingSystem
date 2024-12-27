@@ -1074,37 +1074,36 @@ public class AdminController : Controller
     //------------------------------------------
     //Admin purchase
     //------------------------------------------
-    public List<Purchase> getAllPurcahse(List<Payment> payments)
+    public List<Purchase> getAllPurcahse(bool unpaid)
     {
-
         var allPurchases = db.Purchase
-            .Include(p => p.PurchaseItems)
-                .ThenInclude(pi => pi.Ticket)
-                    .ThenInclude(at => at.Attraction)
-            .Include(us => us.User)
-            .OrderByDescending(p => p.PaymentDateTime)
-            .Where(p => p.Status == "S") // Compare p.Id with ap.PurchaseId
-            .ToList();
-        if (payments.IsNullOrEmpty())
+               .Include(p => p.PurchaseItems)
+                   .ThenInclude(pi => pi.Ticket)
+                       .ThenInclude(at => at.Attraction)
+               .Include(us => us.User)
+               .Where(p => p.User is Member)
+               .OrderByDescending(p => p.PaymentDateTime)
+               .ToList();
+
+        if (unpaid == false)
         {
+            allPurchases = allPurchases
+            .Where(p => p.Status == "S") // Compare p.Id with Payment.PurchaseId
+             .ToList();
             return allPurchases;
         }
 
         allPurchases = allPurchases
-     .Where(p => payments.Select(ap => ap.PurchaseId).Contains(p.Id)) // Compare p.Id with Payment.PurchaseId
-     .ToList();
+             .Where(p => p.Status == "F")
+             .ToList();
 
 
         return allPurchases;
     }
     public IActionResult AdminPurchase(string? purchaseID, DateTime? validdate, string? payment)
     {
-        // Retrieve all PurchaseItem records with related data
-        var payments = db.Payment
-       .Where(p => p.Status == "S")
-       .ToList();
-
-        var allPurchases = getAllPurcahse(payments);
+      
+        var allPurchases = getAllPurcahse(false);
 
 
         IEnumerable<Purchase> purchaseItems;
@@ -1116,19 +1115,22 @@ public class AdminController : Controller
         }
         else if (payment != null)
         {
-            purchaseItems = getAllPurcahse(null);
+            purchaseItems = getAllPurcahse(true);  // If no validdate is provided, show all purchase items(Unpaid)
         }
         else
         {
-            purchaseItems = allPurchases;  // If no validdate is provided, show all purchase items
+            purchaseItems = allPurchases;  // If no validdate is provided, show all purchase items(Payment)
         }
-
+        //stating VM
         var viewModel = new PurchaseViewModel();
+        var member = purchaseItems.Select(p => p.User as Member).FirstOrDefault();
+
         if (Request.IsAjax())
         {
             viewModel = new PurchaseViewModel
             {
                 Purchases = purchaseItems,
+                PhotoURL = member?.PhotoURL,
                 PurchaseUpdate = new PurchaseUpdateVM() // Initialize or fetch as required
             };
             return PartialView("PurchaseTable/_SharePurchaseTable1", viewModel);
@@ -1136,6 +1138,7 @@ public class AdminController : Controller
         viewModel = new PurchaseViewModel
         {
             Purchases = purchaseItems,
+            PhotoURL = member?.PhotoURL,
             PurchaseUpdate = new PurchaseUpdateVM() // Initialize or fetch as required
         };
 
@@ -1245,8 +1248,6 @@ public class AdminController : Controller
         }
         return Json(purchaseItems);
     }
-    //-----------------------------
-    //update purcahse detail
 
     //----------------------------------------
     //get PurchaseItemsID
