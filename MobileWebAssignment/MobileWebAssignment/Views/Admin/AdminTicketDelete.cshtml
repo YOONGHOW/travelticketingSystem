@@ -14,49 +14,33 @@
 <body>
     <div class="content">
         <h1>Delete ticket</h1>
-<form method="post" class="form">
-            <div asp-validation-summary="ModelOnly"></div>
-            <span style="display:flex; font-size:18px;">
-                <p style="width:20%;">Id: @Model.Id</p>
-                <p>AttractionId: @Model.AttractionId</p><br /><br />
-            </span>
-            <div class="actionBox">
+        <form method="post" class="form">
+            ID: <label asp-for="Id"></label>
+            <p>@Model.Id"</p>
 
+            <input asp-for="AttractionId" value="@Model.AttractionId" disabled />
+            Ticket Name: <lable asp-for="ticketName"></lable><br />
+            <input asp-for="ticketName" data-upper autofocus />
+
+            Stock Quantity: <lable asp-for="stockQty"></lable> <br />
+            <input asp-for="stockQty" type="number" min="1" disabled />
+
+            Ticket Price: <lable asp-for="ticketPrice"></lable><br />
+            <input asp-for="ticketPrice" type="number" min="0.01" disabled />
+
+            Ticket Details: <lable asp-for="ticketDetails"> </lable><br />
+            <input asp-for="ticketDetails" type="text" disabled />
+
+            Ticket Type: <lable asp-for="ticketType"></lable><br />
             <div>
-            <input asp-for="AttractionId" type="hidden" value="@Model.AttractionId" />
-            <input asp-for="Id" type="hidden">
-
-            <lable asp-for="ticketName" id="actionLabel">Ticket Name: </lable><br />
-                    <input id="inputBox" asp-for="ticketName" data-upper autofocus disabled /><br />
-
-                    <lable asp-for="stockQty" id="actionLabel">Stock Quantity:</lable><br />
-                    <input id="inputBox" asp-for="stockQty" type="number" disabled /><br />
-
-                    <lable asp-for="ticketPrice" id="actionLabel">Ticket Price: </lable><br />
-                    <input id="inputBox" asp-for="ticketPrice" type="number" disabled /><br />
-                </div>
-
-                <div>
-                    <lable asp-for="ticketStatus" id="actionLabel">Ticket Status:</lable><br />
-                    <div id="selectBox">
-                        <label><input asp-for="ticketStatus" type="radio" value="Good" disabled />Available</label>
-                        <label><input asp-for="ticketStatus" type="radio" value="Fail" disabled />Non-available</label><br />
-                    </div>
-
-                    <lable asp-for="ticketDetails" id="actionLabel">Ticket Details: </lable><br />
-                    <input id="inputBox" asp-for="ticketDetails" type="text" disabled /><br />
-
-                    <lable asp-for="ticketType" id="actionLabel">Ticket Type: </lable><br />
-                    <div id="selectBox">
-                        <label><input asp-for="ticketType" type="radio" value="Adult" disabled />Adult</label>
-                        <label><input asp-for="ticketType" type="radio" value="Child" disabled />Child</label>
-                        <label><input asp-for="ticketType" type="radio" value="OKU" disabled />OKU</label><br />
-                 </div>
-
-                </div>
+                <label><input asp-for="ticketType" type="radio" value="adult" disabled />Adult</label>
+                <label><input asp-for="ticketType" type="radio" value="child" disabled />Child</label>
+                <label><input asp-for="ticketType" type="radio" value="oku" disabled />OKU</label>
             </div>
+            <br />
             <section>
-                <button id="ticketBtnDelete">Delete</button>
+                <button>Delete</button>
+                <button type="reset">Reset</button>
             </section>
 
         </form>
