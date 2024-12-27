@@ -26,7 +26,7 @@
             <tbody>
                 @foreach (var a in Model)
                 {
-                    <tr class="clickable-row" data-href="@Url.Action("AdminTicketDetails", "Admin", new { id = a.Id })">
+                    <tr id="attraction-row" class="clickable-row" data-href="@Url.Action("AdminTicketDetails", "Admin", new { id = a.Id })">
                         <td>@a.Id</td>
                         <td>@a.Name</td>
                         <td>@a.AttractionType?.Name</td>
