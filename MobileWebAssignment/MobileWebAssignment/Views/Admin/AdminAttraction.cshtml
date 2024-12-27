@@ -1,116 +1,99 @@
-﻿@*
+@*
     For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 *@
 @{
-    Layout = "_AdminLayout";
-    ViewBag.Title = "Admin | Feedback";
+	Layout = "_AdminLayout";
+	ViewBag.Title = "Admin | Feedback";
 }
+
+@using X.PagedList
+@using X.PagedList.Mvc.Core
+@model IPagedList<Attraction>
 
 
 <html>
 <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <link rel="stylesheet" href="/css/AdminCss/AdminAttraction.css" asp-append-version="true">
-    <script>
-        // JavaScript to toggle visibility of sections
-        function toggleSection(sectionId, toggleButtonId) {
-            const section = document.getElementById(sectionId);
-            const toggleButton = document.getElementById(toggleButtonId);
-            if (section.style.display === "none") {
-                section.style.display = "block";
-                toggleButton.textContent = "-"; // Expanded state
-            } else {
-                section.style.display = "none";
-                toggleButton.textContent = "+"; // Collapsed state
-            }
-        }
-    </script>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<link rel="stylesheet" href="/css/AdminCss/AdminAttraction.css" asp-append-version="true">
+
 </head>
 <body>
-    <div class="content">
+	<div class="content">
+		<div class="attractionTypeData">
+			<h3 class="attractionTypeTitle">
+				Attraction Type List
+				<span class="tableNav">
 
-        <div class="attractionTypeData">
-            <h3 class="attractionTypeTitle">
-                Attraction Type List
-                <span>
-                    <button class="create">Create New</button>
-                    <button id="toggleTypeButton" onclick="toggleSection('attractionTypeSection', 'toggleTypeButton')">+</button>
-                </span>
-            </h3>
-            <div id="attractionTypeSection" style="display: none;">
-                <div class="attractionTypeTable">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Attraction Type ID</th>
-                                <th>Name</th>
-                                <th colspan="2" style="text-align:center;">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>AT0001</td>
-                                <td>Water Park</td>
-                                <td style="text-align:center;"><button class="update">Update</button></td>
-                                <td style="text-align:center;"><button class="delete">Delete</button></td>
-                            </tr>
-                            <tr>
-                                <td>AT0002</td>
-                                <td>Bird Park</td>
-                                <td style="text-align:center;"><button class="update">Update</button></td>
-                                <td style="text-align:center;"><button class="delete">Delete</button></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+					<form data-ajax="true"
+						  data-ajax-update="#atarget"
+						  data-ajax-loading="#aloader">
+						@Html.TextBox("ATname", "",
+									new { type = "search", autofocus = "", data_trim = "", id = "searchATBar" })
+						<button>Search</button>
 
-        <div class="attractionTable">
-            <h3 class="attractionTitle">
-                Attraction List
-                <span>
-                    <button class="create">Create New</button>
-                    <button id="toggleAttractionButton" onclick="toggleSection('attractionSection', 'toggleAttractionButton')">+</button>
-                </span>
-            </h3>
-            <div id="attractionSection" style="display: none;">
-                <div class="attractionTypeTable">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Attraction ID</th>
-                                <th>Attraction Name</th>
-                                <th>Attraction Type</th>
-                                <th>Location(Region)</th>
-                                <th colspan="3" style="text-align:center;">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>A0001</td>
-                                <td>Sunway Lagoon</td>
-                                <td>Water Park</td>
-                                <td>Kuala Lumpur</td>
-                                <td style="text-align:center;"><button class="detail">Detail</button></td>
-                                <td style="text-align:center;"><button class="update">Update</button></td>
-                                <td style="text-align:center;"><button class="delete">Delete</button></td>
-                            </tr>
-                            <tr>
-                                <td>A0002</td>
-                                <td>A Famosa</td>
-                                <td>Water Park</td>
-                                <td>Melaka</td>
-                                <td style="text-align:center;"><button class="detail">Detail</button></td>
-                                <td style="text-align:center;"><button class="update">Update</button></td>
-                                <td style="text-align:center;"><button class="delete">Delete</button></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+						<img src="/images/loader.gif" id="aloader" style="display: none">
+					</form>
 
-    </div>
+					@{
+						var attractionTypes = (IPagedList<AttractionType>)ViewBag.AttractionTypes;
+					}
+					@attractionTypes.Count of @attractionTypes.TotalItemCount record(s) |
+					Page @attractionTypes.PageNumber of @attractionTypes.PageCount
+					<button class="create" data-get="/Admin/AdminAttractionTypeCreate">Create New</button>
+				</span>
+			</h3>
+			<div class="attractionTypeTable" id="atarget">
+				<partial name="_AdminAttractionType" />
+			</div>
+		</div>
+		<br />
+		<br />
+		<div class="attractionTable">
+			<h3 class="attractionTitle">
+				Attraction List
+				<span class="tableNav">
+					<form data-ajax="true"
+						  data-ajax-update="#target"
+						  data-ajax-loading="#loader">
+						@Html.TextBox("Aname", "",
+									new { type = "search", autofocus = "", data_trim = "", id = "searchBar" })
+						<button>
+							Search
+						</button>
+
+						<img src="/images/loader.gif" id="loader" style="display: none">
+					</form>
+					@Model.Count() of @Model.TotalItemCount record(s) |
+					Page @Model.PageNumber of @Model.PageCount
+					<button class="create" data-get="/Admin/AdminAttractionCreate">Create New</button>
+				</span>
+			</h3>
+			<div class="attractionTypeTable" id="target">
+				<partial name="_AdminAttraction" />
+			</div>
+		</div>
+	</div>
+
 </body>
 </html>
+@section foot {
+	<script>
+		let timer = null;
+
+		$('#searchBar').on('input', e => {
+		clearTimeout(timer);
+		timer = setTimeout(() => $(e.target.form).submit(), 500);
+		});
+	</script>
+	<script>
+		let timer = null;
+
+		$('#searchATBar').on('input', e => {
+		clearTimeout(timer);
+		timer = setTimeout(() => $(e.target.form).submit(), 500);
+		});
+	</script>
+}
+
+
+ 
