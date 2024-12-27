@@ -87,7 +87,6 @@ public class AttractionUpdateVM
     public string? ImagePath { get; set; }
 
     public string AttractionTypeId { get; set; }
-    public ImageSet? Photo { get; set; }
     public UpdateImageSet? Photo { get; set; }
 
     public List<OperatingHour>? operatingHours { get; set; }
@@ -393,5 +392,7 @@ public class PurchaseViewModel
 {
     public IEnumerable<Purchase> Purchases { get; set; } = new List<Purchase>();
     public PurchaseUpdateVM PurchaseUpdate { get; set; }
+
+    public string? PhotoURL { get; set; }
 
 }

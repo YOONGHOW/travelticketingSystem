@@ -3,113 +3,69 @@
     ViewBag.Title = "Admin | Discounts and Promotions";
 }
 
+
+@model List<MobileWebAssignment.Models.PromotionInsertVM>
+
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <link rel="stylesheet" href="/css/AdminCss/AdminPromotions.css" asp-append-version="true">
+    <link rel="stylesheet" href="/css/AdminCss/AdminDiscount.css" asp-append-version="true">
 </head>
 <body>
     <div class="content">
 
-        <div>
+        <!-- Discounts Section -->
+        <div class="discountTable">
+            <h3 class="discountTitle">
+                Discounts List
+                <span>
+                    <a href="@Url.Action("AdminDiscountCreate", "Admin")">
+                        <button class="create">Create New</button>
+                    </a>
+                </span>
+            </h3>
+            <br />
+            <div class="discountTableContent">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Discount ID</th>
+                            <th>Title</th>
+                            <th>Discount Amount</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Status</th>
+                            <th colspan="2" style="text-align:center;">Action</th>
+                        </tr>
+                    </thead>
 
-            <!-- Discounts Section -->
-            <div class="discountTable">
-                <h3 class="discountTitle">
-                    Discounts List
-                    <span><button class="create">Create New</button></span>
-                </h3>
-                <br />
-                <div class="discountTableContent">
-                    <table>
-                        <thead>
+                    <tbody>
+                        @foreach (var promotion in Model)
+                        {
                             <tr>
-                                <th>Discount ID</th>
-                                <th>Title</th>
-                                <th>Discount Amount</th>
-                                <th>Start Date</th>
-                                <th>End Date</th>
-                                <th>Status</th>
-                                <th colspan="2" style="text-align:center;">Action</th>
+                                <td>@promotion.Id</td>
+                                <td>@promotion.Title</td>
+                                <td>@promotion.PriceDeduction</td>
+                                <td>@promotion.StartDate.ToString("yyyy-MM-dd")</td>
+                                <td>@promotion.EndDate.ToString("yyyy-MM-dd")</td>
+                                <td>@promotion.PromoStatus</td>
+                                <td style="text-align:center;">
+                                    <a href="@Url.Action("AdminDiscountUpdate", "Admin", new { id = promotion.Id })">
+                                        <button class="update">Update</button>
+                                    </a>
+                                </td>
+                                <td style="text-align:center;">
+                                    <a href="@Url.Action("AdminDiscountDelete", "Admin", new { id = promotion.Id })">
+                                        <button class="delete">Delete</button>
+                                    </a>
+                                </td>
                             </tr>
-                        </thead>
-
-                        <tbody>
-                            <tr>
-                                <td>D0001</td>
-                                <td>10% Off Electronics</td>
-                                <td>10%</td>
-                                <td>2024-12-01</td>
-                                <td>2024-12-31</td>
-                                <td>Active</td>
-                                <td style="text-align:center;"><button class="update">Update</button></td>
-                                <td style="text-align:center;"><button class="delete">Delete</button></td>
-                            </tr>
-                            <tr>
-                                <td>D0002</td>
-                                <td>$5 Off Your First Purchase</td>
-                                <td>$5</td>
-                                <td>2024-11-15</td>
-                                <td>2024-12-15</td>
-                                <td>Inactive</td>
-                                <td style="text-align:center;"><button class="update">Update</button></td>
-                                <td style="text-align:center;"><button class="delete">Delete</button></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+                        }
+                    </tbody>
+                </table>
             </div>
-
-            <!-- Promotions Section -->
-            <div class="promotionTable">
-                <h3 class="promotionTitle">
-                    Promotions List
-                    <span><button class="create">Create New</button></span>
-                </h3>
-                <br />
-                <div class="promotionTableContent">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Promotion ID</th>
-                                <th>Title</th>
-                                <th>Price Deduction</th>
-                                <th>Start Date</th>
-                                <th>End Date</th>
-                                <th>Status</th>
-                                <th colspan="3" style="text-align:center;">Action</th>
-                            </tr>
-                        </thead>
-
-                        <tbody>
-                            <tr>
-                                <td>P0001</td>
-                                <td>Buy 1 Get 1 Free</td>
-                                <td>$15</td>
-                                <td>2024-12-01</td>
-                                <td>2024-12-10</td>
-                                <td>Active</td>
-                                <td style="text-align:center;"><button class="detail">Detail</button></td>
-                                <td style="text-align:center;"><button class="update">Update</button></td>
-                                <td style="text-align:center;"><button class="delete">Delete</button></td>
-                            </tr>
-                            <tr>
-                                <td>P0002</td>
-                                <td>Free Shipping</td>
-                                <td>$10</td>
-                                <td>2024-11-20</td>
-                                <td>2024-12-25</td>
-                                <td>Inactive</td>
-                                <td style="text-align:center;"><button class="detail">Detail</button></td>
-                                <td style="text-align:center;"><button class="update">Update</button></td>
-                                <td style="text-align:center;"><button class="delete">Delete</button></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
         </div>
+
     </div>
 </body>
 </html>
