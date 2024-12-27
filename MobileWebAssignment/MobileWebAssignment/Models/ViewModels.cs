@@ -291,6 +291,11 @@ public class CartVM
     public int quantity { get; set; }
 }
 
+public class CartItem
+{
+    public string TicketId { get; set; }
+    public int Quantity { get; set; }
+}
 
 public class AdminTicketDetails
 {
