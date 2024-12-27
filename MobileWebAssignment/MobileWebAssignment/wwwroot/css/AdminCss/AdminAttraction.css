@@ -4,6 +4,7 @@ body {
     margin: 0;
     padding: 0;
     background-color: #f9f9f9;
+    overflow:initial;
 }
 
 .content {
@@ -20,6 +21,13 @@ h3 {
     color: #333;
     margin-bottom: 20px;
 }
+
+    h3 span {
+        display: flex; 
+        justify-content: flex-end; 
+        gap: 10px; 
+        width: 100%;
+    }
 
 button {
     font-size: 0.9rem;
@@ -98,7 +106,6 @@ td, th {
     }
 }
 
-
 span.tableNav {
     justify-content: space-between;
     margin-top:12px;
@@ -132,4 +139,5 @@ span.tableNav {
     align-items: center;
     justify-content: space-between;
 }
+
 
