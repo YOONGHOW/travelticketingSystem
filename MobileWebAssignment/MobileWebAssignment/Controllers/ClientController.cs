@@ -1,11 +1,14 @@
 
 using System.Globalization;
 using System.Net.Mail;
+using System.Net.Sockets;
+using Azure.Core;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Client;
+using Microsoft.IdentityModel.Tokens;
 using MobileWebAssignment.Models;
 using MobileWebAssignment.Service;
 
@@ -490,47 +493,50 @@ namespace MobileWebAssignment.Controllers
         }
 
         [HttpPost]
-        public IActionResult AddToCart(string ticketId, int quantity)
+        public IActionResult AddMultipleToCart(List<CartItem> tickets)
         {
-            var userId = "U001";
-            //var userId = User.Identity!.Name;
-            //if (userId == null)
-            //{
-            //    TempData["Error"] = "You must log in to add items to the cart.";
-            //    return RedirectToAction("Login");
-            //}
+            var userId = "U001"; // Replace with actual user ID retrieval logic.
+            string attractionId = null; // Initialize AttractionId.
 
-            var ticket = db.Ticket.SingleOrDefault(t => t.Id == ticketId);
-            if (ticket == null || ticket.stockQty < quantity)
+            foreach (var ticket in tickets)
             {
-                TempData["Error"] = "Invalid ticket or insufficient stock.";
-                return RedirectToAction("ClientAttractionDetail", new { AttractionId = ticket?.AttractionId });
-            }
+                if (ticket.Quantity <= 0) continue; // Skip tickets with zero or negative quantities.
 
-            var existingCart = db.Cart.SingleOrDefault(c => c.UserId == userId && c.TicketId == ticketId);
-            if (existingCart != null)
-            {
-                existingCart.Quantity += quantity;
-            }
-            else
-            {
-                db.Cart.Add(new Cart
+                var dbTicket = db.Ticket.SingleOrDefault(t => t.Id == ticket.TicketId);
+                if (dbTicket == null || dbTicket.stockQty < ticket.Quantity)
                 {
-                    Id = NextCartId(),
-                    UserId = userId,
-                    TicketId = ticketId,
-                    Quantity = quantity,
-                });
+                    TempData["Error"] = $"Invalid ticket or insufficient stock for ticket {ticket.TicketId}.";
+                    continue;
+                }
+
+                attractionId = dbTicket.AttractionId; // Capture the AttractionId from a valid ticket.
+
+                var existingCart = db.Cart.SingleOrDefault(c => c.UserId == userId && c.TicketId == ticket.TicketId);
+                if (existingCart != null)
+                {
+                    existingCart.Quantity += ticket.Quantity;
+                }
+                else
+                {
+                    db.Cart.Add(new Cart
+                    {
+                        Id = NextCartId(),
+                        UserId = userId,
+                        TicketId = ticket.TicketId,
+                        Quantity = ticket.Quantity,
+                    });
+                }
             }
 
             db.SaveChanges();
-            TempData["Info"] = "Item added to cart successfully.";
-            return RedirectToAction("ClientAttractionDetail", new { AttractionId = ticket.AttractionId });
+
+            TempData["Info"] = "Selected items added to cart successfully.";
+            return RedirectToAction("ClientAttractionDetail", new { AttractionId = attractionId });
         }
 
 
 
-      //  [Authorize(Roles = "Member")] 
+        //  [Authorize(Roles = "Member")] 
         public IActionResult ClientCart()
         {
             //var userId = User.Identity!.Name;
@@ -772,29 +778,339 @@ namespace MobileWebAssignment.Controllers
 
 
 
+
+        //add cart
+        public void UpdateCart(string productId, int quantity)
+        {
+            var cart = hp.GetCart();
+            if (quantity >= 1 && quantity <= 1000)
+            {
+                cart[productId] = quantity;
+            }
+            else
+            {
+                cart.Remove(productId);
+            }
+            hp.SetCart(cart);
+
+        }
+        //GET client/clienPayment
         public IActionResult ClientPayment()
         {
-            List<Ticket> ticketList = new List<Ticket>();
-            Ticket ticket = new Ticket { };
+            UpdateCart("T002", 9);
+            UpdateCart("T001", 9);
+            var cart = hp.GetCart();
 
+            // Check if the cart is valid and contains data
+            if (cart == null || !cart.Any())
+            {
+                ViewBag.CartItems = new List<CartPVM>(); // Assign an empty list to avoid null issues
+            }
+            else
+            {
+                var m = db.Ticket
+                    .Include(t => t.Attraction)
+                    .Where(t => cart.Keys.Contains(t.Id))
+                    .Select(p => new CartPVM
+                    {
+                        Ticket = p,
+                        Quantit = cart[p.Id],
+                        Subtotal = p.ticketPrice * cart[p.Id],
+                        imagepath = p.Attraction.ImagePath,
+                    }).ToList();
+
+                ViewBag.CartItems = m;
+            }
 
             return View();
-        }
-        public IActionResult ClientPaymentHIS()
-        {
-            var session = _httpContextAccessor.HttpContext.Session;
-            session.SetString("UserName", "U0001");
-            var trySession = session.GetString("UserName");
-            {
-                var m = db.PurchaseItem
-                    .Include(re => re.Ticket)
-                    .Include(re => re.Purchase)
-                    .Where(re=>re.Purchase.UserId==trySession).ToList();
-                   
 
-                return View(m);
+        }
+
+        [HttpPost]
+        public IActionResult ClientPayment(PaymentVM vm)
+        {
+            if (ModelState.IsValid)
+            {
+                // Process the payment (e.g., save to the database)
+                hp.SetUserID("U0001");
+                if (hp.GetUserID == null)
+                {
+                    return View();
+                }
+                CheckOut();
             }
-            
+            var cart = hp.GetCart();
+
+            // Check if the cart is valid and contains data
+            if (cart == null || !cart.Any())
+            {
+                ViewBag.CartItems = new List<CartPVM>(); // Assign an empty list to avoid null issues
+            }
+            else
+            {
+                var m = db.Ticket
+                    .Include(t => t.Attraction)
+                    .Where(t => cart.Keys.Contains(t.Id))
+                    .Select(p => new CartPVM
+                    {
+                        Ticket = p,
+                        Quantit = cart[p.Id],
+                        Subtotal = p.ticketPrice * cart[p.Id],
+                        imagepath = p.Attraction.ImagePath,
+                    }).ToList();
+
+                ViewBag.CartItems = m;
+            }
+            return View();
+        }
+
+        /// ------------------------------------------------
+        /// show result
+        /// ------------------------------------------------
+        public List<Purchase> getAllPurcahse(List<Payment> payments)
+        {
+            hp.SetUserID("U0001");
+            var userID = hp.GetUserID();
+            var allPurchases = db.Purchase
+                .Include(p => p.PurchaseItems)
+                    .ThenInclude(pi => pi.Ticket)
+                        .ThenInclude(at => at.Attraction)
+                .Include(us => us.User)
+                .OrderByDescending(p => p.PaymentDateTime)
+
+                .ToList();
+
+            if (payments.IsNullOrEmpty())
+            {
+                allPurchases = allPurchases
+                .Where(p => p.Status == "F") // Compare p.Id with Payment.PurchaseId
+                 .ToList();
+                return allPurchases;
+            }
+
+            allPurchases = allPurchases
+           .Where(p => payments.Select(ap => ap.PurchaseId).Contains(p.Id) && p.User.Id == userID && p.Status == "S") // Compare p.Id with Payment.PurchaseId
+           .ToList();
+
+
+            return allPurchases;
+        }
+        public IActionResult ClientPaymentHIS(string? purchaseID, DateTime? validdate, string? payment)
+        {
+
+            // Retrieve all PurchaseItem records with related data
+            var payments = db.Payment
+           .Where(p => p.Status == "S")
+           .ToList();
+
+            var allPurchases = getAllPurcahse(payments);
+
+
+            IEnumerable<Purchase> purchaseItems;
+            //Purcahse fillter
+            if (validdate != null)
+            {
+                purchaseItems = allPurchases
+                 .Where(pi => pi.PaymentDateTime.Date == validdate?.Date);
+            }
+            else if (payment != null)
+            {
+
+                purchaseItems = getAllPurcahse(null);
+            }
+            else
+            {
+                purchaseItems = allPurchases;  // If no validdate is provided, show all purchase items
+            }
+
+            var viewModel = new PurchaseViewModel();
+            if (Request.IsAjax())
+            {
+                viewModel = new PurchaseViewModel
+                {
+                    Purchases = purchaseItems,
+                    PurchaseUpdate = new PurchaseUpdateVM() // Initialize or fetch as required
+                };
+                return PartialView("PurchaseTable/_SharePurchaseTable1", viewModel);
+            }
+            viewModel = new PurchaseViewModel
+            {
+                Purchases = purchaseItems,
+                PurchaseUpdate = new PurchaseUpdateVM() // Initialize or fetch as required
+            };
+
+            //return view
+            return View(viewModel);
+
+        }
+        public ActionResult ClientPurchaseDetail(string purchaseID)
+        {
+            if (string.IsNullOrEmpty(purchaseID))
+            {
+                return Json(new { error = "Purchase ID cannot be null or empty." });
+            }
+
+            // Retrieve and group PurchaseItems by AttractionName and ValidDate (only the date part)
+            var groupedItems = db.PurchaseItem
+                .Where(pi => pi.PurchaseId == purchaseID)
+                .Include(pi => pi.Ticket)
+                .ThenInclude(at => at.Attraction)
+                .GroupBy(pi => new
+                {
+                    pi.Ticket.Attraction.Name,
+                    ValidDate = pi.validDate.Date  // Group by Date only, ignoring time
+                })
+                .Select(g => new
+                {
+                    attractionName = g.Key.Name,
+                    validDate = g.Key.ValidDate.ToString("yyyy-MM-dd"),  // Format DateTime to string in "yyyy-MM-dd" format
+                    totalQuantity = g.Sum(pi => pi.Quantity),
+                    totalAmount = g.Sum(pi => pi.Quantity * pi.Ticket.ticketPrice),
+                    attractionImg = g.Select(pi => pi.Ticket.Attraction.ImagePath).FirstOrDefault(),
+                    ticketType = g.Select(pi => pi.Ticket.ticketName).Count(),
+                    purchaseId = g.Select(pi => pi.Purchase.Id).FirstOrDefault(),
+                })
+                .ToList();
+
+            if (!groupedItems.Any())
+            {
+                return Json(new { error = "No items found for the given Purchase ID." });
+            }
+
+            return Json(groupedItems);
+
+        }
+        public ActionResult ClientPurchaseTicket(string? purchaseId, DateTime validDate)
+        {
+            if (string.IsNullOrEmpty(purchaseId))
+            {
+                return Json(new { error = "Purchase ID cannot be null or empty." });
+            }
+
+            // Retrieve all the PurchaseItems related to the given PurchaseID
+            var purchaseItems = db.PurchaseItem
+                .Where(pi => pi.PurchaseId == purchaseId && pi.validDate.Date == validDate.Date)
+                .Include(pi => pi.Ticket)
+                .Select(pi => new
+                {
+                    purchaseItemId = pi.Id,
+                    ticketID = pi.TicketId,
+                    quantity = pi.Quantity,
+                    validDate = pi.validDate.ToString("yyyy/MM/dd"),
+                    ticketName = pi.Ticket.ticketName,
+                    attractionName = pi.Ticket.Attraction.Name,
+                    attractionImg = pi.Ticket.Attraction.ImagePath,
+                    amount = pi.Quantity * pi.Ticket.ticketPrice,
+                    status = pi.validDate.Date >= DateTime.Now.Date // Compare the date part (ignores time)
+            ? "Valid"
+            : "Invalid",
+                    purcahseid = pi.Purchase.Id,
+                    ticketPrice = pi.Ticket.ticketPrice,
+                })
+                .ToList();
+
+            if (!purchaseItems.Any())
+            {
+                return Json(new { error = "No items found for the given Purchase ID." });
+            }
+            return Json(purchaseItems);
+        }
+
+        public IActionResult ClientPurchaseUpdate(string ticketID, string purcahseItemID)
+        {
+            if (string.IsNullOrEmpty(purcahseItemID) && string.IsNullOrEmpty(ticketID))
+            {
+                return Json(new { error = "Record Not found" });
+            }
+
+            // Retrieve all the PurchaseItems related to the given PurchaseID
+            var purchaseItems = db.PurchaseItem
+                .Where(pi => pi.Id == purcahseItemID && pi.TicketId == ticketID)
+                .Include(pi => pi.Ticket)
+                .Select(pi => new
+                {
+                    purcahseItemID = pi.Id,
+                    ticketID = pi.TicketId,
+                    quantity = pi.Quantity,
+                    validDate = pi.validDate.ToString("yyyy-MM-dd hh:mm tt"),
+                    ticketName = pi.Ticket.ticketName,
+                    ticketPrice = pi.Ticket.ticketPrice,
+                    purcahseid = pi.Purchase.Id,
+                })
+                 .FirstOrDefault();
+
+            if (purchaseItems == null)
+            {
+                return Json(new { error = "No items found for the given PurchaseItem ID." });
+            }
+            return Json(purchaseItems);
+        }
+        //Add Purchase
+
+        private string NextPurchase_Id()
+        {
+            // TODO
+            string max = db.Purchase.Max(t => t.Id) ?? "P0000";
+            int n = int.Parse(max[1..]);
+
+            return (n + 1).ToString("'P'0000");
+        }
+        private string NextPurchaseItem_Id(int count)
+        {
+            // TODO
+            string max = db.PurchaseItem.Max(t => t.Id) ?? "PI0000";
+            int n = int.Parse(max[2..]);
+            return (n + count).ToString("'PI'0000");
+        }
+
+        [HttpPost]
+        public void CheckOut()
+        {
+            var cart = hp.GetCart();
+
+            var m = db.Ticket
+               .Include(t => t.Attraction)
+               .Where(t => cart.Keys.Contains(t.Id))
+               .Select(p => new CartPVM
+               {
+                   Ticket = p,
+                   Quantit = cart[p.Id],
+                   Subtotal = p.ticketPrice * cart[p.Id],
+               })
+               .ToList();
+
+            decimal total = m.Sum(t => t.Subtotal);
+            var purchase = new Purchase
+            {
+                Id = NextPurchase_Id(),
+                PaymentDateTime = DateTime.Now,
+                Status = "F",
+                Amount = total,
+                UserId = hp.GetUserID(),
+                PurchaseItems = new List<PurchaseItem>() // Initialize the list
+
+            };
+            var count = 1;
+            foreach (var (productId, quantity) in cart)
+            {
+                var p = db.Ticket.Find(productId);
+                if (p == null) continue;
+                purchase.PurchaseItems.Add(new PurchaseItem()
+                {
+                    Id = NextPurchaseItem_Id(count),
+                    Quantity = quantity,
+                    validDate = DateTime.Now,
+                    TicketId = p.Id,
+                    PurchaseId = purchase.Id,
+                });
+                count++;
+            }
+
+            db.Purchase.Add(purchase);
+            db.SaveChanges();
+            hp.SetCart(cart);
         }
     }
+
 }
+
