@@ -862,68 +862,65 @@ namespace MobileWebAssignment.Controllers
         /// ------------------------------------------------
         /// show result
         /// ------------------------------------------------
-        public List<Purchase> getAllPurcahse(List<Payment> payments)
+        public List<Purchase> getAllPurcahse(bool unpaid)
         {
-            hp.SetUserID("U0001");
+            hp.SetUserID("U001");
             var userID = hp.GetUserID();
             var allPurchases = db.Purchase
                 .Include(p => p.PurchaseItems)
                     .ThenInclude(pi => pi.Ticket)
                         .ThenInclude(at => at.Attraction)
                 .Include(us => us.User)
+                .Where(p => p.UserId == userID && p.User is Member)
                 .OrderByDescending(p => p.PaymentDateTime)
-
                 .ToList();
 
-            if (payments.IsNullOrEmpty())
+            
+            if (unpaid==false)
             {
                 allPurchases = allPurchases
-                .Where(p => p.Status == "F") // Compare p.Id with Payment.PurchaseId
+                .Where(p => p.Status == "S" || p.Status == "R") // Compare p.Id with Payment.PurchaseId
                  .ToList();
                 return allPurchases;
             }
-
+           
             allPurchases = allPurchases
-           .Where(p => payments.Select(ap => ap.PurchaseId).Contains(p.Id) && p.User.Id == userID && p.Status == "S") // Compare p.Id with Payment.PurchaseId
+           .Where(p => p.Status == "F") 
            .ToList();
 
 
             return allPurchases;
         }
-        public IActionResult ClientPaymentHIS(string? purchaseID, DateTime? validdate, string? payment)
+        public IActionResult ClientPaymentHIS(string? purchaseID, DateTime? validdate, string? Unpaid)
         {
-
             // Retrieve all PurchaseItem records with related data
-            var payments = db.Payment
-           .Where(p => p.Status == "S")
-           .ToList();
+            
 
-            var allPurchases = getAllPurcahse(payments);
+            var allPurchases = getAllPurcahse(false);
 
 
             IEnumerable<Purchase> purchaseItems;
             //Purcahse fillter
-            if (validdate != null)
+            if (Unpaid != null)
             {
-                purchaseItems = allPurchases
-                 .Where(pi => pi.PaymentDateTime.Date == validdate?.Date);
-            }
-            else if (payment != null)
-            {
-
-                purchaseItems = getAllPurcahse(null);
+                purchaseItems = getAllPurcahse(true); // If no validdate is provided, show all purchase items(Unpaid)
             }
             else
             {
-                purchaseItems = allPurchases;  // If no validdate is provided, show all purchase items
+                purchaseItems = allPurchases;  // If no validdate is provided, show all purchase items(paid)
             }
 
+
+            //stating VM
             var viewModel = new PurchaseViewModel();
+            var member = purchaseItems.Select(p => p.User as Member).FirstOrDefault();
+
             if (Request.IsAjax())
             {
                 viewModel = new PurchaseViewModel
                 {
                     Purchases = purchaseItems,
+                    PhotoURL = member?.PhotoURL,
                     PurchaseUpdate = new PurchaseUpdateVM() // Initialize or fetch as required
                 };
                 return PartialView("PurchaseTable/_SharePurchaseTable1", viewModel);
@@ -931,9 +928,9 @@ namespace MobileWebAssignment.Controllers
             viewModel = new PurchaseViewModel
             {
                 Purchases = purchaseItems,
+                PhotoURL = member?.PhotoURL,
                 PurchaseUpdate = new PurchaseUpdateVM() // Initialize or fetch as required
             };
-
             //return view
             return View(viewModel);
 
