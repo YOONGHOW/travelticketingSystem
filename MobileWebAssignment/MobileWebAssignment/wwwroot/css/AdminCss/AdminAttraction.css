@@ -124,6 +124,16 @@ span.tableNav {
     max-width: 200px; /* Adjust the width as needed */
 }
 
+#searchATBar {
+    padding: 8px 12px;
+    font-size: 0.9rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-right: 10px;
+    flex-grow: 1;
+    max-width: 200px; /* Adjust the width as needed */
+}
+
 .tableNav {
     display: flex;
     align-items: center;
