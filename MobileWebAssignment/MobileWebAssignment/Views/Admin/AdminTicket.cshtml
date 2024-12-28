@@ -4,14 +4,14 @@
 }
 
 <html>
-    <head>
+<head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <link rel="stylesheet" href="/css/AdminCss/AdminTicket.css" asp-append-version="true">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    </head>
+</head>
 
-    <body>
-        <div class="content">
+<body>
+    <div class="content">
         <h1>Ticket management</h1>
 
         <table class="attractionTicket">
@@ -26,7 +26,7 @@
             <tbody>
                 @foreach (var a in Model)
                 {
-                    <tr class="clickable-row" data-href="@Url.Action("AdminTicketDetails", "Admin", new { id = a.Id })">
+                    <tr id="attraction-row" class="clickable-row" data-href="@Url.Action("AdminTicketDetails", "Admin", new { id = a.Id })">
                         <td>@a.Id</td>
                         <td>@a.Name</td>
                         <td>@a.AttractionType?.Name</td>
@@ -48,7 +48,7 @@
             });
         });
     </script>
-    </body>
+</body>
 
 </html>
 

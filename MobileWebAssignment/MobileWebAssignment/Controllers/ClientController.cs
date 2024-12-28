@@ -1,6 +1,7 @@
 
 using System.Globalization;
 using System.Net.Mail;
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -38,7 +39,13 @@ namespace MobileWebAssignment.Controllers
 
         public IActionResult Homepage()
         {
-            return View();
+            // Retrieve the logged-in user's email
+            var email = User.Identity!.Name;
+
+            // Find the user by email
+            var user = db.Members.SingleOrDefault(member => member.Email == email);
+
+            return View(user);
         }
 
         //============================================ Account Maintenance =========================================================
@@ -72,11 +79,37 @@ namespace MobileWebAssignment.Controllers
                 ModelState.AddModelError("Email", "Duplicated Email.");
             }
 
-            //check photo
-            if (ModelState.IsValid("Photo"))
+            string photoPath = null;
+
+            // Handle Base64 photo (Webcam)
+            if (!string.IsNullOrEmpty(vm.PhotoBase64))
             {
-                var e = hp.ValidatePhoto(vm.Photo);
-                if (e != "") ModelState.AddModelError("Photo", e);
+                var base64Data = Regex.Match(vm.PhotoBase64, @"data:image/(?<type>.+?);base64,(?<data>.+)").Groups["data"].Value;
+                var bytes = Convert.FromBase64String(base64Data);
+
+                string fileName = $"{Guid.NewGuid():N}.jpg";
+                string filePath = Path.Combine("wwwroot/User", fileName);
+                System.IO.File.WriteAllBytes(filePath, bytes);
+
+                photoPath = fileName;
+            }
+            // Handle uploaded file
+            else if (vm.Photo != null && vm.Photo.Length > 0)
+            {
+                var photoError = hp.ValidatePhoto(vm.Photo);
+                if (!string.IsNullOrEmpty(photoError))
+                {
+                    ModelState.AddModelError("Photo", photoError);
+                }
+                else
+                {
+                    photoPath = hp.SavePhoto(vm.Photo, "User");
+                }
+            }
+
+            if (string.IsNullOrEmpty(photoPath))
+            {
+                ModelState.AddModelError("Photo", "Please provide a profile photo by uploading or capturing one.");
             }
 
             if (ModelState.IsValid)
@@ -91,7 +124,7 @@ namespace MobileWebAssignment.Controllers
                     PhoneNumber = vm.PhoneNumber,
                     Gender = vm.Gender,
                     Freeze = false,
-                    PhotoURL = hp.SavePhoto(vm.Photo, "User")
+                    PhotoURL = photoPath,
                 });
                 db.SaveChanges();
                 TempData["Info"] = "Register successfully. Please login.";
@@ -101,6 +134,7 @@ namespace MobileWebAssignment.Controllers
             return View(vm);
         }
 
+
         //GET : Client/Login
         public IActionResult Login()
         {
@@ -109,39 +143,88 @@ namespace MobileWebAssignment.Controllers
 
         //POST : Client/Login
         [HttpPost]
-        public IActionResult Login(LoginVm vm, string? returnURL)
+        public async Task<IActionResult> Login(LoginVm vm, string? returnURL)
         {
+
+            if (vm.RecaptchaToken == null)
+            {
+                ModelState.AddModelError("", "reCAPTCHA validation failed.");
+                return View(vm);
+            }
+            else if (!await RecaptchaService.verifyRecaptchaV2(vm.RecaptchaToken, "6LcsrqMqAAAAAKF7Sxh6S-SBwDC3czdQMo00XPhj"))
+            {
+                ModelState.AddModelError("", "Token sent fail");
+                return View(vm);
+            }
+
             if (string.IsNullOrEmpty(vm.Email))
             {
-                ModelState.AddModelError("", "Email are required.");
+                ModelState.AddModelError("", "Email is required.");
                 return View(vm);
             }
 
             if (string.IsNullOrEmpty(vm.PasswordCurrent))
             {
-                ModelState.AddModelError("", "Password are required.");
+                ModelState.AddModelError("", "Password is required.");
                 return View(vm);
             }
 
-            var u = db.User.SingleOrDefault(user => user.Email == vm.Email);
+            // Retrieve the failed attempts cookie
+            var failedAttemptsCookie = Request.Cookies["FailedLoginAttempts"];
+            int failedAttempts = string.IsNullOrEmpty(failedAttemptsCookie) ? 0 : int.Parse(failedAttemptsCookie);
 
-            if (u.Freeze == true)
+            // Check if the user is temporarily blocked
+            if (failedAttempts >= 3)
             {
-                ModelState.AddModelError("", "Account already block by Admin.");
+                ModelState.AddModelError("", "Your account is temporarily blocked. Please try again after some time.");
                 return View(vm);
             }
 
-            if (u == null || string.IsNullOrEmpty(u.Password) || !hp.VerifyPassword(u.Password, vm.PasswordCurrent))
+            // Find user in the database
+            var user = db.User.SingleOrDefault(u => u.Email == vm.Email);
+
+            if (user == null || string.IsNullOrEmpty(user.Password) || !hp.VerifyPassword(user.Password, vm.PasswordCurrent))
             {
-                ModelState.AddModelError("", "Login credentials not matched.");
+                // Increment the failed attempts
+                failedAttempts++;
+
+                // Update the cookie
+                CookieOptions options = new()
+                {
+                    Expires = DateTime.Now.AddSeconds(30), // Block for 30 seconds
+                    HttpOnly = true,
+                    IsEssential = true
+                };
+
+                Response.Cookies.Append("FailedLoginAttempts", failedAttempts.ToString(), options);
+
+                if (failedAttempts >= 3)
+                {
+                    ModelState.AddModelError("", "Your account is temporarily blocked due to multiple failed login attempts.");
+                }
+                else
+                {
+                    ModelState.AddModelError("", "Login credentials not matched.");
+                }
+
                 return View(vm);
             }
 
-            // Successful login
+            // Reset the failed attempts on successful login
+            Response.Cookies.Delete("FailedLoginAttempts");
+
+            // Check if the account is frozen
+            if (user.Freeze)
+            {
+                ModelState.AddModelError("", "Account is blocked by Admin.");
+                return View(vm);
+            }
+
+            //Sucessfully login
             TempData["Info"] = "Login successfully.";
 
-            var role = (u is Admin) ? "Admin" : "Member";
-            hp.SignIn(u.Email, role);
+            var role = (user is Admin) ? "Admin" : "Member";
+            hp.SignIn(user.Email, role);
 
             if (!string.IsNullOrEmpty(returnURL))
             {
@@ -151,7 +234,6 @@ namespace MobileWebAssignment.Controllers
             if (role == "Admin")
             {
                 return RedirectToAction("AdminAttraction", "Admin");
-
             }
             else
             {
@@ -354,9 +436,7 @@ namespace MobileWebAssignment.Controllers
             mail.Subject = "Reset Password";
             mail.IsBodyHtml = true;
 
-
             var url = Url.Action("Login", "Client", null, "https");
-
 
             var path = u switch
             {
@@ -401,6 +481,7 @@ namespace MobileWebAssignment.Controllers
                 {
                     attraction = a,
                     feedbacks = db.Feedback.Where(f => f.AttractionId == a.Id).ToList(),
+                    tickets = db.Ticket.Where(t => t.AttractionId == a.Id).ToList(),
                 });
             }
 
@@ -413,6 +494,69 @@ namespace MobileWebAssignment.Controllers
             }
 
             return View(attractFeedback);
+        }
+
+        [HttpPost]
+        public IActionResult ClientAttraction(string? name, string? category, string? sort)
+        {
+            ViewBag.AttractionTypes = db.AttractionType.ToList();
+
+            // Searching for attraction
+            name = name?.Trim() ?? "";
+            category = category == "all" ? "" : category?.Trim();
+
+            var attractions = db.Attraction.Include(a => a.AttractionType)
+                                           .Where(a => a.Name.Contains(name))
+                                           .Where(a => a.AttractionTypeId.Contains(category))
+                                           .ToList();
+
+            ViewBag.Attractions = attractions;
+
+            var attractFeedback = new List<AttractFeedback>();
+
+            foreach (var a in attractions)
+            {
+                attractFeedback.Add(new AttractFeedback
+                {
+                    attraction = a,
+                    feedbacks = db.Feedback.Where(f => f.AttractionId == a.Id).ToList(),
+                    tickets = db.Ticket.Where(t => t.AttractionId == a.Id).ToList(),
+                });
+            }
+
+            foreach (var a in attractFeedback)
+            {
+                if (hp.SplitImagePath(a.attraction.ImagePath).Count > 0)
+                    a.attraction.ImagePath = hp.SplitImagePath(a.attraction.ImagePath)[0];
+            }
+
+            //get the minimum ticket price of each atttraction if have
+            foreach(var a in attractFeedback)
+            {
+                if(a.tickets.Count > 0)
+                {
+                    a.ticketPrice = hp.GetMinTicketPrice(a.tickets);
+                }
+            }
+
+            Func<AttractFeedback, object> attraction = "ticketPrice" switch
+            {
+                "ticketPrice" => t => t.ticketPrice,
+                _ => t => t.ticketPrice,
+            };
+
+            string Asort = sort == "High To Low" ? "des" : "asc";
+
+
+            //perform price sorting when needed
+            var at = Asort == "des" ?
+                    attractFeedback.OrderByDescending(attraction) :
+                    attractFeedback.OrderBy(attraction);
+
+            attractFeedback = at.ToList();
+
+
+            return PartialView("_ClientAttraction", attractFeedback);
         }
 
         //GET: AttractionDetail
@@ -491,42 +635,45 @@ namespace MobileWebAssignment.Controllers
         }
 
         [HttpPost]
-        public IActionResult AddToCart(string ticketId, int quantity)
+        public IActionResult AddMultipleToCart(List<CartItem> tickets)
         {
-            var userId = "U001";
-            //var userId = User.Identity!.Name;
-            //if (userId == null)
-            //{
-            //    TempData["Error"] = "You must log in to add items to the cart.";
-            //    return RedirectToAction("Login");
-            //}
+            var userId = "U001"; // Replace with actual user ID retrieval logic.
+            string attractionId = null; // Initialize AttractionId.
 
-            var ticket = db.Ticket.SingleOrDefault(t => t.Id == ticketId);
-            if (ticket == null || ticket.stockQty < quantity)
+            foreach (var ticket in tickets)
             {
-                TempData["Error"] = "Invalid ticket or insufficient stock.";
-                return RedirectToAction("ClientAttractionDetail", new { AttractionId = ticket?.AttractionId });
-            }
+                if (ticket.Quantity <= 0) continue; // Skip tickets with zero or negative quantities.
 
-            var existingCart = db.Cart.SingleOrDefault(c => c.UserId == userId && c.TicketId == ticketId);
-            if (existingCart != null)
-            {
-                existingCart.Quantity += quantity;
-            }
-            else
-            {
-                db.Cart.Add(new Cart
+                var dbTicket = db.Ticket.SingleOrDefault(t => t.Id == ticket.TicketId);
+                if (dbTicket == null || dbTicket.stockQty < ticket.Quantity)
                 {
-                    Id = NextCartId(),
-                    UserId = userId,
-                    TicketId = ticketId,
-                    Quantity = quantity,
-                });
+                    TempData["Error"] = $"Invalid ticket or insufficient stock for ticket {ticket.TicketId}.";
+                    continue;
+                }
+
+                attractionId = dbTicket.AttractionId; // Capture the AttractionId from a valid ticket.
+
+                var existingCart = db.Cart.SingleOrDefault(c => c.UserId == userId && c.TicketId == ticket.TicketId);
+                if (existingCart != null)
+                {
+                    existingCart.Quantity += ticket.Quantity;
+                }
+                else
+                {
+                    db.Cart.Add(new Cart
+                    {
+                        Id = NextCartId(),
+                        UserId = userId,
+                        TicketId = ticket.TicketId,
+                        Quantity = ticket.Quantity,
+                    });
+                }
             }
 
             db.SaveChanges();
-            TempData["Info"] = "Item added to cart successfully.";
-            return RedirectToAction("ClientAttractionDetail", new { AttractionId = ticket.AttractionId });
+
+            TempData["Info"] = "Selected items added to cart successfully.";
+            return RedirectToAction("ClientAttractionDetail", new { AttractionId = attractionId });
         }
 
 
@@ -561,6 +708,7 @@ namespace MobileWebAssignment.Controllers
 
             return View();
         }
+
         //------------------------------------------ FeedBack start ----------------------------------------------
 
         // Manually generate next id for feedback
@@ -572,6 +720,7 @@ namespace MobileWebAssignment.Controllers
         }
 
         //GET: Feedback/Insert
+        [Authorize(Roles = "Member")]
         public IActionResult ClientFeedbackForm(string attractionId)
         {
             ViewBag.Attraction = db.Attraction.Find(attractionId);
@@ -658,10 +807,16 @@ namespace MobileWebAssignment.Controllers
             return View(vm);
         }
 
-
-        public IActionResult ClientFeedback(string? userId)
+        [Authorize(Roles = "Member")]
+        public IActionResult ClientFeedback()
         {
-            var feedbacks = db.Feedback.Include(a => a.Attraction).Include(u => u.User).Where(f => f.UserId == userId).ToList();
+            // Retrieve the logged-in user's email
+            var email = User.Identity!.Name;
+
+            // Find the user by email
+            var user = db.Members.SingleOrDefault(member => member.Email == email);
+
+            var feedbacks = db.Feedback.Include(a => a.Attraction).Include(u => u.User).Where(f => f.UserId == user.Id).ToList();
 
             if (feedbacks == null)
             {
@@ -703,6 +858,7 @@ namespace MobileWebAssignment.Controllers
 
             return View(vm);
         }
+
 
         public IActionResult ClientFeedbackUpdate(string? Id)
         {
@@ -771,10 +927,6 @@ namespace MobileWebAssignment.Controllers
 
         //------------------------------------------ FeedBack end ----------------------------------------------
 
-
-
-
-
         //add cart
         public void UpdateCart(string productId, int quantity)
         {
@@ -790,7 +942,9 @@ namespace MobileWebAssignment.Controllers
             hp.SetCart(cart);
 
         }
+
         //GET client/clienPayment
+        [Authorize(Roles = "Member")]
         public IActionResult ClientPayment()
         {
             UpdateCart("T002", 9);
@@ -822,8 +976,12 @@ namespace MobileWebAssignment.Controllers
 
         }
 
+
         [HttpPost]
-        public IActionResult ClientPayment(PaymentVM vm)
+
+        [Authorize(Roles = "Member")]
+        public IActionResult ClientPaymentHIS()
+
         {
             if (ModelState.IsValid)
             {
@@ -876,17 +1034,17 @@ namespace MobileWebAssignment.Controllers
                 .OrderByDescending(p => p.PaymentDateTime)
                 .ToList();
 
-            
-            if (unpaid==false)
+
+            if (unpaid == false)
             {
                 allPurchases = allPurchases
                 .Where(p => p.Status == "S" || p.Status == "R") // Compare p.Id with Payment.PurchaseId
                  .ToList();
                 return allPurchases;
             }
-           
+
             allPurchases = allPurchases
-           .Where(p => p.Status == "F") 
+           .Where(p => p.Status == "F")
            .ToList();
 
 
@@ -895,7 +1053,7 @@ namespace MobileWebAssignment.Controllers
         public IActionResult ClientPaymentHIS(string? purchaseID, DateTime? validdate, string? Unpaid)
         {
             // Retrieve all PurchaseItem records with related data
-            
+
 
             var allPurchases = getAllPurcahse(false);
 

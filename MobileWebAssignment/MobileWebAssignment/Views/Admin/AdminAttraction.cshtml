@@ -27,7 +27,8 @@
 
 					<form data-ajax="true"
 						  data-ajax-update="#atarget"
-						  data-ajax-loading="#aloader">
+						  data-ajax-loading="#aloader"
+						  action="AjaxAttractionType">
 						@Html.TextBox("ATname", "",
 									new { type = "search", autofocus = "", data_trim = "", id = "searchATBar" })
 						<button>Search</button>
@@ -35,11 +36,7 @@
 						<img src="/images/loader.gif" id="aloader" style="display: none">
 					</form>
 
-					@{
-						var attractionTypes = (IPagedList<AttractionType>)ViewBag.AttractionTypes;
-					}
-					@attractionTypes.Count of @attractionTypes.TotalItemCount record(s) |
-					Page @attractionTypes.PageNumber of @attractionTypes.PageCount
+					
 					<button class="create" data-get="/Admin/AdminAttractionTypeCreate">Create New</button>
 				</span>
 			</h3>
@@ -64,12 +61,12 @@
 
 						<img src="/images/loader.gif" id="loader" style="display: none">
 					</form>
-					@Model.Count() of @Model.TotalItemCount record(s) |
-					Page @Model.PageNumber of @Model.PageCount
+					
 					<button class="create" data-get="/Admin/AdminAttractionCreate">Create New</button>
 				</span>
 			</h3>
 			<div class="attractionTypeTable" id="target">
+				
 				<partial name="_AdminAttraction" />
 			</div>
 		</div>

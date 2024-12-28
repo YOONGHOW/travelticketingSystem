@@ -1,5 +1,4 @@
-﻿﻿
-<!DOCTYPE html>
+﻿﻿<!DOCTYPE html>
 <html lang="en">
 @model UpdateProfileVm
 
@@ -34,7 +33,9 @@
             z-index: 1;
         }
     </style>
-
+    <script src="/js/WebCam.js" type="text/javascript"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="/js/webcamFeatures.js" type="text/javascript"></script>
 </head>
 
 <body>
@@ -43,33 +44,21 @@
     <div class="container">
         <div class="title">Profile</div>
         <div class="content">
-            @*
-            @if(Model.ErrorMessage.Length > 0){
-                <div class="alert" role="alert">
-                    <strong>@Model.ErrorMessage</strong>
-                    <button type="button" class="button" data-bs-dismiss="alert" aria-label="close"></button>
-                </div>
-            }
-            else if (Model.SuccessMessage.Length > 0)
-            {
-                <div class="alert" role="alert">
-                    <strong>@Model.SuccessMessage</strong>
-                    <button type="button" class="button" data-bs-dismiss="alert" aria-label="close"></button>
-                </div>
-            }*@
 
             <form method="POST" id="state" enctype="multipart/form-data">
                 
                 <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                 <div class="user-details">
 
-                    <!--Profile Photo -->                   
                     <div class="input-address">
-                        <label class="upload" tabindex="0">
-                            <input class="form-control" type="file" accept="image/jpg,image/png" name="Photo" asp-for="Photo" hidden>
+                        <label class="details">Profile Photo</label>
+
+                            <!-- Image File Upload  -->
+                        <label class="upload" tabindex="0" asp-for="Photo">
+                            <input class="form-control" type="file" accept="image/jpeg,image/png" name="Photo" asp-for="Photo" hidden>
                             <img src="@Model.PhotoURL" id="drag">
-                            <span asp-validation-for="Photo" class="text-danger"></span>
                         </label>
+                        <span asp-validation-for="Photo" class="text-danger"></span>
                     </div>
 
                     <!-- Full Name -->

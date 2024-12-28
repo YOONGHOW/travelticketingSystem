@@ -8,10 +8,11 @@ using X.PagedList.Extensions;
 using Microsoft.AspNetCore.Hosting.Server;
 using System.Media;
 using Microsoft.IdentityModel.Tokens;
+using Azure;
+using Microsoft.AspNetCore.Authorization;
 
 
 namespace MobileWebAssignment.Controllers;
-
 public class AdminController : Controller
 {
     private readonly DB db;
@@ -29,7 +30,7 @@ public class AdminController : Controller
 
 
     //==================================== Attraction Type start =========================================================
-    public IActionResult AdminAttraction(string? Aname, int ATpage = 1, int Apage = 1)
+    public IActionResult AdminAttraction(string? Aname, string? Asort, string? Adir, int ATpage = 1, int Apage = 1)
     {
         //page list for Attraction Types
         if (ATpage < 1)
@@ -43,21 +44,41 @@ public class AdminController : Controller
         {
             return RedirectToAction(null, new { ATpage = ViewBag.AttractionTypes.PageCount });
         }
+    
 
+        // Searching for attraction
+        ViewBag.aname = Aname = Aname?.Trim() ?? "";
+
+        var atts = db.Attraction.Include(a => a.AttractionType).Where(a => a.Name.Contains(Aname));
+
+        // Sorting for attraction
+        ViewBag.ASort = Asort;
+        ViewBag.ADir = Adir;
+
+        Func<Attraction, object> attraction = Asort switch
+        {
+            "Id" => a => a.Id,
+            "Name" => a => a.Name,
+            "Location" => a => a.Location,
+            "AttractionTypeId" => a => a.AttractionTypeId,
+            _ => a => a.Id,
+        };
+
+        var at = Adir == "des" ?
+                atts.OrderByDescending(attraction) :
+                atts.OrderBy(attraction);
 
         //page list for Attractions
         if (Apage < 1)
         {
             return RedirectToAction(null, new { Apage = 1 });
         }
-
-        Aname = Aname?.Trim() ?? "";
-
-        var attractions = db.Attraction.Include(a => a.AttractionType).Where(a => a.Name.Contains(Aname)).ToPagedList(Apage, 5);
+        
+        var attractions = at.ToPagedList(Apage, 5);
 
         if (Apage > attractions.PageCount && attractions.PageCount > 0)
         {
-            return RedirectToAction(null, new { Apage = attractions.PageCount });
+            return RedirectToAction(null, new { Aname, Asort, Adir, Apage = attractions.PageCount });
         }
 
         if (Request.IsAjax())
@@ -65,8 +86,46 @@ public class AdminController : Controller
             return PartialView("_AdminAttraction", attractions);
         }
 
-
         return View(attractions);
+    }
+
+    //ajax function for attraction type
+    public IActionResult AjaxAttractionType(string? ATname, string? ATsort, string? ATdir, int ATpage = 1)
+    {
+        //Searching for attraction type
+        ViewBag.atname = ATname = ATname?.Trim() ?? "";
+        var attractionTypes = db.AttractionType.Where(at => at.Name.Contains(ATname));
+
+        // Sorting for attraction
+        ViewBag.ATSort = ATsort;
+        ViewBag.ATDir = ATdir;
+
+        Func<AttractionType, object> attraction = ATsort switch
+        {
+            "Id" => at => at.Id,
+            "Name" => at => at.Name,
+            _ => at => at.Id,
+        };
+
+        var at = ATdir == "des" ?
+                attractionTypes.OrderByDescending(attraction) :
+                attractionTypes.OrderBy(attraction);
+
+        //page list for Attraction Types
+        if (ATpage < 1)
+        {
+            return RedirectToAction(null, new { ATpage = 1 });
+        }
+
+        var atType = at.ToPagedList(ATpage, 5);
+        ViewBag.AttractionTypes = atType;
+
+        if (ATpage > ViewBag.AttractionTypes.PageCount && ViewBag.AttractionTypes.PageCount > 0)
+        {
+            return RedirectToAction(null, new { ATname, ATsort, ATdir, ATpage = ViewBag.AttractionTypes.PageCount });
+        }
+
+        return PartialView("_AdminAttractionType");
     }
 
     // Manually generate next id for attraction type
@@ -347,7 +406,7 @@ public class AdminController : Controller
 
         var a = db.Attraction.Find(vm.Id);
         ViewBag.AttractionTypes = db.AttractionType.ToList();
-        
+
 
         //check vm model
         if (a == null)
@@ -524,7 +583,7 @@ public class AdminController : Controller
                 ticketDetails = vm.ticketDetails,
                 ticketType = vm.ticketType,
                 AttractionId = vm.AttractionId,
-            }); 
+            });
             db.SaveChanges();
 
             TempData["Info"] = "A ticket for " + vm.AttractionId + "  is inserted.";
@@ -882,18 +941,10 @@ public class AdminController : Controller
             ModelState.AddModelError("Email", "Duplicated Email.");
         }
 
-        //check photo
-        if (ModelState.IsValid("Photo"))
-        {
-            var e = hp.ValidatePhoto(vm.Photo);
-            if (e != "") ModelState.AddModelError("Photo", e);
-
-        }
-
         if (ModelState.IsValid)
         {
 
-            db.Members.Add(new()
+            db.Admins.Add(new()
             {
                 Id = NextRegisterId(),
                 Name = vm.Name,
@@ -903,7 +954,6 @@ public class AdminController : Controller
                 PhoneNumber = vm.PhoneNumber,
                 Gender = vm.Gender,
                 Freeze = false,
-                PhotoURL = hp.SavePhoto(vm.Photo, "User")
             });
             db.SaveChanges();
             TempData["Info"] = "Create successfully. Please login.";
@@ -915,25 +965,19 @@ public class AdminController : Controller
     }
 
     //GET Admin/MemberList
-    public IActionResult MemberList(int page = 1)
+    public IActionResult MemberList(int MemberPage = 1, int AdminPage = 1)
     {
-        // Ensure the page number is at least 1
-        if (page < 1)
-        {
-            return RedirectToAction(null, new { page = 1 });
-        }
+        // Ensure the page numbers are at least 1
+        if (MemberPage < 1) MemberPage = 1;
+        if (AdminPage < 1) AdminPage = 1;
 
-        // Get paged list of users from the database
-        ViewBag.Users = db.User.ToPagedList(page, 5);
+        // Get paginated lists of members and admins
+        var members = db.User.OfType<Member>().ToPagedList(MemberPage, 5);
+        var admins = db.User.OfType<Admin>().ToPagedList(AdminPage, 5);
 
-        // Ensure the page number does not exceed the total page count
-        if (page > ViewBag.Users.PageCount && ViewBag.Users.PageCount > 0)
-        {
-            return RedirectToAction(null, new { page = ViewBag.Users.PageCount });
-        }
 
-        // Return the view with the paged list
-        return View(ViewBag.Users);
+        // Pass the lists as a tuple to the view
+        return View((members, admins));
     }
 
 
@@ -962,8 +1006,74 @@ public class AdminController : Controller
     }
 
     //GET Admin/AdminUpdateMember
-    [HttpGet("Admin/AdminUpdateMember/{Id?}")]
-    public IActionResult AdminUpdateMember(string? Id)
+    [HttpGet]
+    public IActionResult AdminUpdateMember()
+    {
+        var email = User.Identity!.Name; // Get the logged-in user's email
+        var m = db.Admins.SingleOrDefault(member => member.Email == email); // Retrieve member details
+
+        if (m == null) return RedirectToAction("MemberList", "Admin");
+
+        var birthDate = Helper.ConvertIcToBirthDate(m.IC);
+
+        var vm = new UpdateProfileVm
+        {
+            Name = m.Name,
+            Email = m.Email,
+            PhoneNumber = m.PhoneNumber,
+            Gender = m.Gender,
+            IC = m.IC,
+            BirthDate = birthDate,
+        };
+
+        return View(vm);
+    }
+
+    //POST Admin/AdminUpdateMember 
+    [HttpPost]
+    public IActionResult AdminUpdateMember(UpdateProfileVm vm, string? Id)
+    {
+        // Retrieve the logged-in user's email
+        var email = User.Identity!.Name;
+
+        // Find the user by email
+        var user = db.Admins.SingleOrDefault(member => member.Email == email);
+
+        if (user == null)
+        {
+            return RedirectToAction("MemberList", "Admin"); // Redirect if user not found
+        }
+
+        // Validate other fields (e.g., name)
+        if (string.IsNullOrWhiteSpace(vm.Name))
+        {
+            ModelState.AddModelError("Name", "Name is required.");
+        }
+
+        // Additional validation for other fields can go here
+
+        if (ModelState.IsValid)
+        {
+            // Update user details
+            user.Name = vm.Name.Trim();
+            user.PhoneNumber = vm.PhoneNumber?.Trim(); // Handle optional fields
+            user.Gender = vm.Gender;
+            user.IC = vm.IC;
+
+            // Save changes to the database
+            db.SaveChanges();
+
+            TempData["Info"] = "Details updated successfully.";
+            return RedirectToAction("MemberList", "Admin");
+        }
+
+        return View(vm);
+
+    }
+
+    //GET Admin/MemberDetails
+    [HttpGet("Admin/MemberDetails/{Id?}")]
+    public IActionResult MemberDetails(string? Id)
     {
         var user = db.Members.Find(Id);
 
@@ -987,62 +1097,55 @@ public class AdminController : Controller
         return View(vm);
     }
 
-    //POST Admin/AdminUpdateMember 
-    [HttpPost("Admin/AdminUpdateMember/{Id?}")]
-    public IActionResult AdminUpdateMember(UpdateProfileVm vm, string? Id)
+    //GET Admin/AdminChangePassword
+    public IActionResult AdminChangePassword()
     {
-        var user = db.Members.Find(Id);
+        return View();
+    }
 
-        if (user == null) return RedirectToAction("MemberList", "Admin");
+    //POST Admin/AdminChangePassword
+    [Authorize]
+    [HttpPost]
+    public IActionResult AdminChangePassword(ChangePassword vm)
+    {
+        // Retrieve the logged-in user's email
+        var email = User.Identity!.Name;
 
-        //check photo
-        if (ModelState.IsValid("Photo"))
+        // Find the user by email
+        var user = db.Admins.SingleOrDefault(member => member.Email == email);
+
+
+        if (user == null)
         {
-            var e = hp.ValidatePhoto(vm.Photo);
-            if (e != "") ModelState.AddModelError("Photo", e);
+            return RedirectToAction("MemberList", "Admin"); // Redirect if user not found
         }
 
-        // Validate other fields (e.g., name)
-        if (string.IsNullOrWhiteSpace(vm.Name))
+        if (!hp.VerifyPassword(user.Password, vm.CurrentPassword))
         {
-            ModelState.AddModelError("Name", "Name is required.");
+            ModelState.AddModelError("Current", "Current Password Incorrect.");
         }
 
-        // Additional validation for other fields can go here
 
         if (ModelState.IsValid)
         {
-            // Update user details
-            user.Name = vm.Name.Trim();
-            user.PhoneNumber = vm.PhoneNumber?.Trim(); // Handle optional fields
-            user.Gender = vm.Gender;
-            user.IC = vm.IC;
 
-            // Update profile photo if a new one is uploaded
-
-            if (vm.Photo != null)
-            {
-                hp.DeletePhoto(user.PhotoURL, "User");
-                user.PhotoURL = hp.SavePhoto(vm.Photo, "User");
-            }
-
-            // Save changes to the database
+            user.Password = hp.HashPassword(vm.NewPassword);
             db.SaveChanges();
 
-            TempData["Info"] = "Profile updated successfully.";
+            TempData["Info"] = "Password updated.";
             return RedirectToAction("MemberList", "Admin");
+
         }
 
+
         return View(vm);
-
     }
-
 
     //============================================ Member Maintenance End =========================================================
 
 
 
-    
+
 
 
 
@@ -1102,7 +1205,7 @@ public class AdminController : Controller
     }
     public IActionResult AdminPurchase(string? purchaseID, DateTime? validdate, string? payment)
     {
-      
+
         var allPurchases = getAllPurcahse(false);
 
 
