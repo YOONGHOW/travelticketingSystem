@@ -1,19 +1,24 @@
 ﻿@*
     For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 *@
+
 @{
-    Layout = "_AdminLayout";
-    ViewBag.Title = "Admin | Feedback";
+	Layout = "_AdminLayout";
+	ViewBag.Title = "Admin | Feedback";
 }
+
+@using X.PagedList
+@using X.PagedList.Mvc.Core
+@model IPagedList<Attraction>
 
 
 <html>
 <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <link rel="stylesheet" href="/css/AdminCss/AdminAttraction.css" asp-append-version="true">
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<link rel="stylesheet" href="/css/AdminCss/AdminAttraction.css" asp-append-version="true">
+
 </head>
 <body>
-
 	<div class="content">
 		<div class="attractionTypeData">
 			<h3 class="attractionTypeTitle">
@@ -67,7 +72,24 @@
 		</div>
 	</div>
 
-
-    </div>
 </body>
 </html>
+@section foot {
+	<script>
+		let timer = null;
+
+		$('#searchBar').on('input', e => {
+		clearTimeout(timer);
+		timer = setTimeout(() => $(e.target.form).submit(), 500);
+		});
+	</script>
+	<script>
+		let timer = null;
+
+		$('#searchATBar').on('input', e => {
+		clearTimeout(timer);
+		timer = setTimeout(() => $(e.target.form).submit(), 500);
+		});
+	</script>
+}
+

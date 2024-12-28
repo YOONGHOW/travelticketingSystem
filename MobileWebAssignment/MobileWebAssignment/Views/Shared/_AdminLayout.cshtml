@@ -4,15 +4,17 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@ViewBag.Title</title>
-    <link rel="shortcut icon" href="/images/favicon.png">
+    <link rel="shortcut icon" href="/images/miyabi.jpeg">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="/css/AdminCss/admin_sidebar.css" asp-append-version="true">
+    <link rel="stylesheet" href="/css/AdminCss/pager.css">
     @RenderSection("head", false)
 </head>
 <body>
-    <div class=" d-flex">
-    <div class="navbarMain">
+    <div class="info">@Html.Raw(TempData["Info"])</div>
+
+    <div class="navbar">
         <div class="main">
             <div class="selected">
                 <a href="ViewAdmin" class="bar" role="navigation" aria-label="Dashboard">
@@ -20,6 +22,14 @@
                     <p>Dashboard</p>
                 </a>
             </div>
+
+            <div class="selected">
+                <a href="MemberList" class="bar" role="navigation" aria-label="Member">
+                    <i class="fa fa-user" aria-hidden="true"></i>
+                    <p>Member</p>
+                </a>
+            </div>
+
             <div>
                 <a href="/Admin/AdminAttraction" class="bar" role="navigation" aria-label="Attraction">
                     <i class="fa fa-map" aria-hidden="true"></i>
@@ -33,12 +43,14 @@
                 </a>
             </div>
             <div>
+
                 <a href="/Admin/AdminTicket" class="bar" role="navigation" aria-label="Ticket">
                     <i class="fa fa-shopping-cart" aria-hidden="true"></i>
-                    <p>Products</p>
+                    <p>Ticket</p>
                 </a>
             </div>
             <div>
+
                 <a href="../../OrderStatusDisplay" class="bar" role="navigation" aria-label="Order">
                     <i class="fa fa-shopping-bag" aria-hidden="true"></i>
                     <p>Order</p>
@@ -51,10 +63,19 @@
                 </a>
             </div>
             <div>
-                <a href="../../View/Admin/staffLogin.jsp" class="bar" role="navigation" aria-label="Logout">
-                    <i class="fa fa-sign-out" aria-hidden="true"></i>
-                    <p>Logout</p>
-                </a>
+                @if(User.Identity!.IsAuthenticated){
+                    <a href="/Client/Logout" class="bar" role="navigation" aria-label="Logout">
+                        <i class="fa fa-sign-out" aria-hidden="true"></i>
+                        <p>Logout</p>
+                    </a>
+                }else{
+                    <a href="/Client/Login" class="bar" role="navigation" aria-label="Login">
+                        <i class="fa fa-sign-out" aria-hidden="true"></i>
+                        <p>Login</p>
+                    </a>
+
+                    }
+
             </div>
         </div>
     </div>
@@ -62,7 +83,7 @@
     <main>
         @RenderBody()
     </main>
-    </div>
+
     <script src="/js/jquery.min.js"></script>
     <script src="/js/jquery.unobtrusive-ajax.min.js"></script>
     <script src="/js/jquery.validate.min.js"></script>
