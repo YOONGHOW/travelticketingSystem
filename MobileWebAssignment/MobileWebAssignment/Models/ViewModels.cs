@@ -168,6 +168,9 @@ public class LoginVm
     [DataType(DataType.Password)]
     [Required(ErrorMessage = "Password is required.")]
     public string PasswordCurrent { get; set; }
+
+    [BindProperty]
+    public string? RecaptchaToken { get; set; }
 }
 public class RegisterVM
 {

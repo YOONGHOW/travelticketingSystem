@@ -31,7 +31,7 @@
 
 
                    
-                    @if(User.Identity!.IsAuthenticated)
+                    @if(User.Identity!.IsAuthenticated && User.IsInRole("Member"))
                     {
 
                         <li><a href="/Client/ClientPaymentHIS">Order History</a></li>
@@ -45,8 +45,6 @@
                             </a>
                         </li>
                         <li><a href="/Client/Logout">Logout</a></li>
-
-
                     }else{
                         <li><a href="/Client/Login">Login</a></li>
 

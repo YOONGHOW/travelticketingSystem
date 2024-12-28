@@ -72,7 +72,6 @@ namespace MobileWebAssignment.Controllers
                 ModelState.AddModelError("Email", "Duplicated Email.");
             }
 
-
             string photoPath = null;
 
             // Handle Base64 photo (Webcam)
@@ -137,50 +136,97 @@ namespace MobileWebAssignment.Controllers
 
         //POST : Client/Login
         [HttpPost]
-        public IActionResult Login(LoginVm vm, string? returnURL)
+        public async Task<IActionResult> Login(LoginVm vm, string? returnURL)
         {
 
-            if (string.IsNullOrEmpty(vm.Email) )
+            if (vm.RecaptchaToken == null)
             {
-                ModelState.AddModelError("", "Email are required.");
+                ModelState.AddModelError("", "reCAPTCHA validation failed.");
                 return View(vm);
             }
-            
+            else if (!await RecaptchaService.verifyRecaptchaV2(vm.RecaptchaToken, "6LcsrqMqAAAAAKF7Sxh6S-SBwDC3czdQMo00XPhj"))
+            {
+                ModelState.AddModelError("", "Token sent fail");
+                return View(vm);
+            }
+
+            if (string.IsNullOrEmpty(vm.Email))
+            {
+                ModelState.AddModelError("", "Email is required.");
+                return View(vm);
+            }
+
             if (string.IsNullOrEmpty(vm.PasswordCurrent))
             {
-                ModelState.AddModelError("", "Password are required.");
+                ModelState.AddModelError("", "Password is required.");
                 return View(vm);
             }
 
-            var u = db.User.SingleOrDefault(user => user.Email == vm.Email);
+            // Retrieve the failed attempts cookie
+            var failedAttemptsCookie = Request.Cookies["FailedLoginAttempts"];
+            int failedAttempts = string.IsNullOrEmpty(failedAttemptsCookie) ? 0 : int.Parse(failedAttemptsCookie);
 
-            if (u == null || string.IsNullOrEmpty(u.Password) || !hp.VerifyPassword(u.Password, vm.PasswordCurrent))
+            // Check if the user is temporarily blocked
+            if (failedAttempts >= 3)
             {
-                ModelState.AddModelError("", "Login credentials not matched.");
+                ModelState.AddModelError("", "Your account is temporarily blocked. Please try again after some time.");
                 return View(vm);
             }
 
-            if (u.Freeze == true)
+            // Find user in the database
+            var user = db.User.SingleOrDefault(u => u.Email == vm.Email);
+
+            if (user == null || string.IsNullOrEmpty(user.Password) || !hp.VerifyPassword(user.Password, vm.PasswordCurrent))
             {
-                ModelState.AddModelError("", "Account already block by Admin.");
+                // Increment the failed attempts
+                failedAttempts++;
+
+                // Update the cookie
+                CookieOptions options = new()
+                {
+                    Expires = DateTime.Now.AddSeconds(30), // Block for 30 seconds
+                    HttpOnly = true,
+                    IsEssential = true
+                };
+
+                Response.Cookies.Append("FailedLoginAttempts", failedAttempts.ToString(), options);
+
+                if (failedAttempts >= 3)
+                {
+                    ModelState.AddModelError("", "Your account is temporarily blocked due to multiple failed login attempts.");
+                }
+                else
+                {
+                    ModelState.AddModelError("", "Login credentials not matched.");
+                }
+
                 return View(vm);
             }
 
-            // Successful login
+            // Reset the failed attempts on successful login
+            Response.Cookies.Delete("FailedLoginAttempts");
+
+            // Check if the account is frozen
+            if (user.Freeze)
+            {
+                ModelState.AddModelError("", "Account is blocked by Admin.");
+                return View(vm);
+            }
+
+            //Sucessfully login
             TempData["Info"] = "Login successfully.";
 
-            var role = (u is Admin) ? "Admin" : "Member";
-            hp.SignIn(u.Email, role);
+            var role = (user is Admin) ? "Admin" : "Member";
+            hp.SignIn(user.Email, role);
 
             if (!string.IsNullOrEmpty(returnURL))
             {
                 return Redirect(returnURL);
             }
 
-            if(role == "Admin")
+            if (role == "Admin")
             {
                 return RedirectToAction("AdminAttraction", "Admin");
-
             }
             else
             {

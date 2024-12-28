@@ -1,32 +1,36 @@
-﻿
-@{
+﻿@{
     Layout = "_AdminLayout";
 }
 
 @using X.PagedList
 @using X.PagedList.Mvc.Core
-@model IPagedList<User>
+@model (IPagedList<Member>, IPagedList<Admin>)
 
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <link rel="stylesheet" href="/css/AdminCss/MemberList.css" asp-append-version="true">
-
 </head>
 <body>
     <div class="content">
 
-        <div class="MemberListData">
-            <h3 class="MemberListTitle">
-                Member List
-                <span class="tableNav">
-                    <input type="text" id="searchBar" placeholder="Search..." />
+        @* Define the options variable only once *@
+        @{
+            var options = PagedListRenderOptions.ClassicPlusFirstAndLast;
+            options.LinkToFirstPageFormat = "First";
+            options.LinkToLastPageFormat = "Last";
+            options.LinkToPreviousPageFormat = "Previous";
+            options.LinkToNextPageFormat = "Next";
+        }
 
-                    @Model.Count() of @Model.TotalItemCount record(s) |
-                    Page @Model.PageNumber of @Model.PageCount
-                    <button class="create" data-get="/Admin/CreateAccount">Create New</button>
-                </span>
-            </h3>
+        <div class="MemberListData">
+            <h3 class="MemberListTitle">Users with Role: Member</h3>
+
+            <span class="tableNav">
+                @Model.Item1.Count() of @Model.Item1.TotalItemCount record(s) |
+                Page @Model.Item1.PageNumber of @Model.Item1.PageCount
+            </span>
+            <br/>
 
             <div class="MemberListTable">
                 <table>
@@ -43,9 +47,9 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @if (Model.Count != 0)
+                        @if (Model.Item1.Count != 0)
                         {
-                            foreach (var user in Model)
+                            foreach (var user in Model.Item1)
                             {
                                 <tr>
                                     <td>@user.Id</td>
@@ -54,14 +58,9 @@
                                     <td>@user.IC</td>
                                     <td>@user.PhoneNumber</td>
                                     <td>@user.Gender</td>
-                                    @if(user.Freeze == false)
-                                        {
-                                        <td>Active</td>
-                                        }else{
-                                        <td>Block</td>
-                                        }
+                                    <td>@(user.Freeze ? "Block" : "Active")</td>
                                     <td style="text-align:center;">
-                                        <button class="update" data-get="/Admin/AdminUpdateMember/@user.Id">Update</button>
+                                        <button class="update" data-get="/Admin/MemberDetails/@user.Id">Details</button>
                                     </td>
                                     <td style="text-align:center;">
                                         <form method="post" asp-action="UserStatus" asp-controller="Admin">
@@ -77,29 +76,79 @@
                         else
                         {
                             <tr>
-                                <td colspan="8" style="text-align:center;">No Users Found</td>
+                                <td colspan="8" style="text-align:center;">No Members Found</td>
                             </tr>
                         }
                     </tbody>
-
                 </table>
-                @{
-                    var options = PagedListRenderOptions.ClassicPlusFirstAndLast;
-                    options.LinkToFirstPageFormat = "First";
-                    options.LinkToLastPageFormat = "Last";
-                    options.LinkToPreviousPageFormat = "Previous";
-                    options.LinkToNextPageFormat = "Next";
-                }
 
                 @Html.PagedListPager(
-                         (IPagedList)Model,
-                         page => Url.Action("MemberList", new { page = page }),
+                         Model.Item1,
+                         page => $"?MemberPage={page}",
                          options
                          )
             </div>
         </div>
-        <br />
-        <br />
+
+        <hr style="margin: 20px 0; border: 1px solid #ccc;" />
+
+        <div class="MemberListData">
+            <h3 class="MemberListTitle">Users with Role: Admin</h3>
+
+            <span class="tableNav">
+                @Model.Item2.Count() of @Model.Item2.TotalItemCount record(s) |
+                Page @Model.Item2.PageNumber of @Model.Item2.PageCount
+                <button class="create" data-get="/Admin/AdminUpdateMember">Update Your Account</button>
+                <button class="create" data-get="/Admin/CreateAccount">Create New Admin Account</button>
+
+            </span>
+            </br>
+            <div class="MemberListTable">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>User ID</th>
+                            <th>Email</th>
+                            <th>Name</th>
+                            <th>IC</th>
+                            <th>Phone No.</th>
+                            <th>Gender</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Item2.Count != 0)
+                        {
+                            foreach (var admin in Model.Item2)
+                            {
+                                <tr>
+                                    <td>@admin.Id</td>
+                                    <td>@admin.Email</td>
+                                    <td>@admin.Name</td>
+                                    <td>@admin.IC</td>
+                                    <td>@admin.PhoneNumber</td>
+                                    <td>@admin.Gender</td>
+                                    <td>@(admin.Freeze ? "Block" : "Active")</td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="8" style="text-align:center;">No Admins Found</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+                @Html.PagedListPager(
+                         Model.Item2,
+                         page => $"?AdminPage={page}",
+                         options
+                         )
+            </div>
+        </div>
+
     </div>
 </body>
 </html>

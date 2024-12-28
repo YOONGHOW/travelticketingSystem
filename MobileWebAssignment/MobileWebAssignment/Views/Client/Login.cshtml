@@ -1,11 +1,32 @@
 ﻿<!DOCTYPE html>
 <html>
     @model LoginVm
+@inject IConfiguration configuration
+
+@{
+    var siteKey = configuration["ReCaptchaSettings:SiteKey"];
+}
+
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta charset="UTF-8">
     <title>Login</title>
     <link href="/css/ClientCss/Login.css" rel="stylesheet" type="text/css" asp-append-version="true" />
+    <script src="https://www.google.com/recaptcha/api.js?onload=onloadCallback&render=explicit" async defer></script>
+
+    <script type="text/javascript">
+        var onloadCallback = function() {
+          grecaptcha.render('html_element', {
+              'sitekey' : '@siteKey'
+            });
+        };
+
+        function onSubmit(event){
+            var token = grecaptcha.getResponse();
+            document.getElementById("recaptchaTokenInputId").value = token;
+            console.log("Token Received",token);
+        }
+    </script>
 </head>
 <style>
     html {
@@ -46,9 +67,9 @@
             <h2>Sign In</h2><br />
 
             <!-- The data form for user to input their email and password for login purpose -->
-            <form method="POST" enctype="multipart/form-data">
-
-                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <form method="POST" enctype="multipart/form-data" onsubmit="onSubmit(event)">
+                
+                <div asp-validation-summary="ModelOnly" class="text-danger" style="font-size:15px;"></div>
 
                 <div class="input-box">
                     <label class="details" for="email" asp-for="Email">Email</label><br />
@@ -61,6 +82,17 @@
                 <div class="input-box">
                     <input type="password" id="password" name="PasswordCurrent" class="login-input" placeholder="Enter your password" asp-for="PasswordCurrent"><br />
                     <span asp-validation-for="PasswordCurrent" class="text-danger"></span>
+                    <br/>
+                    <br />
+
+
+                    <div class="">
+                        <div class="">
+                            <div id="html_element"></div>
+                            <input type="hidden" id="recaptchaTokenInputId" asp-for="RecaptchaToken">
+                            <hr />
+                        </div>
+                    </div>
 
                     <p>Forget password? <a href="ResetPassword">Click here</a></p>
                 </div>
