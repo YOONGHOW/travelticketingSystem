@@ -475,6 +475,7 @@ namespace MobileWebAssignment.Controllers
                 {
                     attraction = a,
                     feedbacks = db.Feedback.Where(f => f.AttractionId == a.Id).ToList(),
+                    tickets = db.Ticket.Where(t => t.AttractionId == a.Id).ToList(),
                 });
             }
 
@@ -487,6 +488,43 @@ namespace MobileWebAssignment.Controllers
             }
 
             return View(attractFeedback);
+        }
+
+        [HttpPost]
+        public IActionResult ClientAttraction(string? name, string? category, string? sort)
+        {
+            ViewBag.AttractionTypes = db.AttractionType.ToList();
+
+            // Searching for attraction
+            name = name?.Trim() ?? "";
+            category = category == "all" ? "" : category?.Trim();
+
+            var attractions = db.Attraction.Include(a => a.AttractionType)
+                                           .Where(a => a.Name.Contains(name))
+                                           .Where(a => a.AttractionTypeId.Contains(category))
+                                           .ToList();
+
+            ViewBag.Attractions = attractions;
+
+            var attractFeedback = new List<AttractFeedback>();
+
+            foreach (var a in attractions)
+            {
+                attractFeedback.Add(new AttractFeedback
+                {
+                    attraction = a,
+                    feedbacks = db.Feedback.Where(f => f.AttractionId == a.Id).ToList(),
+                    tickets = db.Ticket.Where(t => t.AttractionId == a.Id).ToList(),
+                });
+            }
+
+            foreach (var a in attractFeedback)
+            {
+                if (hp.SplitImagePath(a.attraction.ImagePath).Count > 0)
+                    a.attraction.ImagePath = hp.SplitImagePath(a.attraction.ImagePath)[0];
+            }
+
+            return PartialView("_ClientAttraction", attractFeedback);
         }
 
         //GET: AttractionDetail
@@ -638,7 +676,7 @@ namespace MobileWebAssignment.Controllers
 
             return View();
         }
-        
+
         //------------------------------------------ FeedBack start ----------------------------------------------
 
         // Manually generate next id for feedback
@@ -650,7 +688,7 @@ namespace MobileWebAssignment.Controllers
         }
 
         //GET: Feedback/Insert
-        [Authorize (Roles = "Member")]
+        [Authorize(Roles = "Member")]
         public IActionResult ClientFeedbackForm(string attractionId)
         {
             ViewBag.Attraction = db.Attraction.Find(attractionId);
@@ -866,7 +904,7 @@ namespace MobileWebAssignment.Controllers
             hp.SetCart(cart);
 
         }
-        
+
         //GET client/clienPayment
         [Authorize(Roles = "Member")]
         public IActionResult ClientPayment()
@@ -905,7 +943,7 @@ namespace MobileWebAssignment.Controllers
 
         [Authorize(Roles = "Member")]
         public IActionResult ClientPaymentHIS()
-        
+
         {
             if (ModelState.IsValid)
             {
@@ -958,17 +996,17 @@ namespace MobileWebAssignment.Controllers
                 .OrderByDescending(p => p.PaymentDateTime)
                 .ToList();
 
-            
-            if (unpaid==false)
+
+            if (unpaid == false)
             {
                 allPurchases = allPurchases
                 .Where(p => p.Status == "S" || p.Status == "R") // Compare p.Id with Payment.PurchaseId
                  .ToList();
                 return allPurchases;
             }
-           
+
             allPurchases = allPurchases
-           .Where(p => p.Status == "F") 
+           .Where(p => p.Status == "F")
            .ToList();
 
 
@@ -977,7 +1015,7 @@ namespace MobileWebAssignment.Controllers
         public IActionResult ClientPaymentHIS(string? purchaseID, DateTime? validdate, string? Unpaid)
         {
             // Retrieve all PurchaseItem records with related data
-            
+
 
             var allPurchases = getAllPurcahse(false);
 
