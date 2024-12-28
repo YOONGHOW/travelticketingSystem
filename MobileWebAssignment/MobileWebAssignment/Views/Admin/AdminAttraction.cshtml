@@ -3,42 +3,93 @@
 *@
 
 @{
-    Layout = "_AdminLayout";
-    ViewBag.Title = "Admin | Feedback";
+	Layout = "_AdminLayout";
+	ViewBag.Title = "Admin | Feedback";
 }
 
 @using X.PagedList
 @using X.PagedList.Mvc.Core
-
+@model IPagedList<Attraction>
 
 
 <html>
 <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <link rel="stylesheet" href="/css/AdminCss/AdminAttraction.css" asp-append-version="true">
-    
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<link rel="stylesheet" href="/css/AdminCss/AdminAttraction.css" asp-append-version="true">
+
 </head>
 <body>
-    <div class="content">
-        <partial name="_AdminAttractionType" />
-        <br />
-        <br />
-      
-                    
-                    <partial name="_AdminAttraction" />
-        </div>
-  
+	<div class="content">
+		<div class="attractionTypeData">
+			<h3 class="attractionTypeTitle">
+				Attraction Type List
+				<span class="tableNav">
+
+					<form data-ajax="true"
+						  data-ajax-update="#atarget"
+						  data-ajax-loading="#aloader"
+						  action="AjaxAttractionType">
+						@Html.TextBox("ATname", "",
+									new { type = "search", autofocus = "", data_trim = "", id = "searchATBar" })
+						<button>Search</button>
+
+						<img src="/images/loader.gif" id="aloader" style="display: none">
+					</form>
+
+					
+					<button class="create" data-get="/Admin/AdminAttractionTypeCreate">Create New</button>
+				</span>
+			</h3>
+			<div class="attractionTypeTable" id="atarget">
+				<partial name="_AdminAttractionType" />
+			</div>
+		</div>
+		<br />
+		<br />
+		<div class="attractionTable">
+			<h3 class="attractionTitle">
+				Attraction List
+				<span class="tableNav">
+					<form data-ajax="true"
+						  data-ajax-update="#target"
+						  data-ajax-loading="#loader">
+						@Html.TextBox("Aname", "",
+									new { type = "search", autofocus = "", data_trim = "", id = "searchBar" })
+						<button>
+							Search
+						</button>
+
+						<img src="/images/loader.gif" id="loader" style="display: none">
+					</form>
+					
+					<button class="create" data-get="/Admin/AdminAttractionCreate">Create New</button>
+				</span>
+			</h3>
+			<div class="attractionTypeTable" id="target">
+				
+				<partial name="_AdminAttraction" />
+			</div>
+		</div>
+	</div>
+
 </body>
 </html>
 @section foot {
-    <script>
-        let timer = null;
+	<script>
+		let timer = null;
 
-        $('#name').on('input', e => {
-            clearTimeout(timer);
-            timer = setTimeout(() => $(e.target.form).submit(), 500);
-        });
+		$('#searchBar').on('input', e => {
+		clearTimeout(timer);
+		timer = setTimeout(() => $(e.target.form).submit(), 500);
+		});
+	</script>
+	<script>
+		let timer = null;
 
-    </script>
+		$('#searchATBar').on('input', e => {
+		clearTimeout(timer);
+		timer = setTimeout(() => $(e.target.form).submit(), 500);
+		});
+	</script>
 }
 

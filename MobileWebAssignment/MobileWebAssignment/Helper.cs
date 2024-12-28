@@ -448,4 +448,51 @@ public class Helper
     }
 
 
+    //------------------------------------
+    // Cart
+    //------------------------------------
+
+    public Dictionary<string, int> GetCart()
+    {
+        return ct.HttpContext!.Session.Get<Dictionary<string, int>>("Cart") ?? [];
+    }
+
+    public void SetCart(Dictionary<string, int>? dict = null)
+    {
+        if (dict == null)
+        {
+            // TODO
+            ct.HttpContext!.Session.Remove("Cart");
+        }
+        else
+        {
+            // TODO
+            ct.HttpContext!.Session.Set("Cart", dict);
+
+        }
+    }
+    // Get UserID from Session
+    public string GetUserID()
+    {
+        return ct.HttpContext?.Session.GetString("UserID") ?? string.Empty;
+    }
+
+    // Set UserID in Session
+    public void SetUserID(string userId)
+    {
+        if (ct.HttpContext != null)
+        {
+            ct.HttpContext.Session.SetString("UserID", userId);
+        }
+    }
+
+    // Remove UserID from Session
+    public void RemoveUserID()
+    {
+        if (ct.HttpContext != null)
+        {
+            ct.HttpContext.Session.Remove("UserID");
+        }
+    }
+
 }

@@ -6,6 +6,9 @@ using MobileWebAssignment.Models;
 using System.Net.Sockets;
 using X.PagedList.Extensions;
 using Microsoft.AspNetCore.Hosting.Server;
+using System.Media;
+using Microsoft.IdentityModel.Tokens;
+using Azure;
 
 
 namespace MobileWebAssignment.Controllers;
@@ -26,7 +29,7 @@ public class AdminController : Controller
 
 
     //==================================== Attraction Type start =========================================================
-    public IActionResult AdminAttraction(string? Aname, int ATpage = 1, int Apage = 1)
+    public IActionResult AdminAttraction(string? Aname, string? Asort, string? Adir, int ATpage = 1, int Apage = 1)
     {
         //page list for Attraction Types
         if (ATpage < 1)
@@ -40,21 +43,41 @@ public class AdminController : Controller
         {
             return RedirectToAction(null, new { ATpage = ViewBag.AttractionTypes.PageCount });
         }
+    
 
+        // Searching for attraction
+        ViewBag.aname = Aname = Aname?.Trim() ?? "";
+
+        var atts = db.Attraction.Include(a => a.AttractionType).Where(a => a.Name.Contains(Aname));
+
+        // Sorting for attraction
+        ViewBag.ASort = Asort;
+        ViewBag.ADir = Adir;
+
+        Func<Attraction, object> attraction = Asort switch
+        {
+            "Id" => a => a.Id,
+            "Name" => a => a.Name,
+            "Location" => a => a.Location,
+            "AttractionTypeId" => a => a.AttractionTypeId,
+            _ => a => a.Id,
+        };
+
+        var at = Adir == "des" ?
+                atts.OrderByDescending(attraction) :
+                atts.OrderBy(attraction);
 
         //page list for Attractions
         if (Apage < 1)
         {
             return RedirectToAction(null, new { Apage = 1 });
         }
-
-        Aname = Aname?.Trim() ?? "";
-
-        var attractions = db.Attraction.Include(a => a.AttractionType).Where(a => a.Name.Contains(Aname)).ToPagedList(Apage, 5);
+        
+        var attractions = at.ToPagedList(Apage, 5);
 
         if (Apage > attractions.PageCount && attractions.PageCount > 0)
         {
-            return RedirectToAction(null, new { Apage = attractions.PageCount });
+            return RedirectToAction(null, new { Aname, Asort, Adir, Apage = attractions.PageCount });
         }
 
         if (Request.IsAjax())
@@ -62,8 +85,46 @@ public class AdminController : Controller
             return PartialView("_AdminAttraction", attractions);
         }
 
-
         return View(attractions);
+    }
+
+    //ajax function for attraction type
+    public IActionResult AjaxAttractionType(string? ATname, string? ATsort, string? ATdir, int ATpage = 1)
+    {
+        //Searching for attraction type
+        ViewBag.atname = ATname = ATname?.Trim() ?? "";
+        var attractionTypes = db.AttractionType.Where(at => at.Name.Contains(ATname));
+
+        // Sorting for attraction
+        ViewBag.ATSort = ATsort;
+        ViewBag.ATDir = ATdir;
+
+        Func<AttractionType, object> attraction = ATsort switch
+        {
+            "Id" => at => at.Id,
+            "Name" => at => at.Name,
+            _ => at => at.Id,
+        };
+
+        var at = ATdir == "des" ?
+                attractionTypes.OrderByDescending(attraction) :
+                attractionTypes.OrderBy(attraction);
+
+        //page list for Attraction Types
+        if (ATpage < 1)
+        {
+            return RedirectToAction(null, new { ATpage = 1 });
+        }
+
+        var atType = at.ToPagedList(ATpage, 5);
+        ViewBag.AttractionTypes = atType;
+
+        if (ATpage > ViewBag.AttractionTypes.PageCount && ViewBag.AttractionTypes.PageCount > 0)
+        {
+            return RedirectToAction(null, new { ATname, ATsort, ATdir, ATpage = ViewBag.AttractionTypes.PageCount });
+        }
+
+        return PartialView("_AdminAttractionType");
     }
 
     // Manually generate next id for attraction type
@@ -344,7 +405,7 @@ public class AdminController : Controller
 
         var a = db.Attraction.Find(vm.Id);
         ViewBag.AttractionTypes = db.AttractionType.ToList();
-        
+
 
         //check vm model
         if (a == null)
@@ -472,6 +533,180 @@ public class AdminController : Controller
 
 
     //============================================ Attraction end =========================================================
+    //============================================ Ticket start =========================================================
+
+    public IActionResult AdminTicket()
+    {
+        ViewBag.AttractionTypes = db.AttractionType;
+        var attractions = db.Attraction.Include(a => a.AttractionType);
+
+        return View(attractions);
+    }
+    //Auto generate id
+    private string NextTicketId()
+    {
+        string max = db.Ticket.Max(s => s.Id) ?? "TK0000";
+        int n = int.Parse(max[2..]);
+        return (n + 1).ToString("'TK'0000");
+    }
+    // Insert ticket
+    [HttpGet]
+    public IActionResult AdminTicketInsert(string id)
+    {
+        var attraction = db.Attraction.FirstOrDefault(a => a.Id == id);
+        if (attraction == null)
+        {
+            return NotFound();
+        }
+
+        var vm = new TicketVM
+        {
+            AttractionId = id
+        };
+
+        return View(vm);
+    }
+
+    [HttpPost]
+    public IActionResult AdminTicketInsert(TicketVM vm)
+    {
+        if (ModelState.IsValid)
+        {
+            db.Ticket.Add(new()
+            {
+                Id = NextTicketId(),
+                ticketName = vm.ticketName,
+                stockQty = vm.stockQty,
+                ticketPrice = vm.ticketPrice,
+                ticketStatus = vm.ticketStatus,
+                ticketDetails = vm.ticketDetails,
+                ticketType = vm.ticketType,
+                AttractionId = vm.AttractionId,
+            });
+            db.SaveChanges();
+
+            TempData["Info"] = "A ticket for " + vm.AttractionId + "  is inserted.";
+            return RedirectToAction("AdminTicketDetails", new { id = vm.AttractionId });
+        }
+        return View(vm);
+    }
+
+    //Update ticket
+
+    //Get ticket
+    public IActionResult AdminTicketUpdate(string? Id)
+    {
+        var t = db.Ticket.Find(Id);
+
+        if (t == null)
+        {
+            return RedirectToAction("Index");
+        }
+        var vm = new TicketVM
+        {
+            Id = t.Id,
+            ticketName = t.ticketName,
+            stockQty = t.stockQty,
+            ticketPrice = t.ticketPrice,
+            ticketStatus = t.ticketStatus,
+            ticketDetails = t.ticketDetails,
+            ticketType = t.ticketType,
+            AttractionId = t.AttractionId,
+        };
+
+        ViewBag.ProgramList = new SelectList(db.Ticket, "Id", "Name");
+        return View(vm);
+    }
+
+    [HttpPost]
+    public IActionResult AdminTicketUpdate(TicketVM vm)
+    {
+        var t = db.Ticket.Find(vm.Id);
+
+        if (t == null)
+        {
+            return RedirectToAction("AdminTicketDetails");
+        }
+
+        if (ModelState.IsValid)
+        {
+            t.ticketName = vm.ticketName.Trim();
+            t.stockQty = vm.stockQty;
+            t.ticketPrice = vm.ticketPrice;
+            t.ticketStatus = vm.ticketStatus;
+            t.ticketDetails = vm.ticketDetails;
+            t.ticketType = vm.ticketType;
+            t.AttractionId = vm.AttractionId;
+            db.SaveChanges();
+
+            TempData["Info"] = "Ticket " + vm.Id + " has been updated.";
+            return RedirectToAction("AdminTicketDetails", new { id = vm.AttractionId });
+
+        };
+        ViewBag.ProgramList = new SelectList(db.Ticket, "Id", "Name");
+        return View(vm);
+    }
+
+    //display attraction and ticket details
+    public IActionResult AdminTicketDetails(string id)
+    {
+        var attraction = db.Attraction.Include(a => a.AttractionType)
+                                       .FirstOrDefault(a => a.Id == id);
+
+        if (attraction == null)
+        {
+            return NotFound();
+        }
+
+        var tickets = db.Ticket.Where(t => t.AttractionId == id).ToList();
+        var vm = new AdminTicketDetails
+        {
+            Attraction = attraction,
+            Tickets = tickets
+        };
+        return View(vm);
+    }
+
+    //Delete ticket
+    public ActionResult AdminTicketDelete(string? Id)
+    {
+        var t = db.Ticket.Find(Id);
+
+        if (t == null)
+        {
+            return RedirectToAction("AdminTicketDetails");
+        }
+        var vm = new TicketVM
+        {
+            Id = t.Id,
+            ticketName = t.ticketName,
+            stockQty = t.stockQty,
+            ticketPrice = t.ticketPrice,
+            ticketStatus = t.ticketStatus,
+            ticketDetails = t.ticketDetails,
+            ticketType = t.ticketType,
+            AttractionId = t.AttractionId,
+
+        };
+        return View(vm);
+    }
+
+    [HttpPost]
+    public IActionResult AdminTicketDelete(TicketVM vm)
+    {
+        var t = db.Ticket.Find(vm.Id);
+
+        if (t != null)
+        {
+            string attractionId = t.AttractionId;
+            db.Ticket.Remove(t);
+            db.SaveChanges();
+            TempData["Info"] = "A ticket for " + t.AttractionId + " has been deleted.";
+
+            return RedirectToAction("AdminTicketDetails", new { id = attractionId });
+        }
+        return RedirectToAction("AdminTicketDetails", new { id = vm.AttractionId });
+    }
     //============================================ Feedback start =========================================================
     public IActionResult AdminFeedback()
     {
@@ -865,178 +1100,7 @@ public class AdminController : Controller
 
 
 
-    //============================================ Ticket start =========================================================
 
-    public IActionResult AdminTicket()
-    {
-        ViewBag.AttractionTypes = db.AttractionType;
-        var attractions = db.Attraction.Include(a => a.AttractionType);
-
-        return View(attractions);
-    }
-    //Auto generate id
-    private string NextTicketId()
-    {
-        string max = db.Ticket.Max(s => s.Id) ?? "TK0000";
-        int n = int.Parse(max[2..]);
-        return (n + 1).ToString("'TK'0000");
-    }
-    // Insert ticket
-    [HttpGet]
-    public IActionResult AdminTicketInsert(string id)
-    {
-        var attraction = db.Attraction.FirstOrDefault(a => a.Id == id);
-        if (attraction == null)
-        {
-            return NotFound();
-        }
-
-        var vm = new TicketVM
-        {
-            AttractionId = id
-        };
-
-        return View(vm);
-    }
-
-    [HttpPost]
-    public IActionResult AdminTicketInsert(TicketVM vm)
-    {
-        if (ModelState.IsValid)
-        {
-            db.Ticket.Add(new()
-            {
-                Id = NextTicketId(),
-                ticketName = vm.ticketName,
-                stockQty = vm.stockQty,
-                ticketPrice = vm.ticketPrice,
-                ticketStatus = vm.ticketStatus,
-                ticketDetails = vm.ticketDetails,
-                ticketType = vm.ticketType,
-                AttractionId = vm.AttractionId,
-            });
-            db.SaveChanges();
-
-            TempData["Info"] = "Record Insert";
-            return RedirectToAction("AdminTicketDetails", new { id = vm.AttractionId });
-        }
-        return View(vm);
-    }
-
-    //Update ticket
-
-    //Get ticket
-    public IActionResult AdminTicketUpdate(string? Id)
-    {
-        var t = db.Ticket.Find(Id);
-
-        if (t == null)
-        {
-            return RedirectToAction("Index");
-        }
-        var vm = new TicketVM
-        {
-            Id = t.Id,
-            ticketName = t.ticketName,
-            stockQty = t.stockQty,
-            ticketPrice = t.ticketPrice,
-            ticketStatus = t.ticketStatus,
-            ticketDetails = t.ticketDetails,
-            ticketType = t.ticketType,
-            AttractionId = t.AttractionId,
-        };
-
-        ViewBag.ProgramList = new SelectList(db.Ticket, "Id", "Name");
-        return View(vm);
-    }
-
-    [HttpPost]
-    public IActionResult AdminTicketUpdate(TicketVM vm)
-    {
-        var t = db.Ticket.Find(vm.Id);
-
-        if (t == null)
-        {
-            return RedirectToAction("AdminTicketDetails");
-        }
-
-        if (ModelState.IsValid)
-        {
-            t.ticketName = vm.ticketName.Trim();
-            t.stockQty = vm.stockQty;
-            t.ticketPrice = vm.ticketPrice;
-            t.ticketStatus = vm.ticketStatus;
-            t.ticketDetails = vm.ticketDetails;
-            t.ticketType = vm.ticketType;
-            t.AttractionId = vm.AttractionId;
-            db.SaveChanges();
-
-            TempData["Info"] = "Record updated.";
-            return RedirectToAction("AdminTicketDetails", new { id = vm.AttractionId });
-
-        };
-        ViewBag.ProgramList = new SelectList(db.Ticket, "Id", "Name");
-        return View(vm);
-    }
-
-    //display attraction and ticket details
-    public IActionResult AdminTicketDetails(string id)
-    {
-        var attraction = db.Attraction.Include(a => a.AttractionType)
-                                       .FirstOrDefault(a => a.Id == id);
-
-        if (attraction == null)
-        {
-            return NotFound();
-        }
-
-        var tickets = db.Ticket.Where(t => t.AttractionId == id).ToList();
-        var vm = new AdminTicketDetails
-        {
-            Attraction = attraction,
-            Tickets = tickets
-        };
-        return View(vm);
-    }
-
-    //Delete ticket
-    public ActionResult AdminTicketDelete(string? Id)
-    {
-        var t = db.Ticket.Find(Id);
-
-        if (t == null)
-        {
-            return RedirectToAction("AdminTicketDetails");
-        }
-        var vm = new TicketVM
-        {
-            Id = t.Id,
-            ticketName = t.ticketName,
-            stockQty = t.stockQty,
-            ticketPrice = t.ticketPrice,
-            ticketStatus = t.ticketStatus,
-            ticketDetails = t.ticketDetails,
-            ticketType = t.ticketType,
-        };
-        return View(vm);
-    }
-
-    [HttpPost]
-    public IActionResult AdminTicketDelete(TicketVM vm)
-    {
-        var t = db.Ticket.Find(vm.Id);
-
-        if (t != null)
-        {
-            string attractionId = t.AttractionId;
-            db.Ticket.Remove(t);
-            db.SaveChanges();
-            TempData["Info"] = "Record Deleted.";
-
-            return RedirectToAction("AdminTicketDetails", new { id = attractionId });
-        }
-        return RedirectToAction("AdminTicketDetails", new { id = vm.AttractionId });
-    }
 
 
 
@@ -1063,6 +1127,305 @@ public class AdminController : Controller
             TempData["Info"] = "Image(s) uploaded.";
         }
         return View();
+    }
+
+    //------------------------------------------
+    //Admin purchase
+    //------------------------------------------
+    public List<Purchase> getAllPurcahse(bool unpaid)
+    {
+        var allPurchases = db.Purchase
+               .Include(p => p.PurchaseItems)
+                   .ThenInclude(pi => pi.Ticket)
+                       .ThenInclude(at => at.Attraction)
+               .Include(us => us.User)
+               .Where(p => p.User is Member)
+               .OrderByDescending(p => p.PaymentDateTime)
+               .ToList();
+
+        if (unpaid == false)
+        {
+            allPurchases = allPurchases
+            .Where(p => p.Status == "S") // Compare p.Id with Payment.PurchaseId
+             .ToList();
+            return allPurchases;
+        }
+
+        allPurchases = allPurchases
+             .Where(p => p.Status == "F")
+             .ToList();
+
+
+        return allPurchases;
+    }
+    public IActionResult AdminPurchase(string? purchaseID, DateTime? validdate, string? payment)
+    {
+
+        var allPurchases = getAllPurcahse(false);
+
+
+        IEnumerable<Purchase> purchaseItems;
+        //Purcahse fillter
+        if (validdate != null)
+        {
+            purchaseItems = allPurchases
+             .Where(pi => pi.PaymentDateTime.Date == validdate?.Date);
+        }
+        else if (payment != null)
+        {
+            purchaseItems = getAllPurcahse(true);  // If no validdate is provided, show all purchase items(Unpaid)
+        }
+        else
+        {
+            purchaseItems = allPurchases;  // If no validdate is provided, show all purchase items(Payment)
+        }
+        //stating VM
+        var viewModel = new PurchaseViewModel();
+        var member = purchaseItems.Select(p => p.User as Member).FirstOrDefault();
+
+        if (Request.IsAjax())
+        {
+            viewModel = new PurchaseViewModel
+            {
+                Purchases = purchaseItems,
+                PhotoURL = member?.PhotoURL,
+                PurchaseUpdate = new PurchaseUpdateVM() // Initialize or fetch as required
+            };
+            return PartialView("PurchaseTable/_SharePurchaseTable1", viewModel);
+        }
+        viewModel = new PurchaseViewModel
+        {
+            Purchases = purchaseItems,
+            PhotoURL = member?.PhotoURL,
+            PurchaseUpdate = new PurchaseUpdateVM() // Initialize or fetch as required
+        };
+
+        //return view
+        return View(viewModel);
+
+    }
+    public ActionResult AdminPurchaseDetail(string purchaseID)
+    {
+        if (string.IsNullOrEmpty(purchaseID))
+        {
+            return Json(new { error = "Purchase ID cannot be null or empty." });
+        }
+
+        // Retrieve and group PurchaseItems by AttractionName and ValidDate (only the date part)
+        var groupedItems = db.PurchaseItem
+            .Where(pi => pi.PurchaseId == purchaseID)
+            .Include(pi => pi.Ticket)
+            .ThenInclude(at => at.Attraction)
+            .GroupBy(pi => new
+            {
+                pi.Ticket.Attraction.Name,
+                ValidDate = pi.validDate.Date  // Group by Date only, ignoring time
+            })
+            .Select(g => new
+            {
+                attractionName = g.Key.Name,
+                validDate = g.Key.ValidDate.ToString("yyyy-MM-dd"),  // Format DateTime to string in "yyyy-MM-dd" format
+                totalQuantity = g.Sum(pi => pi.Quantity),
+                totalAmount = g.Sum(pi => pi.Quantity * pi.Ticket.ticketPrice),
+                attractionImg = g.Select(pi => pi.Ticket.Attraction.ImagePath).FirstOrDefault(),
+                ticketType = g.Select(pi => pi.Ticket.ticketName).Count(),
+                purchaseId = g.Select(pi => pi.Purchase.Id).FirstOrDefault(),
+            })
+            .ToList();
+
+        if (!groupedItems.Any())
+        {
+            return Json(new { error = "No items found for the given Purchase ID." });
+        }
+
+        return Json(groupedItems);
+
+    }
+    public ActionResult AdminPurchaseTicket(string? purchaseId, DateTime validDate)
+    {
+        if (string.IsNullOrEmpty(purchaseId))
+        {
+            return Json(new { error = "Purchase ID cannot be null or empty." });
+        }
+
+        // Retrieve all the PurchaseItems related to the given PurchaseID
+        var purchaseItems = db.PurchaseItem
+            .Where(pi => pi.PurchaseId == purchaseId && pi.validDate.Date == validDate.Date)
+            .Include(pi => pi.Ticket)
+            .Select(pi => new
+            {
+                purchaseItemId = pi.Id,
+                ticketID = pi.TicketId,
+                quantity = pi.Quantity,
+                validDate = pi.validDate.ToString("yyyy/MM/dd"),
+                ticketName = pi.Ticket.ticketName,
+                attractionName = pi.Ticket.Attraction.Name,
+                attractionImg = pi.Ticket.Attraction.ImagePath,
+                amount = pi.Quantity * pi.Ticket.ticketPrice,
+                status = pi.validDate.Date >= DateTime.Now.Date // Compare the date part (ignores time)
+        ? "Valid"
+        : "Invalid",
+                purcahseid = pi.Purchase.Id,
+                ticketPrice = pi.Ticket.ticketPrice,
+            })
+            .ToList();
+
+        if (!purchaseItems.Any())
+        {
+            return Json(new { error = "No items found for the given Purchase ID." });
+        }
+        return Json(purchaseItems);
+    }
+
+    public IActionResult AdminPurchaseUpdate(string ticketID, string purcahseItemID)
+    {
+        if (string.IsNullOrEmpty(purcahseItemID) && string.IsNullOrEmpty(ticketID))
+        {
+            return Json(new { error = "Record Not found" });
+        }
+
+        // Retrieve all the PurchaseItems related to the given PurchaseID
+        var purchaseItems = db.PurchaseItem
+            .Where(pi => pi.Id == purcahseItemID && pi.TicketId == ticketID)
+            .Include(pi => pi.Ticket)
+            .Select(pi => new
+            {
+                purcahseItemID = pi.Id,
+                ticketID = pi.TicketId,
+                quantity = pi.Quantity,
+                validDate = pi.validDate.ToString("yyyy-MM-dd hh:mm tt"),
+                ticketName = pi.Ticket.ticketName,
+                ticketPrice = pi.Ticket.ticketPrice,
+                purcahseid = pi.Purchase.Id,
+            })
+             .FirstOrDefault();
+
+        if (purchaseItems == null)
+        {
+            return Json(new { error = "No items found for the given PurchaseItem ID." });
+        }
+        return Json(purchaseItems);
+    }
+
+    //----------------------------------------
+    //get PurchaseItemsID
+    //-----------------------------------------
+    private string NextPurchaseItem_Id(int count)
+    {
+        // TODO
+        string max = db.PurchaseItem.Max(t => t.Id) ?? "PI0000";
+        int n = int.Parse(max[2..]);
+        return (n + count).ToString("'PI'0000");
+    }
+    [HttpPost]
+    public IActionResult AdminPurchase(PurchaseViewModel vm)
+    {
+        if (ModelState.IsValid)
+        {
+            var purchaseItems = db.PurchaseItem
+           .Where(pi => pi.Id == vm.PurchaseUpdate.Id && pi.TicketId == vm.PurchaseUpdate.TicketId)
+           .Include(pi => pi.Ticket)
+           .FirstOrDefault();
+
+            if (vm.PurchaseUpdate.Quantity > purchaseItems?.Quantity)
+            {
+                TempData["SuccessMessage"] = "Ticket updated Cancled (Ticket more than " + purchaseItems?.Quantity + " )!";
+                return Redirect("/Admin/AdminPurchase");
+            }
+
+            if (purchaseItems?.Quantity == vm.PurchaseUpdate.Quantity)
+            {
+                purchaseItems.validDate = vm.PurchaseUpdate.validDate;
+                db.SaveChanges();
+                TempData["SuccessMessage"] = "Ticket updated successfully!";
+                return Redirect("/Admin/AdminPurchase");
+            }
+
+            if (vm.PurchaseUpdate.Quantity < purchaseItems?.Quantity)
+            {
+                if (vm.PurchaseUpdate.validDate == purchaseItems?.validDate)
+                {
+                    TempData["SuccessMessage"] = "Ticket updated Cancled (Same valid date " + vm.PurchaseUpdate.validDate.ToString("yyyy-MM-dd") + " )!";
+                    return Redirect("/Admin/AdminPurchase");
+                }
+
+
+                if (purchaseItems?.validDate == vm.PurchaseUpdate.validDate)
+                {
+                    purchaseItems.Quantity += vm.PurchaseUpdate.Quantity;
+                    db.SaveChanges();
+                    TempData["SuccessMessage"] = "Ticket updated successfully!";
+                    return Redirect("/Admin/AdminPurchase");
+                }
+
+                purchaseItems.Quantity -= vm.PurchaseUpdate.Quantity;
+                db.SaveChanges();
+
+
+                var purcahseID = purchaseItems.PurchaseId;
+                var reAdd =
+                    new PurchaseItem
+                    {
+                        PurchaseId = purchaseItems.PurchaseId,
+                        Id = NextPurchaseItem_Id(1),
+                        validDate = vm.PurchaseUpdate.validDate,
+                        TicketId = vm.PurchaseUpdate.TicketId,
+                        Quantity = vm.PurchaseUpdate.Quantity,
+                    };
+
+
+                db.PurchaseItem.Add(reAdd);
+
+                db.SaveChanges();
+                TempData["SuccessMessage"] = "Ticket updated successfully!";
+                return Redirect("/Admin/AdminPurchase");
+            }
+
+
+
+        }
+        return Json(ModelState.IsValid);
+    }
+    //-------------------------------------
+    //change status
+    //-------------------------------------
+    [HttpPost]
+    public IActionResult ChangePurchseStatus(string? purchaseID)
+    {
+        if (purchaseID == null)
+        {
+            TempData["SuccessMessage"] = "Purchase Not found!" + purchaseID;
+            return Redirect("/Admin/AdminPurchase");
+        }
+
+        var purchaseItems = db.Purchase
+           .Where(pi => pi.Id == purchaseID)
+           .FirstOrDefault();
+
+        if (purchaseItems == null)
+        {
+            TempData["SuccessMessage"] = "Purchase Not found!";
+            return Redirect("/Admin/AdminPurchase");
+        }
+
+        var payment = db.Payment
+            .Where(pi => pi.PurchaseId == purchaseID)
+           .FirstOrDefault();
+
+        if (payment != null)
+        {
+            purchaseItems.Status = "R"; //refund
+            payment.Status = "R";
+            db.SaveChanges();
+            TempData["SuccessMessage"] = "Purchase cancle successfully!";
+            return Redirect("/Admin/AdminPurchase");
+
+        }
+
+        TempData["SuccessMessage"] = "Try again later !";
+        return Redirect("/Admin/AdminPurchase");
+
+
     }
 }
 

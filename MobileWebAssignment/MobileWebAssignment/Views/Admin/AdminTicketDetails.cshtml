@@ -13,18 +13,20 @@
     <script src="~/js/app.js"></script>
     </head>
 <body>
+
     <div class="content">
     <h1>Ticket Details for @Model.Attraction.Name</h1>
 
-    <h2>Attraction Information</h2>
-    <p><strong>Attraction ID:</strong> @Model.Attraction.Id</p>
-    <p><strong>Attraction Name:</strong> @Model.Attraction.Name</p>
-    <p><strong>Attraction Type:</strong> @Model.Attraction.AttractionType?.Name</p>
-    <p><strong>Location:</strong> @Model.Attraction.Location</p>
+    <h2 style:font-size:18px;>Attraction Information</h2>
+    <p><strong>Attraction ID:</strong> @Model.Attraction.Id</p><br />
+        <p><strong>Attraction Name:</strong> @Model.Attraction.Name</p><br />
+        <p><strong>Attraction Type:</strong> @Model.Attraction.AttractionType?.Name</p><br />
+        <p><strong>Location:</strong> @Model.Attraction.Location</p><br />
 
-    <h2>Tickets for this Attraction</h2> 
-    <button class="clickable-row" data-href="@Url.Action("AdminTicketInsert", "Admin", new { id = Model.Attraction.Id })">Add</button>
-    <br />
+        <h2>Tickets for this Attraction</h2> <br />
+
+        <button id="ticketAddBtn" class="clickable-row" data-href="@Url.Action("AdminTicketInsert", "Admin", new { id = Model.Attraction.Id })"> Add </button><br />
+
     @if (Model.Tickets.Any())
     {
         <table class="ticketTable">
@@ -50,8 +52,8 @@
                         <td>@ticket.ticketStatus</td>
                         <td>@ticket.ticketType</td>
                         <td>
-                                <button class="clickable-row" data-href="@Url.Action("AdminTicketUpdate", "Admin", new { id = ticket.Id }) ">Edit</button>
-                                <button class="clickable-row" data-href="@Url.Action("AdminTicketDelete", "Admin", new { id = ticket.Id }) ">Delete</button>
+                                <button id="ticketBtnEdit" class="clickable-row" data-href="@Url.Action("AdminTicketUpdate", "Admin", new { id = ticket.Id }) ">Edit</button>
+                                <button id="ticketBtnDelete" class="clickable-row" data-href="@Url.Action("AdminTicketDelete", "Admin", new { id = ticket.Id }) ">Delete</button>
                         </td>  
                     </tr>
                 }
@@ -59,6 +61,7 @@
         </table>
     }
     else
+
     {
         <p>No tickets found for this attraction.</p>
     }
