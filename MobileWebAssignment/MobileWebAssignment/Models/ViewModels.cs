@@ -118,6 +118,8 @@ public class AttractFeedback
 
     public List<Feedback> feedbacks { get; set; }
 
+    public List<Ticket> tickets { get; set; }
+
 }
 
 

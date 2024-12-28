@@ -40,6 +40,16 @@ header {
         font-weight: bold;
     }
 
+@media (max-width: 768px) {
+    .logo-title img {
+        width: 40px;
+    }
+
+    .logo-title p {
+        font-size: 14px;
+    }
+}
+
 /* Navigation styling */
 nav {
     margin-left: auto; /* Pushes the nav to the right */
@@ -294,3 +304,4 @@ li.content3 {
         font-size: 18px;
         margin-left: 4%;
     }
+
