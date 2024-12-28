@@ -1,6 +1,7 @@
 
 using System.Globalization;
 using System.Net.Mail;
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -72,11 +73,37 @@ namespace MobileWebAssignment.Controllers
                 ModelState.AddModelError("Email", "Duplicated Email.");
             }
 
-            //check photo
-            if (ModelState.IsValid("Photo"))
+            string photoPath = null;
+
+            // Handle Base64 photo (Webcam)
+            if (!string.IsNullOrEmpty(vm.PhotoBase64))
             {
-                var e = hp.ValidatePhoto(vm.Photo);
-                if (e != "") ModelState.AddModelError("Photo", e);
+                var base64Data = Regex.Match(vm.PhotoBase64, @"data:image/(?<type>.+?);base64,(?<data>.+)").Groups["data"].Value;
+                var bytes = Convert.FromBase64String(base64Data);
+
+                string fileName = $"{Guid.NewGuid():N}.jpg";
+                string filePath = Path.Combine("wwwroot/User", fileName);
+                System.IO.File.WriteAllBytes(filePath, bytes);
+
+                photoPath = fileName;
+            }
+            // Handle uploaded file
+            else if (vm.Photo != null && vm.Photo.Length > 0)
+            {
+                var photoError = hp.ValidatePhoto(vm.Photo);
+                if (!string.IsNullOrEmpty(photoError))
+                {
+                    ModelState.AddModelError("Photo", photoError);
+                }
+                else
+                {
+                    photoPath = hp.SavePhoto(vm.Photo, "User");
+                }
+            }
+
+            if (string.IsNullOrEmpty(photoPath))
+            {
+                ModelState.AddModelError("Photo", "Please provide a profile photo by uploading or capturing one.");
             }
 
             if (ModelState.IsValid)
@@ -91,7 +118,7 @@ namespace MobileWebAssignment.Controllers
                     PhoneNumber = vm.PhoneNumber,
                     Gender = vm.Gender,
                     Freeze = false,
-                    PhotoURL = hp.SavePhoto(vm.Photo, "User")
+                    PhotoURL = photoPath,
                 });
                 db.SaveChanges();
                 TempData["Info"] = "Register successfully. Please login.";
@@ -101,6 +128,7 @@ namespace MobileWebAssignment.Controllers
             return View(vm);
         }
 
+
         //GET : Client/Login
         public IActionResult Login()
         {
@@ -109,39 +137,88 @@ namespace MobileWebAssignment.Controllers
 
         //POST : Client/Login
         [HttpPost]
-        public IActionResult Login(LoginVm vm, string? returnURL)
+        public async Task<IActionResult> Login(LoginVm vm, string? returnURL)
         {
+
+            if (vm.RecaptchaToken == null)
+            {
+                ModelState.AddModelError("", "reCAPTCHA validation failed.");
+                return View(vm);
+            }
+            else if (!await RecaptchaService.verifyRecaptchaV2(vm.RecaptchaToken, "6LcsrqMqAAAAAKF7Sxh6S-SBwDC3czdQMo00XPhj"))
+            {
+                ModelState.AddModelError("", "Token sent fail");
+                return View(vm);
+            }
+
             if (string.IsNullOrEmpty(vm.Email))
             {
-                ModelState.AddModelError("", "Email are required.");
+                ModelState.AddModelError("", "Email is required.");
                 return View(vm);
             }
 
             if (string.IsNullOrEmpty(vm.PasswordCurrent))
             {
-                ModelState.AddModelError("", "Password are required.");
+                ModelState.AddModelError("", "Password is required.");
                 return View(vm);
             }
 
-            var u = db.User.SingleOrDefault(user => user.Email == vm.Email);
+            // Retrieve the failed attempts cookie
+            var failedAttemptsCookie = Request.Cookies["FailedLoginAttempts"];
+            int failedAttempts = string.IsNullOrEmpty(failedAttemptsCookie) ? 0 : int.Parse(failedAttemptsCookie);
 
-            if (u.Freeze == true)
+            // Check if the user is temporarily blocked
+            if (failedAttempts >= 3)
             {
-                ModelState.AddModelError("", "Account already block by Admin.");
+                ModelState.AddModelError("", "Your account is temporarily blocked. Please try again after some time.");
                 return View(vm);
             }
 
-            if (u == null || string.IsNullOrEmpty(u.Password) || !hp.VerifyPassword(u.Password, vm.PasswordCurrent))
+            // Find user in the database
+            var user = db.User.SingleOrDefault(u => u.Email == vm.Email);
+
+            if (user == null || string.IsNullOrEmpty(user.Password) || !hp.VerifyPassword(user.Password, vm.PasswordCurrent))
             {
-                ModelState.AddModelError("", "Login credentials not matched.");
+                // Increment the failed attempts
+                failedAttempts++;
+
+                // Update the cookie
+                CookieOptions options = new()
+                {
+                    Expires = DateTime.Now.AddSeconds(30), // Block for 30 seconds
+                    HttpOnly = true,
+                    IsEssential = true
+                };
+
+                Response.Cookies.Append("FailedLoginAttempts", failedAttempts.ToString(), options);
+
+                if (failedAttempts >= 3)
+                {
+                    ModelState.AddModelError("", "Your account is temporarily blocked due to multiple failed login attempts.");
+                }
+                else
+                {
+                    ModelState.AddModelError("", "Login credentials not matched.");
+                }
+
                 return View(vm);
             }
 
-            // Successful login
+            // Reset the failed attempts on successful login
+            Response.Cookies.Delete("FailedLoginAttempts");
+
+            // Check if the account is frozen
+            if (user.Freeze)
+            {
+                ModelState.AddModelError("", "Account is blocked by Admin.");
+                return View(vm);
+            }
+
+            //Sucessfully login
             TempData["Info"] = "Login successfully.";
 
-            var role = (u is Admin) ? "Admin" : "Member";
-            hp.SignIn(u.Email, role);
+            var role = (user is Admin) ? "Admin" : "Member";
+            hp.SignIn(user.Email, role);
 
             if (!string.IsNullOrEmpty(returnURL))
             {
@@ -151,7 +228,6 @@ namespace MobileWebAssignment.Controllers
             if (role == "Admin")
             {
                 return RedirectToAction("AdminAttraction", "Admin");
-
             }
             else
             {
@@ -576,6 +652,7 @@ namespace MobileWebAssignment.Controllers
         }
 
         //GET: Feedback/Insert
+        [Authorize (Roles = "Member")]
         public IActionResult ClientFeedbackForm(string attractionId)
         {
             ViewBag.Attraction = db.Attraction.Find(attractionId);
@@ -662,7 +739,7 @@ namespace MobileWebAssignment.Controllers
             return View(vm);
         }
 
-
+        [Authorize(Roles = "Member")]
         public IActionResult ClientFeedback(string? userId)
         {
             var feedbacks = db.Feedback.Include(a => a.Attraction).Include(u => u.User).Where(f => f.UserId == userId).ToList();
@@ -707,6 +784,7 @@ namespace MobileWebAssignment.Controllers
 
             return View(vm);
         }
+
 
         public IActionResult ClientFeedbackUpdate(string? Id)
         {
@@ -775,10 +853,6 @@ namespace MobileWebAssignment.Controllers
 
         //------------------------------------------ FeedBack end ----------------------------------------------
 
-
-
-
-
         //add cart
         public void UpdateCart(string productId, int quantity)
         {
@@ -794,7 +868,9 @@ namespace MobileWebAssignment.Controllers
             hp.SetCart(cart);
 
         }
+        
         //GET client/clienPayment
+        [Authorize(Roles = "Member")]
         public IActionResult ClientPayment()
         {
             UpdateCart("T002", 9);
@@ -826,8 +902,12 @@ namespace MobileWebAssignment.Controllers
 
         }
 
+
         [HttpPost]
-        public IActionResult ClientPayment(PaymentVM vm)
+
+        [Authorize(Roles = "Member")]
+        public IActionResult ClientPaymentHIS()
+        
         {
             if (ModelState.IsValid)
             {
