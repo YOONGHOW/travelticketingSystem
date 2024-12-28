@@ -368,7 +368,7 @@ public class PaymentVM()
     public string CVV { get; set; }
 }
 
-public class CartPVM()
+public class CartPaymentVM()
 {
     public Ticket Ticket { get; set; }
     public int Quantit { get; set; }
@@ -401,5 +401,6 @@ public class PurchaseViewModel
     public PurchaseUpdateVM PurchaseUpdate { get; set; }
 
     public string? PhotoURL { get; set; }
+    public IEnumerable<Payment> Payment { get; set; } = new List<Payment>();
 
 }
