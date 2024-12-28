@@ -1,6 +1,11 @@
 ﻿@using X.PagedList
 @using X.PagedList.Mvc.Core
 
+<div class="attractionTypeData">
+    <h3 class="attractionTypeTitle">
+        Attraction Type List
+        <span class="tableNav">
+
 
 @{
 	var attractionTypes = (IPagedList<AttractionType>)ViewBag.AttractionTypes;
@@ -74,3 +79,4 @@ Page @attractionTypes.PageNumber of @attractionTypes.PageCount
 			page => $"AjaxAttractionType?ATpage={page}",
 			PagedListRenderOptions.EnableUnobtrusiveAjaxReplacing(AToptions, ajaxOptions)
 		)
+
