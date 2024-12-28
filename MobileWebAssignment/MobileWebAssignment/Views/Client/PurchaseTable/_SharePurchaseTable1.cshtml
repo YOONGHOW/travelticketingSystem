@@ -20,7 +20,6 @@
             </div>
         </div>
     }
-
     @foreach (var s in Model.Purchases)
     {
         <!-- Order Card Example -->
@@ -30,21 +29,27 @@
 
                 <div class="d-flex justify-content-between align-items-center">
                     <div class="w-25 me-3">@*userImage*@
-                        @* <img src="@Url.Content(s.User.ImagePath ?? "~/images/error.png")" *@
-                        @*      alt="Product Image" *@
-                        @*      class="img-fluid rounded" *@
-                        @*      onerror="this.onerror=null; this.src='@Url.Content("~/images/error.png")';"> *@
+                        <img src="~/images/@Model.PhotoURL"
+                             alt="Product Image" 
+                             class="img-fluid rounded" 
+                              onerror="this.onerror=null; this.src='@Url.Content("~/images/error.png")';"> 
                     </div>
                     <div>
                         <h5 class="card-title"> @s.User.Name (@s.User.Id) : @s.User.Email </h5>
                         <p class="card-text text-muted">Payment Date-Time:  @s.PaymentDateTime.ToString("yyyy/MM/dd HH:mm:ss") </p>
-                        <p class="card-text"> Purchase Amount RM @(s.Amount)</p>
+                        <p class="card-text"> Purchase Price RM @(s.Amount)
+                            @(s.Status == "R" ? "<span class='red-text'> (Cancelled Purchase: Refunded)</span>" : "")
+                        </p>
                     </div>
 
                     <div class="text-end ">
                         <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#detailModal" data-purchaseid="@s.Id">Detail</button>
                         <button class="btn btn-primary btn-sm" data-bs-toggle="modal"  data-purchaseid="@s.Id">E-Receipt</button>
-                        <button class="btn btn-primary btn-sm btn-danger cancel-purchase" data-purchaseid="@s.Id">Cancel</button>
+                        <button class="btn btn-primary btn-sm btn-danger cancel-purchase"
+                        @(s.Status == "R" ? "style=display:none;" : "")
+                                data-purchaseid="@s.Id">
+                            Cancel
+                        </button>
                     </div>
                 </div>
 

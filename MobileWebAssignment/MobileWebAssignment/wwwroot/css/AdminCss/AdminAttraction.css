@@ -4,7 +4,7 @@ body {
     margin: 0;
     padding: 0;
     background-color: #f9f9f9;
-    overflow:initial;
+    overflow: initial;
 }
 
 .content {
@@ -23,9 +23,9 @@ h3 {
 }
 
     h3 span {
-        display: flex; 
-        justify-content: flex-end; 
-        gap: 10px; 
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
         width: 100%;
     }
 
@@ -70,6 +70,21 @@ thead th {
     text-align: left;
 }
 
+    thead th a {
+        color: inherit;
+        display: block;
+        text-align: left;
+        text-decoration: none;
+    }
+
+        thead th a.asc::after {
+            content: ' ▴';
+        }
+
+        thead th a.des::after {
+            content: ' ▾';
+        }
+
 tbody tr:nth-child(odd) {
     background-color: #f2f2f2;
 }
@@ -108,10 +123,10 @@ td, th {
 
 span.tableNav {
     justify-content: space-between;
-    margin-top:12px;
-    font-family:Arial, sans-serif; 
-    font-size:20px;
-    vertical-align:middle;
+    margin-top: 12px;
+    font-family: Arial, sans-serif;
+    font-size: 20px;
+    vertical-align: middle;
 }
 
 #searchBar {
@@ -139,5 +154,3 @@ span.tableNav {
     align-items: center;
     justify-content: space-between;
 }
-
-

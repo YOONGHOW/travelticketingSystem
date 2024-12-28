@@ -11,14 +11,22 @@
 .navbar {
     min-width: 1200px;
     max-width: 1800px;
-    font-weight: bold;
+    font-weight:400;
 }
-
-
-.custom-width {
-    height: 400px;
+.navbar ul a:hover{
+    color:black;
 }
+    .navbar ul a {
+        color: gray;
+    }
 
+    .custom-width {
+        height: 400px;
+    }
+
+.red-text {
+    color: red;
+}
 .btn {
     width: 120px;
     height: 40px;
