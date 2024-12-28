@@ -252,3 +252,23 @@ label.upload {
         flex-direction: column;
     }
 }
+
+/*Webcam design*/
+.photo-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.webcam-container, .upload {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+    .upload img {
+        max-width: 150px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+    }
