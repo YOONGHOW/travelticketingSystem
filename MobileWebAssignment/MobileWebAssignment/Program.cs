@@ -15,9 +15,6 @@ builder.Services.AddSqlServer<DB>($@"
     AttachDbFilename={builder.Environment.ContentRootPath}\DB.mdf;
 ");
 
-builder.Services.AddAuthentication().AddCookie();
-builder.Services.AddHttpContextAccessor();
-
 var app = builder.Build();
 app.UseSession();// add Session
 app.UseHttpsRedirection();//redirect HTTP to HTTPS
