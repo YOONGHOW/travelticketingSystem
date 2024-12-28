@@ -1,14 +1,34 @@
 ﻿@using X.PagedList
 @using X.PagedList.Mvc.Core
 @model IPagedList<Attraction>
+@{
+	string[] fields = ["Attraction ID", "Attraction Name", "Attraction Type", "Location"];
+}
 
+				@Model.Count() of @Model.TotalItemCount record(s) |
+				Page @Model.PageNumber of @Model.PageCount
+				<br />
 <table>
 	<thead>
 		<tr>
-			<th>Attraction ID</th>
-			<th>Attraction Name</th>
-			<th>Attraction Type</th>
-			<th>Location(Region)</th>
+			@foreach (var f in fields)
+			{
+				string d = "asc";
+				string c = "";
+
+				if (f == ViewBag.ASort)
+				{
+					d = ViewBag.ADir == "des" ? "asc" : "des";
+					c = ViewBag.ADir;
+				}
+
+				<th>
+					<a data-ajax="true"
+					   data-ajax-update="#target"
+					   data-ajax-loading="#loader"
+					   href="?Aname=@ViewBag.aname&Asort=@f&Adir=@d" class="@c">@f</a>
+				</th>
+			}
 			<th colspan="3" style="text-align:center;">Action</th>
 		</tr>
 	</thead>
@@ -37,9 +57,16 @@
 	options.LinkToLastPageFormat = "Last";
 	options.LinkToPreviousPageFormat = "Previous";
 	options.LinkToNextPageFormat = "Next";
+
+	var ajaxOptions = new AjaxOptions
+			{
+				HttpMethod = "get",
+				UpdateTargetId = "target",
+				LoadingElementId = "#loader",
+			};
 }
 
-@Html.PagedListPager(Model, page => $"?Apage={page}", options)
+@Html.PagedListPager(Model, page => $"?Apage={page}", PagedListRenderOptions.EnableUnobtrusiveAjaxReplacing(options, ajaxOptions))
 
 
 
