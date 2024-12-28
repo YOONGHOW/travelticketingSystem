@@ -1,28 +1,31 @@
 ﻿@{
-    Layout = "_ClientLayout";
-    ViewBag.Title = "Home Page";
+	Layout = "_ClientLayout";
+	ViewBag.Title = "Home Page";
 }
 
+
 <main>
-    <div class="image-container">
-        <img src="/images/homepage_background.jpg" alt="Home Image" class="homeImage">
-        <div class="black-overlay"></div>
-        <div class="content">
-            <h1>Welcome to Phaethon Electronic</h1>
-    @*         <?php *@
-    @*         if($_user == null){  *@
-    @*         echo '<p>Register as a member and purchase it to get more details and discount</p><br>'; *@
-    @*         echo '<a href="member_registration.php" class="register-button">Register Now</a>'; *@
-    @*         }else{ *@
-    @*         echo '<p>Get the promotion and purchase it to get more good electric and bring it to home</p><br>'; *@
-    @*         echo '<a href="product_list.php" class="register-button">Buy Now</a>'; *@
-			 @* }  *@
-    @*         ?> *@
-            <p>Get the promotion and purchase it to get more good electric and bring it to home</p><br>
-            <a href="product_list.php" class="register-button">Buy Now</a>
-           
-        </div>
-    </div>
+	<div class="image-container">
+		<img src="/images/homepage_background.jpg" alt="Home Image" class="homeImage">
+		<div class="black-overlay"></div>
+		<div class="content">
+			<h1>Welcome to Phaethon Miyabi</h1>
+			@if (User.Identity!.IsAuthenticated && User.IsInRole("Member"))
+			{
+				<p>"Don't miss out! Buy your tickets and gain access to exciting discounts and offers!"</p>
+				<br />
+				<a href="ClientAttraction" class="register-button">Buy Now</a>
+			}
+			else
+			{
+				<p>Login as a member to purchase tickets and get more details</p>
+				<br />
+				<a href="Login" class="register-button">Login Now</a>
+			}
+
+
+		</div>
+	</div>
 
 </main>
 

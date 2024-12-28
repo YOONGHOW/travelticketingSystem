@@ -39,7 +39,13 @@ namespace MobileWebAssignment.Controllers
 
         public IActionResult Homepage()
         {
-            return View();
+            // Retrieve the logged-in user's email
+            var email = User.Identity!.Name;
+
+            // Find the user by email
+            var user = db.Members.SingleOrDefault(member => member.Email == email);
+
+            return View(user);
         }
 
         //============================================ Account Maintenance =========================================================
