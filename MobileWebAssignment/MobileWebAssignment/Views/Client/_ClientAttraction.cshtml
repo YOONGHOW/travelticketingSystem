@@ -1,0 +1,89 @@
+﻿@model IEnumerable<AttractFeedback>
+
+<div class="product-list">
+	@if (Model.Count() == 0)
+	{
+		<div style="font-size:220%;opacity:2;color:slategrey;">No result found.</div>
+	}
+	else
+	{
+		@foreach (var a in @Model)
+		{
+			<div class="product-item" onclick="window.location.href='ClientAttractionDetail?attractionId=@a.attraction.Id'">
+				<img src="/attractionImages/@a.attraction.ImagePath" alt="" class="product-image">
+				<div class="product-details">
+					<h3 class="product-name">@a.attraction.Name</h3>
+					@{
+						if (a.feedbacks.Count == 0)
+						{
+							<p class="feedback-summary"><span class="feedback-star">★</span> 0.0 (0)</p>
+						}
+						else
+						{
+							int total = a.feedbacks.Sum(f => f.Rating);
+							double averageRating = (double)total / a.feedbacks.Count;
+							<p class="feedback-summary"><span class="feedback-star">★</span> @averageRating.ToString("F1") (@a.feedbacks.Count)</p>
+						}
+					}
+
+
+					<p class="product-cost">
+						@if (a.tickets.Count == 0)
+						{
+							<span class="ticketNA">No Available Ticket Sold</span>
+						}
+						else if (a.tickets.Count > 0)
+						{
+							int availableTicket = 0;
+							foreach (var t in a.tickets)
+							{
+								if (t.ticketStatus == "Good" || t.stockQty > 0)
+								{
+									availableTicket++;
+								}
+							}
+
+							if (availableTicket > 1)
+							{
+								decimal lowestPrice = 99999;
+
+								foreach (var t in a.tickets)
+								{
+									if (t.ticketPrice < lowestPrice)
+									{
+										lowestPrice = t.ticketPrice;
+									}
+
+								}
+
+								<span class="ticket-price">
+									start with RM
+									@lowestPrice
+									per ticket
+								</span>
+							}
+							else if (availableTicket == 1)
+							{
+								foreach (var t in a.tickets)
+								{
+									if (t.ticketStatus == "Good" || t.stockQty > 0)
+									{
+										<span class="ticket-price">
+											start with RM
+											@t.ticketPrice
+											per ticket
+										</span>
+									}
+								}
+							}
+							else
+							{
+								<span class="ticketNA">No Available Ticket Sold</span>
+							}
+						}
+					</p>
+				</div>
+			</div>
+		}
+	}
+</div>
