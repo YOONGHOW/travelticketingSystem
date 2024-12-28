@@ -37,7 +37,7 @@
 							int availableTicket = 0;
 							foreach (var t in a.tickets)
 							{
-								if (t.ticketStatus == "Good" || t.stockQty > 0)
+								if (t.ticketStatus == "Good" && t.stockQty > 0)
 								{
 									availableTicket++;
 								}
@@ -66,7 +66,7 @@
 							{
 								foreach (var t in a.tickets)
 								{
-									if (t.ticketStatus == "Good" || t.stockQty > 0)
+									if (t.ticketStatus == "Good" && t.stockQty > 0)
 									{
 										<span class="ticket-price">
 											start with RM

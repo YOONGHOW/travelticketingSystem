@@ -31,10 +31,10 @@
 									new { type = "search", autofocus = "", data_trim = "", id = "search_prod", placeholder = "Search..." })
 				<br><br>
 				<label>Filter by Price : </label><br><br>
-				<input type="submit" name="sort" id="priceBtn" value="dec" /> <br><br>
-				<input type="submit" name="sort" id="priceBtn" value="asc">
-
-
+				<input type="submit" name="sort" id="priceBtn" value="High To Low" /> <br><br>
+				<input type="submit" name="sort" id="priceBtn" value="Low To High">
+				<br><br>
+				<label for="category">Attraction Type :</label>
 				<select name="category" id="category">
 					<option value="all">All</option>
 					@foreach (var at in ViewBag.AttractionTypes)

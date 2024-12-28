@@ -120,6 +120,8 @@ public class AttractFeedback
 
     public List<Ticket> tickets { get; set; }
 
+    public decimal? ticketPrice { get; set; }
+
 }
 
 
