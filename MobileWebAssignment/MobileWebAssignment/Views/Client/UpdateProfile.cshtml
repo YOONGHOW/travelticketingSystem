@@ -54,14 +54,11 @@
                         <label class="details">Profile Photo</label>
 
                             <!-- Image File Upload  -->
-                            <label class="upload">
-                                <input asp-for="Photo" class="form-control" type="file" accept="image/*" hidden>
-                                <img src="/images/photo.jpg" id="drag" alt="Profile Photo Preview">
-                            </label>
-
+                        <label class="upload" tabindex="0" asp-for="Photo">
+                            <input class="form-control" type="file" accept="image/jpeg,image/png" name="Photo" asp-for="Photo" hidden>
+                            <img src="@Model.PhotoURL" id="drag">
+                        </label>
                         <span asp-validation-for="Photo" class="text-danger"></span>
-
-
                     </div>
 
                     <!-- Full Name -->
