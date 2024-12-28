@@ -524,6 +524,32 @@ namespace MobileWebAssignment.Controllers
                     a.attraction.ImagePath = hp.SplitImagePath(a.attraction.ImagePath)[0];
             }
 
+            //get the minimum ticket price of each atttraction if have
+            foreach(var a in attractFeedback)
+            {
+                if(a.tickets.Count > 0)
+                {
+                    a.ticketPrice = hp.GetMinTicketPrice(a.tickets);
+                }
+            }
+
+            Func<AttractFeedback, object> attraction = "ticketPrice" switch
+            {
+                "ticketPrice" => t => t.ticketPrice,
+                _ => t => t.ticketPrice,
+            };
+
+            string Asort = sort == "High To Low" ? "des" : "asc";
+
+
+            //perform price sorting when needed
+            var at = Asort == "des" ?
+                    attractFeedback.OrderByDescending(attraction) :
+                    attractFeedback.OrderBy(attraction);
+
+            attractFeedback = at.ToList();
+
+
             return PartialView("_ClientAttraction", attractFeedback);
         }
 
@@ -776,9 +802,15 @@ namespace MobileWebAssignment.Controllers
         }
 
         [Authorize(Roles = "Member")]
-        public IActionResult ClientFeedback(string? userId)
+        public IActionResult ClientFeedback()
         {
-            var feedbacks = db.Feedback.Include(a => a.Attraction).Include(u => u.User).Where(f => f.UserId == userId).ToList();
+            // Retrieve the logged-in user's email
+            var email = User.Identity!.Name;
+
+            // Find the user by email
+            var user = db.Members.SingleOrDefault(member => member.Email == email);
+
+            var feedbacks = db.Feedback.Include(a => a.Attraction).Include(u => u.User).Where(f => f.UserId == user.Id).ToList();
 
             if (feedbacks == null)
             {
