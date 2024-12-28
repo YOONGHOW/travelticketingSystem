@@ -430,9 +430,7 @@ namespace MobileWebAssignment.Controllers
             mail.Subject = "Reset Password";
             mail.IsBodyHtml = true;
 
-
             var url = Url.Action("Login", "Client", null, "https");
-
 
             var path = u switch
             {

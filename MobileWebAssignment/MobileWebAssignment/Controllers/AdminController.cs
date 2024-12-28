@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Hosting.Server;
 using System.Media;
 using Microsoft.IdentityModel.Tokens;
 using Azure;
+using Microsoft.AspNetCore.Authorization;
 
 
 namespace MobileWebAssignment.Controllers;
@@ -1092,6 +1093,50 @@ public class AdminController : Controller
             BirthDate = birthDate,
             PhotoURL = photo,
         };
+
+        return View(vm);
+    }
+
+    //GET Admin/AdminChangePassword
+    public IActionResult AdminChangePassword()
+    {
+        return View();
+    }
+
+    //POST Admin/AdminChangePassword
+    [Authorize]
+    [HttpPost]
+    public IActionResult AdminChangePassword(ChangePassword vm)
+    {
+        // Retrieve the logged-in user's email
+        var email = User.Identity!.Name;
+
+        // Find the user by email
+        var user = db.Admins.SingleOrDefault(member => member.Email == email);
+
+
+        if (user == null)
+        {
+            return RedirectToAction("MemberList", "Admin"); // Redirect if user not found
+        }
+
+        if (!hp.VerifyPassword(user.Password, vm.CurrentPassword))
+        {
+            ModelState.AddModelError("Current", "Current Password Incorrect.");
+        }
+
+
+        if (ModelState.IsValid)
+        {
+
+            user.Password = hp.HashPassword(vm.NewPassword);
+            db.SaveChanges();
+
+            TempData["Info"] = "Password updated.";
+            return RedirectToAction("MemberList", "Admin");
+
+        }
+
 
         return View(vm);
     }
