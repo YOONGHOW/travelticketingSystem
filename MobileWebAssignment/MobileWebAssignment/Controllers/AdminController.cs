@@ -9,10 +9,10 @@ using Microsoft.AspNetCore.Hosting.Server;
 using System.Media;
 using Microsoft.IdentityModel.Tokens;
 using Azure;
+using Microsoft.AspNetCore.Authorization;
 
 
 namespace MobileWebAssignment.Controllers;
-
 public class AdminController : Controller
 {
     private readonly DB db;
@@ -941,18 +941,10 @@ public class AdminController : Controller
             ModelState.AddModelError("Email", "Duplicated Email.");
         }
 
-        //check photo
-        if (ModelState.IsValid("Photo"))
-        {
-            var e = hp.ValidatePhoto(vm.Photo);
-            if (e != "") ModelState.AddModelError("Photo", e);
-
-        }
-
         if (ModelState.IsValid)
         {
 
-            db.Members.Add(new()
+            db.Admins.Add(new()
             {
                 Id = NextRegisterId(),
                 Name = vm.Name,
@@ -962,7 +954,6 @@ public class AdminController : Controller
                 PhoneNumber = vm.PhoneNumber,
                 Gender = vm.Gender,
                 Freeze = false,
-                PhotoURL = hp.SavePhoto(vm.Photo, "User")
             });
             db.SaveChanges();
             TempData["Info"] = "Create successfully. Please login.";
@@ -974,25 +965,19 @@ public class AdminController : Controller
     }
 
     //GET Admin/MemberList
-    public IActionResult MemberList(int page = 1)
+    public IActionResult MemberList(int MemberPage = 1, int AdminPage = 1)
     {
-        // Ensure the page number is at least 1
-        if (page < 1)
-        {
-            return RedirectToAction(null, new { page = 1 });
-        }
+        // Ensure the page numbers are at least 1
+        if (MemberPage < 1) MemberPage = 1;
+        if (AdminPage < 1) AdminPage = 1;
 
-        // Get paged list of users from the database
-        ViewBag.Users = db.User.ToPagedList(page, 5);
+        // Get paginated lists of members and admins
+        var members = db.User.OfType<Member>().ToPagedList(MemberPage, 5);
+        var admins = db.User.OfType<Admin>().ToPagedList(AdminPage, 5);
 
-        // Ensure the page number does not exceed the total page count
-        if (page > ViewBag.Users.PageCount && ViewBag.Users.PageCount > 0)
-        {
-            return RedirectToAction(null, new { page = ViewBag.Users.PageCount });
-        }
 
-        // Return the view with the paged list
-        return View(ViewBag.Users);
+        // Pass the lists as a tuple to the view
+        return View((members, admins));
     }
 
 
@@ -1021,8 +1006,74 @@ public class AdminController : Controller
     }
 
     //GET Admin/AdminUpdateMember
-    [HttpGet("Admin/AdminUpdateMember/{Id?}")]
-    public IActionResult AdminUpdateMember(string? Id)
+    [HttpGet]
+    public IActionResult AdminUpdateMember()
+    {
+        var email = User.Identity!.Name; // Get the logged-in user's email
+        var m = db.Admins.SingleOrDefault(member => member.Email == email); // Retrieve member details
+
+        if (m == null) return RedirectToAction("MemberList", "Admin");
+
+        var birthDate = Helper.ConvertIcToBirthDate(m.IC);
+
+        var vm = new UpdateProfileVm
+        {
+            Name = m.Name,
+            Email = m.Email,
+            PhoneNumber = m.PhoneNumber,
+            Gender = m.Gender,
+            IC = m.IC,
+            BirthDate = birthDate,
+        };
+
+        return View(vm);
+    }
+
+    //POST Admin/AdminUpdateMember 
+    [HttpPost]
+    public IActionResult AdminUpdateMember(UpdateProfileVm vm, string? Id)
+    {
+        // Retrieve the logged-in user's email
+        var email = User.Identity!.Name;
+
+        // Find the user by email
+        var user = db.Admins.SingleOrDefault(member => member.Email == email);
+
+        if (user == null)
+        {
+            return RedirectToAction("MemberList", "Admin"); // Redirect if user not found
+        }
+
+        // Validate other fields (e.g., name)
+        if (string.IsNullOrWhiteSpace(vm.Name))
+        {
+            ModelState.AddModelError("Name", "Name is required.");
+        }
+
+        // Additional validation for other fields can go here
+
+        if (ModelState.IsValid)
+        {
+            // Update user details
+            user.Name = vm.Name.Trim();
+            user.PhoneNumber = vm.PhoneNumber?.Trim(); // Handle optional fields
+            user.Gender = vm.Gender;
+            user.IC = vm.IC;
+
+            // Save changes to the database
+            db.SaveChanges();
+
+            TempData["Info"] = "Details updated successfully.";
+            return RedirectToAction("MemberList", "Admin");
+        }
+
+        return View(vm);
+
+    }
+
+    //GET Admin/MemberDetails
+    [HttpGet("Admin/MemberDetails/{Id?}")]
+    public IActionResult MemberDetails(string? Id)
     {
         var user = db.Members.Find(Id);
 
@@ -1046,56 +1097,49 @@ public class AdminController : Controller
         return View(vm);
     }
 
-    //POST Admin/AdminUpdateMember 
-    [HttpPost("Admin/AdminUpdateMember/{Id?}")]
-    public IActionResult AdminUpdateMember(UpdateProfileVm vm, string? Id)
+    //GET Admin/AdminChangePassword
+    public IActionResult AdminChangePassword()
     {
-        var user = db.Members.Find(Id);
+        return View();
+    }
 
-        if (user == null) return RedirectToAction("MemberList", "Admin");
+    //POST Admin/AdminChangePassword
+    [Authorize]
+    [HttpPost]
+    public IActionResult AdminChangePassword(ChangePassword vm)
+    {
+        // Retrieve the logged-in user's email
+        var email = User.Identity!.Name;
 
-        //check photo
-        if (ModelState.IsValid("Photo"))
+        // Find the user by email
+        var user = db.Admins.SingleOrDefault(member => member.Email == email);
+
+
+        if (user == null)
         {
-            var e = hp.ValidatePhoto(vm.Photo);
-            if (e != "") ModelState.AddModelError("Photo", e);
+            return RedirectToAction("MemberList", "Admin"); // Redirect if user not found
         }
 
-        // Validate other fields (e.g., name)
-        if (string.IsNullOrWhiteSpace(vm.Name))
+        if (!hp.VerifyPassword(user.Password, vm.CurrentPassword))
         {
-            ModelState.AddModelError("Name", "Name is required.");
+            ModelState.AddModelError("Current", "Current Password Incorrect.");
         }
 
-        // Additional validation for other fields can go here
 
         if (ModelState.IsValid)
         {
-            // Update user details
-            user.Name = vm.Name.Trim();
-            user.PhoneNumber = vm.PhoneNumber?.Trim(); // Handle optional fields
-            user.Gender = vm.Gender;
-            user.IC = vm.IC;
 
-            // Update profile photo if a new one is uploaded
-
-            if (vm.Photo != null)
-            {
-                hp.DeletePhoto(user.PhotoURL, "User");
-                user.PhotoURL = hp.SavePhoto(vm.Photo, "User");
-            }
-
-            // Save changes to the database
+            user.Password = hp.HashPassword(vm.NewPassword);
             db.SaveChanges();
 
-            TempData["Info"] = "Profile updated successfully.";
+            TempData["Info"] = "Password updated.";
             return RedirectToAction("MemberList", "Admin");
+
         }
 
+
         return View(vm);
-
     }
-
 
     //============================================ Member Maintenance End =========================================================
 

@@ -10,6 +10,8 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using System.Net.Mail;
 using System.Net;
+using System.Runtime.ConstrainedExecution;
+using System;
 
 namespace MobileWebAssignment;
 
@@ -19,7 +21,9 @@ public class Helper
     private readonly IHttpContextAccessor ct;
     private readonly IConfiguration cf;
 
+
     public Helper(IWebHostEnvironment en, IHttpContextAccessor ct, IConfiguration cf)
+
     {
         this.en = en;
         this.ct = ct;
@@ -493,4 +497,47 @@ public class Helper
         }
     }
 
+    public decimal GetMinTicketPrice(List<Ticket> ticketList)
+    {
+        decimal ticketPrice = 0;
+
+        int availableTicket = 0;
+        foreach (var t in ticketList)
+        {
+            if (t.ticketStatus == "Good" || t.stockQty > 0)
+            {
+                availableTicket++;
+            }
+        }
+
+        if (availableTicket > 1)
+        {
+            decimal lowestPrice = 99999;
+
+            foreach (var t in ticketList)
+            {
+                if (t.ticketPrice < lowestPrice)
+                {
+                    lowestPrice = t.ticketPrice;
+                }
+
+            }
+
+            ticketPrice = lowestPrice;
+        }
+        else if (availableTicket == 1)
+        {
+            foreach (var t in ticketList)
+            {
+                if (t.ticketStatus == "Good" || t.stockQty > 0)
+                {
+                    ticketPrice = t.ticketPrice;
+                }
+            }
+        }
+        return ticketPrice;
+    }
+
+
 }
+

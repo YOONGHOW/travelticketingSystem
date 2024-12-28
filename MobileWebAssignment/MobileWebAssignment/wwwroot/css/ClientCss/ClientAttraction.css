@@ -751,3 +751,102 @@ nav.image_side {
         opacity: 1
     }
 }
+
+/* Ticket Not Available Design */
+.ticketNA {
+    display: inline-block;
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+    border-radius: 5px;
+    padding: 5px 10px;
+    font-size: 14px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 10px;
+    animation: fadeIn 0.5s ease-in-out;
+    margin-bottom:0;
+}
+
+/* Fade-in effect for smoother appearance */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+/* Product Name */
+.product-name {
+    font-family: 'Poppins', sans-serif;
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    margin: 10px 0;
+    text-align: center;
+    transition: color 0.3s ease;
+}
+
+    .product-name:hover {
+        color: #007bff;
+        cursor: pointer;
+    }
+
+/* Feedback Summary */
+.feedback-summary {
+    font-size: 14px;
+    color: #666;
+    text-align: center;
+    margin: 5px 0;
+    vertical-align:bottom;
+}
+
+.feedback-star {
+    color: #ffcc00; /* Gold color for star */
+    font-size: 16px;
+}
+
+/* Ticket Price */
+.ticket-price {
+    font-size: 16px;
+    color: #28a745;
+    font-weight: bold;
+    margin-top: 10px;
+    display: block;
+    vertical-align: bottom;
+}
+
+/* General Styling for Product Item */
+.product-item {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+    padding: 15px;
+}
+
+    .product-item:hover {
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        transform: scale(1.02);
+    }
+
+button {
+    
+    font-size: 0.9rem;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 10px;
+}
+
+    button:hover {
+        opacity: 0.9;
+        background-color:#DEDEDE;
+    }

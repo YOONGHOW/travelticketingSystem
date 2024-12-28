@@ -8,7 +8,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/css/ClientCss/RegisterAccount.css" asp-append-version="true">
-    <title>Member Registration</title>
+    <title>Admin Account Registration</title>
 
     <style>
         html {
@@ -41,20 +41,12 @@
 <body>
 
     <div class="container">
-        <div class="title">Registration</div>
+        <div class="title">Admin Account Registration</div>
+        <br/>
         <div class="content">
             <form method="POST" id="state" enctype="multipart/form-data">
-                <div asp-validation-summary="All"></div>
+                <div asp-validation-summary="ModelOnly"></div>
                 <div class="user-details">
-
-                    <div class="input-address">
-                        <label class="details" asp-for="Photo">Profile Photo</label>
-                        <label class="upload" tabindex="0">
-                            <input asp-for="Photo" class="form-control" type="file" accept="image/jpg,image/png" hidden>
-                            <img src="/images/photo.jpg" id="drag">
-                        </label>
-                        <span asp-validation-for="Photo" class="text-danger"></span>
-                    </div>
 
                     <div class="input-box">
                         <label class="details" asp-for="Name">Full Name</label>

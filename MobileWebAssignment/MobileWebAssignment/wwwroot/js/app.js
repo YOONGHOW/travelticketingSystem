@@ -77,6 +77,7 @@ $('.upload input').on('change', e => {
     $(e.target).valid();
 });
 
+
 // Drag and drop functionality
 $('label.upload').on('dragenter dragover', e => {
     e.preventDefault();  // Prevent default behavior, which is open the file in browser
@@ -148,6 +149,7 @@ $(".day-status").each(function () {
     const row = $(this).closest(".day-row");
     row.find(".start-time, .end-time").prop("disabled", isClosed);
 });
+
 
 
 

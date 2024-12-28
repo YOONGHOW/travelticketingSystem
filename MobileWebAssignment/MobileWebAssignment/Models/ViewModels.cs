@@ -118,6 +118,10 @@ public class AttractFeedback
 
     public List<Feedback> feedbacks { get; set; }
 
+    public List<Ticket> tickets { get; set; }
+
+    public decimal? ticketPrice { get; set; }
+
 }
 
 
@@ -168,6 +172,9 @@ public class LoginVm
     [DataType(DataType.Password)]
     [Required(ErrorMessage = "Password is required.")]
     public string PasswordCurrent { get; set; }
+
+    [BindProperty]
+    public string? RecaptchaToken { get; set; }
 }
 public class RegisterVM
 {
@@ -202,8 +209,8 @@ public class RegisterVM
     [DataType(DataType.Password)]
     public string ConfirmPassword { get; set; }
 
-    public IFormFile Photo { get; set; }
-
+    public IFormFile? Photo { get; set; }
+    public string? PhotoBase64 { get; set; }
 }
 
 public class UpdateProfileVm

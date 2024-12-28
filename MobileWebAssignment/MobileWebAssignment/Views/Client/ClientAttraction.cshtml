@@ -1,6 +1,6 @@
 ﻿@{
-    Layout = "_ClientLayout";
-    ViewBag.Title = "Client | Attraction";
+	Layout = "_ClientLayout";
+	ViewBag.Title = "Client | Attraction";
 }
 
 @model IEnumerable<AttractFeedback>
@@ -8,70 +8,95 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/css/ClientCss/ClientAttraction.css" asp-append-version="true">
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="/css/ClientCss/ClientAttraction.css" asp-append-version="true">
 
 </head>
-<body></body>
+<body>
+</body>
 </html>
 <main style="min-height: 600px;">
-    <p class="introduction">
-        From local escapes to far-flung adventures, find what makes you happy anytime, anywhere
-    </p>
-    <section>
-        <nav class="prod_side">
-            <form method="POST" action="product_list.php">
-                <input type="search" name="search" id="search_prod" placeholder="Search..." />
+	<p class="introduction">
+		From local escapes to far-flung adventures, find what makes you happy anytime, anywhere
+	</p>
+	<section>
+		<nav class="prod_side">
+			<form method="POST"
+				  data-ajax="true"
+				  data-ajax-update="#target"
+				  data-ajax-loading="#loader"
+				  id="filterForm">
+				@Html.TextBox("name", "",
+									new { type = "search", autofocus = "", data_trim = "", id = "search_prod", placeholder = "Search..." })
+				<br><br>
+				<label>Filter by Price : </label><br><br>
+				<input type="submit" name="sort" id="priceBtn" value="High To Low" /> <br><br>
+				<input type="submit" name="sort" id="priceBtn" value="Low To High">
+				<br><br>
+				<label for="category">Attraction Type :</label>
+				<select name="category" id="category">
+					<option value="all">All</option>
+					@foreach (var at in ViewBag.AttractionTypes)
+					{
+						<option value="@at.Id">@at.Name</option>
+					}
+				</select>
+				<img src="/images/loader.gif" id="loader" style="display: none" />
+				<button>Search</button>
+			</form>
+		</nav>
 
-                <br><br>
-                <label>Filter by Price : </label><br><br>
-                <input type="submit" name="sort_High_Low" id="priceBtn" value="High to Low" /> <br><br>
-                <input type="submit" name="sort_Low_High" id="priceBtn" value="Low to High">
-
-
-                <select name="category" id="category" onchange="this.form.submit()">
-                    <option value="all">All</option>
-                    @foreach (var at in ViewBag.AttractionTypes)
-                    { 
-                        <option value="@at.Id">@at.Name</option>
-                    }
-                </select>
-            </form>
-        </nav>
-
-        <div class="productList">
-            <div class="product-list">
-                @foreach (var a in @Model)
-                {
-                     <div class="product-item" onclick="window.location.href='ClientAttractionDetail?attractionId=@a.attraction.Id'">
-                    <img src="/attractionImages/@a.attraction.ImagePath" alt="" class="product-image">
-                        <h3 class="product-name">@a.attraction.Name</h3>
-                        @{
-                            if(a.feedbacks.Count == 0){
-                                <p>★ 0.0(0)</p>
-                            }else{
-                                int total = 0;
-                                double averageRating = 0.0;
-                                foreach (var f in a.feedbacks)
-                                {
-                                    total += f.Rating;
-                                }
-
-                                averageRating = (double)total / a.feedbacks.Count;
-
-
-								<p>★ @averageRating.ToString("F1") (@a.feedbacks.Count)</p>
-							}
-						}
-                        
-                    
-                    <p class="product-cost">start with RM120 per ticket</p>
-                </div>
-                }
-
-			</div>
-        </div>
-    </section>
+		<div class="productList" id="target">
+			<partial name="_ClientAttraction" />
+		</div>
+	</section>
 </main>
+
+@section foot {
+	<script>
+		let timer = null;
+
+		$('#search_prod').on('input', e => {
+		clearTimeout(timer);
+		timer = setTimeout(() => $(e.target.form).submit(), 500);
+		});
+	</script>
+	<script>
+				document.addEventListener("DOMContentLoaded", function () {
+			const form = document.getElementById('filterForm');
+			const categorySelect = document.getElementById('category');
+			const resultContainer = document.getElementById('target');
+
+			// Event listener for change event on the select tag
+			categorySelect.addEventListener('change', function () {
+				// Create a FormData object to capture form data
+				const formData = new FormData(form);
+
+				// Optional: Show a loading message or spinner
+				resultContainer.innerHTML = '<p>Loading...</p>';
+
+				// Send the form data via AJAX using fetch
+				fetch(form.action, {
+					method: form.method,
+					body: formData,
+				})
+					.then(response => {
+						if (!response.ok) {
+							throw new Error('Network response was not ok');
+						}
+						return response.text(); // Assuming the server returns HTML
+					})
+					.then(html => {
+						// Inject the resulting HTML into the result container
+						resultContainer.innerHTML = html;
+					})
+					.catch(error => {
+						console.error('Error during AJAX request:', error);
+						resultContainer.innerHTML = '<p>An error occurred. Please try again later.</p>';
+					});
+			});
+		});
+	</script>
+}
 
