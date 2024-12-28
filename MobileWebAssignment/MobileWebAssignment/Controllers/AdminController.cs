@@ -8,6 +8,7 @@ using X.PagedList.Extensions;
 using Microsoft.AspNetCore.Hosting.Server;
 using System.Media;
 using Microsoft.IdentityModel.Tokens;
+using Azure;
 
 
 namespace MobileWebAssignment.Controllers;
@@ -29,7 +30,7 @@ public class AdminController : Controller
 
 
     //==================================== Attraction Type start =========================================================
-    public IActionResult AdminAttraction(string? Aname, int ATpage = 1, int Apage = 1)
+    public IActionResult AdminAttraction(string? Aname, string? Asort, string? Adir, int ATpage = 1, int Apage = 1)
     {
         //page list for Attraction Types
         if (ATpage < 1)
@@ -43,21 +44,41 @@ public class AdminController : Controller
         {
             return RedirectToAction(null, new { ATpage = ViewBag.AttractionTypes.PageCount });
         }
+    
 
+        // Searching for attraction
+        ViewBag.aname = Aname = Aname?.Trim() ?? "";
+
+        var atts = db.Attraction.Include(a => a.AttractionType).Where(a => a.Name.Contains(Aname));
+
+        // Sorting for attraction
+        ViewBag.ASort = Asort;
+        ViewBag.ADir = Adir;
+
+        Func<Attraction, object> attraction = Asort switch
+        {
+            "Id" => a => a.Id,
+            "Name" => a => a.Name,
+            "Location" => a => a.Location,
+            "AttractionTypeId" => a => a.AttractionTypeId,
+            _ => a => a.Id,
+        };
+
+        var at = Adir == "des" ?
+                atts.OrderByDescending(attraction) :
+                atts.OrderBy(attraction);
 
         //page list for Attractions
         if (Apage < 1)
         {
             return RedirectToAction(null, new { Apage = 1 });
         }
-
-        Aname = Aname?.Trim() ?? "";
-
-        var attractions = db.Attraction.Include(a => a.AttractionType).Where(a => a.Name.Contains(Aname)).ToPagedList(Apage, 5);
+        
+        var attractions = at.ToPagedList(Apage, 5);
 
         if (Apage > attractions.PageCount && attractions.PageCount > 0)
         {
-            return RedirectToAction(null, new { Apage = attractions.PageCount });
+            return RedirectToAction(null, new { Aname, Asort, Adir, Apage = attractions.PageCount });
         }
 
         if (Request.IsAjax())
@@ -65,8 +86,46 @@ public class AdminController : Controller
             return PartialView("_AdminAttraction", attractions);
         }
 
-
         return View(attractions);
+    }
+
+    //ajax function for attraction type
+    public IActionResult AjaxAttractionType(string? ATname, string? ATsort, string? ATdir, int ATpage = 1)
+    {
+        //Searching for attraction type
+        ViewBag.atname = ATname = ATname?.Trim() ?? "";
+        var attractionTypes = db.AttractionType.Where(at => at.Name.Contains(ATname));
+
+        // Sorting for attraction
+        ViewBag.ATSort = ATsort;
+        ViewBag.ATDir = ATdir;
+
+        Func<AttractionType, object> attraction = ATsort switch
+        {
+            "Id" => at => at.Id,
+            "Name" => at => at.Name,
+            _ => at => at.Id,
+        };
+
+        var at = ATdir == "des" ?
+                attractionTypes.OrderByDescending(attraction) :
+                attractionTypes.OrderBy(attraction);
+
+        //page list for Attraction Types
+        if (ATpage < 1)
+        {
+            return RedirectToAction(null, new { ATpage = 1 });
+        }
+
+        var atType = at.ToPagedList(ATpage, 5);
+        ViewBag.AttractionTypes = atType;
+
+        if (ATpage > ViewBag.AttractionTypes.PageCount && ViewBag.AttractionTypes.PageCount > 0)
+        {
+            return RedirectToAction(null, new { ATname, ATsort, ATdir, ATpage = ViewBag.AttractionTypes.PageCount });
+        }
+
+        return PartialView("_AdminAttractionType");
     }
 
     // Manually generate next id for attraction type
@@ -347,7 +406,7 @@ public class AdminController : Controller
 
         var a = db.Attraction.Find(vm.Id);
         ViewBag.AttractionTypes = db.AttractionType.ToList();
-        
+
 
         //check vm model
         if (a == null)
@@ -524,7 +583,7 @@ public class AdminController : Controller
                 ticketDetails = vm.ticketDetails,
                 ticketType = vm.ticketType,
                 AttractionId = vm.AttractionId,
-            }); 
+            });
             db.SaveChanges();
 
             TempData["Info"] = "A ticket for " + vm.AttractionId + "  is inserted.";
@@ -1042,7 +1101,7 @@ public class AdminController : Controller
 
 
 
-    
+
 
 
 
@@ -1102,7 +1161,7 @@ public class AdminController : Controller
     }
     public IActionResult AdminPurchase(string? purchaseID, DateTime? validdate, string? payment)
     {
-      
+
         var allPurchases = getAllPurcahse(false);
 
 

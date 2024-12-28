@@ -6,58 +6,77 @@
         Attraction Type List
         <span class="tableNav">
 
-            <form data-ajax="true"
-                  data-ajax-update="#target"
-                  data-ajax-loading="#loader">
-                @Html.TextBox("ATname", "",
-                         new { type = "search", autofocus = "", data_trim = "", id = "searchBar" })
-                <button>Search</button>
 
-                <img src="/images/loader.gif" id="loader" style="display: none">
-            </form>
+@{
+	var attractionTypes = (IPagedList<AttractionType>)ViewBag.AttractionTypes;
+	string[] fields = ["Attraction Type ID", "Attraction Type Name"];
 
-            @{
-                var attractionTypes = (IPagedList<AttractionType>)ViewBag.AttractionTypes;
-            }
-            @attractionTypes.Count of @attractionTypes.TotalItemCount record(s) |
-            Page @attractionTypes.PageNumber of @attractionTypes.PageCount
-            <button class="create" data-get="/Admin/AdminAttractionTypeCreate">Create New</button>
-        </span>
-    </h3>
+}
+@attractionTypes.Count of @attractionTypes.TotalItemCount record(s) |
+Page @attractionTypes.PageNumber of @attractionTypes.PageCount
 
-    <div class="attractionTypeTable">
-        <table>
-            <thead>
-                <tr>
-                    <th>Attraction Type ID</th>
-                    <th>Name</th>
-                    <th colspan="2" style="text-align:center;">Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var at in ViewBag.AttractionTypes)
-                {
-                    <tr>
-                        <td>@at.Id</td>
-                        <td>@at.Name</td>
-                        <td style="text-align:center;"><button class="update" data-get="/Admin/AdminAttractionTypeUpdate/@at.Id">Update</button></td>
-                        <td style="text-align:center;"><button class="delete" data-get="/Admin/AdminAttractionTypeDelete/@at.Id">Delete</button></td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-        @{
-            var AToptions = PagedListRenderOptions.ClassicPlusFirstAndLast;
-            AToptions.LinkToFirstPageFormat = "First";
-            AToptions.LinkToLastPageFormat = "Last";
-            AToptions.LinkToPreviousPageFormat = "Previous";
-            AToptions.LinkToNextPageFormat = "Next";
-        }
+<table>
+	<thead>
+		<tr>
+			@foreach (var f in fields)
+			{
+				string d = "asc";
+				string c = "";
 
-        @Html.PagedListPager(
-                 (IPagedList)ViewBag.AttractionTypes,
-                 page => $"?ATpage={page}",
-                 AToptions
-                 )
-    </div>
-</div>
+				if (f == ViewBag.ATSort)
+				{
+					d = ViewBag.ATDir == "des" ? "asc" : "des";
+					c = ViewBag.ATDir;
+				}
+
+				<th>
+					<a data-ajax="true"
+					   data-ajax-update="#atarget"
+					   data-ajax-loading="#aloader"
+					   href="AjaxAttractionType?Aname=@ViewBag.atname&ATsort=@f&ATdir=@d" class="@c">@f</a>
+				</th>
+			}
+			<th colspan="2" style="text-align:center;">Action</th>
+		</tr>
+	</thead>
+	<tbody>
+		@if (ViewBag.AttractionTypes.Count == 0)
+		{
+			<tr><td colspan="6" style="text-align:center;">No record found.</td></tr>
+		}
+		else
+		{
+			@foreach (var at in ViewBag.AttractionTypes)
+			{
+				<tr>
+					<td>@at.Id</td>
+					<td>@at.Name</td>
+					<td style="text-align:center;"><button class="update" data-get="/Admin/AdminAttractionTypeUpdate/@at.Id">Update</button></td>
+					<td style="text-align:center;"><button class="delete" data-get="/Admin/AdminAttractionTypeDelete/@at.Id">Delete</button></td>
+				</tr>
+			}
+		}
+
+	</tbody>
+</table>
+@{
+	var AToptions = PagedListRenderOptions.ClassicPlusFirstAndLast;
+	AToptions.LinkToFirstPageFormat = "First";
+	AToptions.LinkToLastPageFormat = "Last";
+	AToptions.LinkToPreviousPageFormat = "Previous";
+	AToptions.LinkToNextPageFormat = "Next";
+
+	var ajaxOptions = new AjaxOptions
+			{
+				HttpMethod = "get",
+				UpdateTargetId = "atarget",
+				LoadingElementId = "#aloader",
+			};
+}
+
+@Html.PagedListPager(
+		(IPagedList)ViewBag.AttractionTypes,
+			page => $"AjaxAttractionType?ATpage={page}",
+			PagedListRenderOptions.EnableUnobtrusiveAjaxReplacing(AToptions, ajaxOptions)
+		)
+
