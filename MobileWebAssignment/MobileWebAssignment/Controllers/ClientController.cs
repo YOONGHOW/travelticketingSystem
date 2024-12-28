@@ -1,8 +1,6 @@
 
 using System.Globalization;
 using System.Net.Mail;
-using System.Net.Sockets;
-using Azure.Core;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -48,7 +46,7 @@ namespace MobileWebAssignment.Controllers
         // Generate ID for register account
         private string NextRegisterId()
         {
-            string max = db.User.Max(s =>  s.Id) ?? "U000";
+            string max = db.User.Max(s => s.Id) ?? "U000";
             int n = int.Parse(max[1..]);
             return (n + 1).ToString("'U'000");
         }
@@ -113,12 +111,12 @@ namespace MobileWebAssignment.Controllers
         [HttpPost]
         public IActionResult Login(LoginVm vm, string? returnURL)
         {
-            if (string.IsNullOrEmpty(vm.Email) )
+            if (string.IsNullOrEmpty(vm.Email))
             {
                 ModelState.AddModelError("", "Email are required.");
                 return View(vm);
             }
-            
+
             if (string.IsNullOrEmpty(vm.PasswordCurrent))
             {
                 ModelState.AddModelError("", "Password are required.");
@@ -127,7 +125,7 @@ namespace MobileWebAssignment.Controllers
 
             var u = db.User.SingleOrDefault(user => user.Email == vm.Email);
 
-            if(u.Freeze == true)
+            if (u.Freeze == true)
             {
                 ModelState.AddModelError("", "Account already block by Admin.");
                 return View(vm);
@@ -150,7 +148,7 @@ namespace MobileWebAssignment.Controllers
                 return Redirect(returnURL);
             }
 
-            if(role == "Admin")
+            if (role == "Admin")
             {
                 return RedirectToAction("AdminAttraction", "Admin");
 
@@ -196,7 +194,7 @@ namespace MobileWebAssignment.Controllers
                 PhotoURL = photo,
             };
 
-            return View(vm); 
+            return View(vm);
         }
 
         //POST : Client/UpdateProfile
@@ -240,7 +238,7 @@ namespace MobileWebAssignment.Controllers
                 user.IC = vm.IC;
 
                 // Update profile photo if a new one is uploaded
-                
+
                 if (vm.Photo != null)
                 {
                     hp.DeletePhoto(user.PhotoURL, "User");
@@ -294,7 +292,7 @@ namespace MobileWebAssignment.Controllers
                 db.SaveChanges();
 
                 TempData["Info"] = "Password updated.";
-                return RedirectToAction("Homepage","Client");
+                return RedirectToAction("Homepage", "Client");
 
             }
 
@@ -330,7 +328,7 @@ namespace MobileWebAssignment.Controllers
                 ModelState.AddModelError("Email", "Email not found.");
             }
 
-            if (ModelState.IsValid) 
+            if (ModelState.IsValid)
             {
                 string password = hp.RandomPassword();
 
@@ -341,7 +339,7 @@ namespace MobileWebAssignment.Controllers
                 SendResetPasswordEmail(u, password);
 
                 TempData["Info"] = $"Password reset. Check your email.";
-                return RedirectToAction("Login","Client");
+                return RedirectToAction("Login", "Client");
             }
 
 
@@ -395,9 +393,9 @@ namespace MobileWebAssignment.Controllers
             var attractions = db.Attraction.Include(a => a.AttractionType).ToList();
             ViewBag.Attractions = attractions;
 
-            var attractFeedback = new List<AttractFeedback>(); 
+            var attractFeedback = new List<AttractFeedback>();
 
-            foreach(var a in attractions)
+            foreach (var a in attractions)
             {
                 attractFeedback.Add(new AttractFeedback
                 {
@@ -406,12 +404,12 @@ namespace MobileWebAssignment.Controllers
                 });
             }
 
-            
+
 
             foreach (var a in attractFeedback)
             {
                 if (hp.SplitImagePath(a.attraction.ImagePath).Count > 0)
-                a.attraction.ImagePath = hp.SplitImagePath(a.attraction.ImagePath)[0];
+                    a.attraction.ImagePath = hp.SplitImagePath(a.attraction.ImagePath)[0];
             }
 
             return View(attractFeedback);
@@ -462,7 +460,7 @@ namespace MobileWebAssignment.Controllers
                 ticketStatus = t.ticketStatus,
                 ticketDetails = t.ticketDetails,
                 ticketType = t.ticketType,
-                AttractionId = t.AttractionId,             
+                AttractionId = t.AttractionId,
 
             }).ToList();
 
@@ -566,6 +564,7 @@ namespace MobileWebAssignment.Controllers
 
             return View();
         }
+        
         //------------------------------------------ FeedBack start ----------------------------------------------
 
         // Manually generate next id for feedback
@@ -621,7 +620,7 @@ namespace MobileWebAssignment.Controllers
                 return RedirectToAction("ClientAttractionDetail");
             }
 
-            if (ModelState.IsValid("Title") && vm.Title == null) 
+            if (ModelState.IsValid("Title") && vm.Title == null)
             {
                 ModelState.AddModelError("Title", "Please enter your title.");
             }
@@ -647,12 +646,12 @@ namespace MobileWebAssignment.Controllers
                 string comment = vm.Title + " | " + vm.Reason + " | " + vm.Partner + " | " + vm.Review;
                 db.Feedback.Add(new()
                 {
-                    Id= vm.Id,
-                    Rating= vm.Rating,
-                    Comment= comment,
-                    SubmitDate= DateTime.Now,
-                    AttractionId= vm.AttractionId,
-                    UserId= vm.UserId,
+                    Id = vm.Id,
+                    Rating = vm.Rating,
+                    Comment = comment,
+                    SubmitDate = DateTime.Now,
+                    AttractionId = vm.AttractionId,
+                    UserId = vm.UserId,
                 });
                 db.SaveChanges();
 
@@ -668,7 +667,7 @@ namespace MobileWebAssignment.Controllers
         {
             var feedbacks = db.Feedback.Include(a => a.Attraction).Include(u => u.User).Where(f => f.UserId == userId).ToList();
 
-            if(feedbacks == null)
+            if (feedbacks == null)
             {
                 return RedirectToAction("HomePage");
             }
@@ -775,6 +774,7 @@ namespace MobileWebAssignment.Controllers
 
 
         //------------------------------------------ FeedBack end ----------------------------------------------
+
 
 
 
