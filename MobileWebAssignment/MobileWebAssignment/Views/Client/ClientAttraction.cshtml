@@ -3,18 +3,21 @@
     ViewBag.Title = "Client | Attraction";
 }
 
+@model IEnumerable<AttractFeedback>
+
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/ClientCss/ClientAttraction.css" asp-append-version="true">
+
 </head>
 <body></body>
 </html>
 <main style="min-height: 600px;">
     <p class="introduction">
-        A comprehensive range from electronic devices
-        to home appliances are available at here !
+        From local escapes to far-flung adventures, find what makes you happy anytime, anywhere
     </p>
     <section>
         <nav class="prod_side">
@@ -29,25 +32,44 @@
 
                 <select name="category" id="category" onchange="this.form.submit()">
                     <option value="all">All</option>
+                    @foreach (var at in ViewBag.AttractionTypes)
+                    { 
+                        <option value="@at.Id">@at.Name</option>
+                    }
                 </select>
             </form>
         </nav>
 
         <div class="productList">
             <div class="product-list">
-                <div class="product-item" onclick="window.location.href='ClientAttractionDetail?product_id=<?= $product->product_id ?>'">
-                    <img src="/images/afamosa.jpeg" alt="" class="product-image">
-                    <h3 class="product-name">A-Famosa</h3>
-                    <p>★ 4.0(12)</p>
+                @foreach (var a in @Model)
+                {
+                     <div class="product-item" onclick="window.location.href='ClientAttractionDetail?attractionId=@a.attraction.Id'">
+                    <img src="/attractionImages/@a.attraction.ImagePath" alt="" class="product-image">
+                        <h3 class="product-name">@a.attraction.Name</h3>
+                        @{
+                            if(a.feedbacks.Count == 0){
+                                <p>★ 0.0(0)</p>
+                            }else{
+                                int total = 0;
+                                double averageRating = 0.0;
+                                foreach (var f in a.feedbacks)
+                                {
+                                    total += f.Rating;
+                                }
+
+                                averageRating = (double)total / a.feedbacks.Count;
+
+
+								<p>★ @averageRating.ToString("F1") (@a.feedbacks.Count)</p>
+							}
+						}
+                        
+                    
                     <p class="product-cost">start with RM120 per ticket</p>
                 </div>
-            
-                <div class="product-item" onclick="window.location.href='ClientAttractionDetail?product_id=<?= $product->product_id ?>'">
-                    <img src="/images/afamosa.jpeg" alt="" class="product-image">
-                    <h3 class="product-name">A-Famosa</h3>
-                    <p>★ 4.0(12)</p>
-                    <p class="product-cost">start with RM120 per ticket</p>
-				</div>
+                }
+
 			</div>
         </div>
     </section>
