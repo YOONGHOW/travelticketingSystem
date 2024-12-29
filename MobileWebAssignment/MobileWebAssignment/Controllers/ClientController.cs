@@ -685,18 +685,22 @@ namespace MobileWebAssignment.Controllers
         //  [Authorize(Roles = "Member")] 
         public IActionResult ClientCart()
         {
+            var userId = "U001"; // Replace this with actual logic to get logged-in user's ID.
+
             //var userId = User.Identity!.Name;
             //if (userId == null)
             //{
             //    TempData["Error"] = "You must log in to view your cart.";
             //    return RedirectToAction("Login");
             //}
-            getUserID(); //to get the cookie email save the id to session
+            //getUserID(); //to get the cookie email save the id to session
 
-            var userId = hp.GetUserID();
+            //var userId = hp.GetUserID();
+
 
             var cartItems = db.Cart
                               .Include(c => c.Ticket)
+                              .ThenInclude(t => t.Attraction)
                               .Where(c => c.UserId == userId)
                               .Select(c => new
                               {
@@ -705,7 +709,9 @@ namespace MobileWebAssignment.Controllers
                                   Quantity = c.Quantity,
                                   Price = c.Ticket.ticketPrice,
                                   TotalPrice = c.Quantity * c.Ticket.ticketPrice,
-                                  StockAvailable = c.Ticket.stockQty
+                                  StockAvailable = c.Ticket.stockQty,
+                                  ImagePath = c.Ticket.Attraction.ImagePath,
+                                  AttractionId = c.Ticket.AttractionId
                               })
                               .ToList();
 
@@ -713,6 +719,22 @@ namespace MobileWebAssignment.Controllers
             ViewBag.TotalPrice = cartItems.Sum(c => c.TotalPrice);
 
             return View();
+        }
+
+        [HttpPost]
+        public IActionResult DeleteCartItem([FromBody] string ticketId)
+        {
+            var userId = "U001"; // Replace with the logic to get the logged-in user ID.
+            var cartItem = db.Cart.SingleOrDefault(c => c.UserId == userId && c.TicketId == ticketId);
+
+            if (cartItem != null)
+            {
+                db.Cart.Remove(cartItem);
+                db.SaveChanges();
+                return Ok();
+            }
+
+            return BadRequest();
         }
 
         //[HttpPost]
