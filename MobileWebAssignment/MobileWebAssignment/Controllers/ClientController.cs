@@ -691,6 +691,7 @@ namespace MobileWebAssignment.Controllers
                               {
                                   c.Id,
                                   TicketName = c.Ticket.ticketName,
+                                  TicketType = c.Ticket.ticketType,
                                   Quantity = c.Quantity,
                                   Price = c.Ticket.ticketPrice,
                                   TotalPrice = c.Quantity * c.Ticket.ticketPrice,
