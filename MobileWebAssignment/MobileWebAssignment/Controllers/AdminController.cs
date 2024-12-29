@@ -2,13 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using MobileWebAssignment.Models;
-using System.Net.Sockets;
 using X.PagedList.Extensions;
-using Microsoft.AspNetCore.Hosting.Server;
-using System.Media;
-using Microsoft.IdentityModel.Tokens;
-using Azure;
 using Microsoft.AspNetCore.Authorization;
 
 
@@ -44,7 +38,7 @@ public class AdminController : Controller
         {
             return RedirectToAction(null, new { ATpage = ViewBag.AttractionTypes.PageCount });
         }
-    
+
 
         // Searching for attraction
         ViewBag.aname = Aname = Aname?.Trim() ?? "";
@@ -73,7 +67,7 @@ public class AdminController : Controller
         {
             return RedirectToAction(null, new { Apage = 1 });
         }
-        
+
         var attractions = at.ToPagedList(Apage, 5);
 
         if (Apage > attractions.PageCount && attractions.PageCount > 0)
@@ -400,7 +394,6 @@ public class AdminController : Controller
     }
 
     // POST: Attraction/Update
-    [HttpPost]
     public IActionResult AdminAttractionUpdate(AttractionUpdateVM vm)
     {
 
@@ -726,11 +719,58 @@ public class AdminController : Controller
                 SubmitDate = f.SubmitDate,
                 AttractionId = f.AttractionId,
                 commentDetail = hp.ConvertComment(f.Comment),
+                insertReplyFeedback = new FeedbackReplyVM(),
+                feedbackReplyList = db.FeedbackReply.Where(fr => fr.FeedbackId == f.Id).ToList(),
             });
         }
 
-
         return View(vm);
+    }
+
+    private string NextFeedbackReplyId()
+    {
+        string max = db.FeedbackReply.Max(fr => fr.Id) ?? "FR000";
+        int n = int.Parse(max[2..]);
+        return (n + 1).ToString("'FR'000");
+    }
+
+    [HttpPost]
+    public IActionResult AddComment(string reply, string feedbackId, string comment)
+    {
+        ViewBag.attractions = db.Attraction.ToList();
+
+
+        db.FeedbackReply.Add(new FeedbackReply
+        {
+            Id = NextFeedbackReplyId(),
+            Comment = comment,
+            Type = reply.Trim(),
+            FeedbackId = feedbackId,
+        });
+        db.SaveChanges();
+
+        TempData["Info"] = "Comment send successfully.";
+
+
+        return RedirectToAction("AdminFeedback");
+    }
+
+    [HttpPost] 
+    public IActionResult DeleteComment(string replyId)
+    {
+        ViewBag.attractions = db.Attraction.ToList();
+
+        var fr = db.FeedbackReply.Find(replyId);
+
+        if (fr != null)
+        {
+            db.FeedbackReply.Remove(fr);
+            db.SaveChanges();
+            TempData["Info"] = "Record Deleted.";
+            return RedirectToAction("AdminFeedback");
+        }
+
+        return RedirectToAction("AdminFeedback");
     }
     //============================================ Feedback end =========================================================
 
@@ -956,6 +996,7 @@ public class AdminController : Controller
     }
 
     // GET Admin/CreateAccount
+    [Authorize(Roles = "Admin")]
     public IActionResult CreateAccount()
     {
         return View();
@@ -994,21 +1035,38 @@ public class AdminController : Controller
     }
 
     //GET Admin/MemberList
-    public IActionResult MemberList(int MemberPage = 1, int AdminPage = 1)
+    [Authorize(Roles = "Admin")]
+    public IActionResult MemberList(int MemberPage = 1, int AdminPage = 1, string MemberSearch = "", string AdminSearch = "")
     {
         // Ensure the page numbers are at least 1
         if (MemberPage < 1) MemberPage = 1;
         if (AdminPage < 1) AdminPage = 1;
 
-        // Get paginated lists of members and admins
-        var members = db.User.OfType<Member>().ToPagedList(MemberPage, 5);
-        var admins = db.User.OfType<Admin>().ToPagedList(AdminPage, 5);
+        // Filter and paginate members
+        var membersQuery = db.User.OfType<Member>().AsQueryable(); //convert all "Member" into queryable object allowing filtering
+        if (!string.IsNullOrEmpty(MemberSearch))
+        {
+            membersQuery = membersQuery.Where(m =>
+                m.Name.Contains(MemberSearch) ||  //Match Member name contains the search string
+                m.Email.Contains(MemberSearch) || //Match Member email 
+                m.PhoneNumber.Contains(MemberSearch)); //Match Member Phone number
+        }
+        var members = membersQuery.ToPagedList(MemberPage, 5); //convert filtered memberQuery into paginated list, MemberPage specifies the number of member for current page
 
+        // Filter and paginate admins
+        var adminsQuery = db.User.OfType<Admin>().AsQueryable(); 
+        if (!string.IsNullOrEmpty(AdminSearch))
+        {
+            adminsQuery = adminsQuery.Where(a =>
+                a.Name.Contains(AdminSearch) ||
+                a.Email.Contains(AdminSearch) ||
+                a.PhoneNumber.Contains(AdminSearch));
+        }
+        var admins = adminsQuery.ToPagedList(AdminPage, 5);
 
         // Pass the lists as a tuple to the view
         return View((members, admins));
     }
-
 
     //POST : UserStatus
     [HttpPost]
@@ -1035,6 +1093,7 @@ public class AdminController : Controller
     }
 
     //GET Admin/AdminUpdateMember
+    [Authorize(Roles = "Admin")]
     [HttpGet]
     public IActionResult AdminUpdateMember()
     {
@@ -1101,6 +1160,7 @@ public class AdminController : Controller
     }
 
     //GET Admin/MemberDetails
+    [Authorize(Roles = "Admin")]
     [HttpGet("Admin/MemberDetails/{Id?}")]
     public IActionResult MemberDetails(string? Id)
     {
@@ -1133,7 +1193,7 @@ public class AdminController : Controller
     }
 
     //POST Admin/AdminChangePassword
-    [Authorize]
+    [Authorize(Roles = "Admin")]
     [HttpPost]
     public IActionResult AdminChangePassword(ChangePassword vm)
     {

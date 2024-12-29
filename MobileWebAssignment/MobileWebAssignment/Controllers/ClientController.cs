@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Globalization;
 using System.Net.Mail;
+using System.Reflection.Metadata.Ecma335;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Authorization;
@@ -340,14 +341,13 @@ namespace MobileWebAssignment.Controllers
         }
 
         //GET Client/ChangePassword
-        [Authorize]
+        [Authorize(Roles = "Member")]
         public IActionResult ChangePassword()
         {
             return View();
         }
 
         //POST Client/ChangePassword
-        [Authorize]
         [HttpPost]
         public IActionResult ChangePassword(ChangePassword vm)
         {
@@ -591,6 +591,7 @@ namespace MobileWebAssignment.Controllers
                     SubmitDate = f.SubmitDate,
                     AttractionId = f.AttractionId,
                     commentDetail = hp.ConvertComment(f.Comment),
+                    feedbackReplyList = db.FeedbackReply.Where(fr => fr.FeedbackId == f.Id).Where(fr => fr.Type == "Public").ToList(),
                 });
             }
 
@@ -643,9 +644,14 @@ namespace MobileWebAssignment.Controllers
             var userId = hp.GetUserID();// Replace with actual user ID retrieval logic.
             string attractionId = null; // Initialize AttractionId.
             int count = 1;
+            bool itemsAdded = false;
+
             foreach (var ticket in tickets)
             {
-                if (ticket.Quantity <= 0) continue; // Skip tickets with zero or negative quantities.
+                if (ticket.Quantity <= 0)
+                {
+                    continue;
+                }
 
                 var dbTicket = db.Ticket.SingleOrDefault(t => t.Id == ticket.TicketId);
                 if (dbTicket == null || dbTicket.stockQty < ticket.Quantity)
@@ -654,7 +660,7 @@ namespace MobileWebAssignment.Controllers
                     continue;
                 }
 
-                attractionId = dbTicket.AttractionId; // Capture the AttractionId from a valid ticket.
+                attractionId = dbTicket.AttractionId; 
 
                 var existingCart = db.Cart.SingleOrDefault(c => c.UserId == userId && c.TicketId == ticket.TicketId);
                 if (existingCart != null)
@@ -672,47 +678,67 @@ namespace MobileWebAssignment.Controllers
                     });
                 }
                 count++;
+                itemsAdded = true;
+            }
+
+            if (!itemsAdded)
+            {
+                TempData["Info"] = "No ticket were added to the cart.";
+                return RedirectToAction("ClientAttraction");
             }
 
             db.SaveChanges();
 
-            TempData["Info"] = "Selected items added to cart successfully.";
+            TempData["Info"] = "Selected ticket(s) added to cart successfully.";
             return RedirectToAction("ClientAttractionDetail", new { AttractionId = attractionId });
         }
 
-
-
-        //  [Authorize(Roles = "Member")] 
+        [Authorize(Roles = "Member")] 
         public IActionResult ClientCart()
         {
-            //var userId = User.Identity!.Name;
-            //if (userId == null)
-            //{
-            //    TempData["Error"] = "You must log in to view your cart.";
-            //    return RedirectToAction("Login");
-            //}
-            getUserID(); //to get the cookie email save the id to session
-
+            getUserID();
             var userId = hp.GetUserID();
-
             var cartItems = db.Cart
                               .Include(c => c.Ticket)
+                              .ThenInclude(t => t.Attraction)
                               .Where(c => c.UserId == userId)
                               .Select(c => new
                               {
                                   c.Id,
+                                  TicketId = c.Ticket.Id,
                                   TicketName = c.Ticket.ticketName,
+                                  TicketType = c.Ticket.ticketType,
                                   Quantity = c.Quantity,
                                   Price = c.Ticket.ticketPrice,
                                   TotalPrice = c.Quantity * c.Ticket.ticketPrice,
-                                  StockAvailable = c.Ticket.stockQty
+                                  StockAvailable = c.Ticket.stockQty,
+                                  ImagePath = c.Ticket.Attraction.ImagePath,
+                                  AttractionId = c.Ticket.AttractionId
                               })
                               .ToList();
 
             ViewBag.CartItems = cartItems;
             ViewBag.TotalPrice = cartItems.Sum(c => c.TotalPrice);
-
+            ViewBag.TotalCount = cartItems.Sum(c => c.Quantity);
             return View();
+        }
+
+        [HttpPost]
+        public IActionResult deleteCart(string TicketId)
+        {
+            getUserID();
+            var userId = hp.GetUserID();
+            var cartItem = db.Cart.SingleOrDefault(c => c.UserId == userId && c.TicketId == TicketId);
+
+            if (cartItem != null)
+            {
+                db.Cart.Remove(cartItem);
+                db.SaveChanges();
+                TempData["Info"] = "Selected ticket is successfully removed";
+                return RedirectToAction("ClientCart");
+            }
+
+            return RedirectToAction("ClientCart");
         }
 
         //[HttpPost]
@@ -851,6 +877,7 @@ namespace MobileWebAssignment.Controllers
                     SubmitDate = f.SubmitDate,
                     AttractionId = f.AttractionId,
                     commentDetail = hp.ConvertComment(f.Comment),
+                    feedbackReplyList = db.FeedbackReply.Where(fr => fr.FeedbackId == f.Id).ToList(),
                 });
             }
 

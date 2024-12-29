@@ -1,6 +1,6 @@
 ﻿@{
-    Layout = "_AdminLayout";
-    ViewBag.Title = "Admin | Feedback";
+	Layout = "_AdminLayout";
+	ViewBag.Title = "Admin | Feedback";
 }
 
 @model IEnumerable<FeedbackInsertVM>
@@ -8,81 +8,70 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/css/AdminCss/AdminFeedback.css" asp-append-version="true">
-    
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="/css/AdminCss/AdminFeedback.css" asp-append-version="true">
+
 </head>
 <body>
-    <div class="reviews-container">
+	<div class="reviews-container">
 
-        <div class="header">
-            <h2>Reviews</h2>
-            <span class="date-range">March 2021 - February 2022</span>
-        </div>
+		<div class="header">
+			<h2>Reviews</h2>
+			<span class="date-range">March 2021 - February 2022</span>
+		</div>
 
-        <!-- Filter Section -->
-        <div class="filtering">
-            <label for="attraction"><b>Attraction:</b></label>
-            <select id="attraction" name="attraction">
-                <option value="all">All Attractions</option>
-                @foreach(var a in ViewBag.attractions){
-                    <option value="@a.Id">@a.Name</option>
-                }
-            </select>
-        </div>
+		<!-- Filter Section -->
+		<div class="filtering">
+			<label for="attraction"><b>Attraction:</b></label>
+			<select id="attraction" name="attraction">
+				<option value="all">All Attractions</option>
+				@foreach (var a in ViewBag.attractions)
+				{
+					<option value="@a.Id">@a.Name</option>
+				}
+			</select>
+		</div>
 
-        <!-- Stats Section -->
-        <div class="stats">
-            <div class="stat">
-                <h3>@Model.Count()</h3>
-                <p>Total Reviews</p>
-            </div>
-            <div class="stat">
-                @{
-                    int total = 0;
-                    double averageRating = 0.0;
-                    foreach (var f in Model)
-                    {
-                        total += f.Rating;
-                    }
-
-                    averageRating = (double)total / Model.Count();
-                }
-                <h3>@averageRating.ToString("F1") ★</h3>
-                <p>Average Rating</p>
-            </div>
-        </div>
-
-        <!-- Reviews Section -->
-        @foreach (var f in Model)
-        {
-            <div class="review">
-                <div class="review-header">
-                    <div class="user-info">
-                        <img src="/images/miyabi.jpeg" alt="User">
-                        <div class="details">
-                            <span class="user-name">Miyabi</span>
-                            <span>Total Spend: $200</span>
-                            <span>Reviews Title: @f.commentDetail.Title</span>
-                        </div>
-                    </div>
-                    <span class="rating">
-                        @for (int i = 0; i < f.Rating; i++)
-                        {
-                            <b>★</b>
-                        }
-                    </span>
-                </div>
-                <p class="review-text">@f.commentDetail.Review</p>
-                <div class="actions">
-                    <button>Public Comment</button>
-                    <button>Direct Message</button>
-                    <button>❤</button>
-                </div>
-            </div>
-        }
-
-    </div>
+		<div id="target">
+			<partial name="_AdminFeedback" />
+		</div>
+	</div>
 </body>
 </html>
+<script>
+		// Get all 'Reply' buttons on the page
+	const replyButtons = document.querySelectorAll('#replyButton');
+
+	// Get all 'View Comment' buttons on the page
+	const viewCommentButtons = document.querySelectorAll('#viewComment');
+
+		// Reply Button Logic
+	replyButtons.forEach(button => {
+		button.addEventListener('click', function() {
+			const actionsDiv = this.closest('.review').querySelector('.actions');
+			actionsDiv.style.display = (actionsDiv.style.display === 'none' || actionsDiv.style.display === '') ? 'block' : 'none';
+		});
+	});
+
+	// View Comment Button Logic
+	viewCommentButtons.forEach(button => {
+		button.addEventListener('click', function() {
+			const replyListDiv = this.closest('.review').querySelector('#replyList');
+			replyListDiv.style.display = (replyListDiv.style.display === 'none' || replyListDiv.style.display === '') ? 'block' : 'none';
+		});
+	});
+
+</script>
+<script>
+	// Attach event listener to form submit
+	document.querySelector('form').addEventListener('submit', function(event) {
+		var commentField = document.querySelector('textarea[name="comment"]');
+		if (!commentField.value.trim()) {  // Check if the textarea is empty or only spaces
+			alert("Comment cannot be empty.");
+			event.preventDefault();  // Prevent form submission
+		}
+	});
+</script>
+
+
