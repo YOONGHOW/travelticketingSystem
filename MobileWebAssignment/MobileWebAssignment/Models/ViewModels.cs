@@ -150,6 +150,22 @@ public class FeedbackInsertVM
     public string? Review { get; set; }
 
     public Comment? commentDetail { get; set; }
+
+    public FeedbackReplyVM? insertReplyFeedback { get; set; }
+    public List<FeedbackReply>? feedbackReplyList { get; set; }
+}
+
+public class FeedbackReplyVM
+{
+    public string Id { get; set; }
+    
+    [Required]
+    [MaxLength(1000)]
+    public string? Comment { get; set; }
+    
+    public string Type { get; set; }
+
+    public string FeedbackId { get; set; }
 }
 
 public class Comment()
@@ -371,9 +387,12 @@ public class PaymentVM()
 public class CartPaymentVM()
 {
     public Ticket Ticket { get; set; }
+    [Required(ErrorMessage = "Quantity is required.")]
+    [RegularExpression(@"^\d+$", ErrorMessage = "Only accept integers.")]
     public int Quantit { get; set; }
     public decimal Subtotal { get; set; }
-
+    [ Required(ErrorMessage = "Date is required.")]
+    public DateOnly Dateonly { get; set; }
     public string imagepath { get; set; }
 }
 
