@@ -99,11 +99,13 @@
     }
 
 .selected {
-    background-color: gray; 
+    background-color: #555; /* Example background */
+    color: #fff; /* Example text color */
+    border-radius: 10px; /* Optional rounded corners */
 }
 
     .selected a {
-        color: #fff; 
+        color: inherit;
     }
 
 @media (max-width: 768px) {

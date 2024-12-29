@@ -11,6 +11,22 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<link rel="stylesheet" href="/css/ClientCss/ClientAttraction.css" asp-append-version="true">
+	<style>
+		button {
+			font-size: 0.9rem;
+			padding: 10px 20px;
+			border: none;
+			border-radius: 4px;
+			cursor: pointer;
+			width: 100%;
+			margin-top: 10px;
+		}
+
+			button:hover {
+				opacity: 0.9;
+				background-color: #DEDEDE;
+			}
+	</style>
 
 </head>
 <body>
@@ -31,10 +47,10 @@
 									new { type = "search", autofocus = "", data_trim = "", id = "search_prod", placeholder = "Search..." })
 				<br><br>
 				<label>Filter by Price : </label><br><br>
-				<input type="submit" name="sort" id="priceBtn" value="dec" /> <br><br>
-				<input type="submit" name="sort" id="priceBtn" value="asc">
-
-
+				<input type="submit" name="sort" id="priceBtn" value="High To Low" /> <br><br>
+				<input type="submit" name="sort" id="priceBtn" value="Low To High">
+				<br><br>
+				<label for="category">Attraction Type :</label>
 				<select name="category" id="category">
 					<option value="all">All</option>
 					@foreach (var at in ViewBag.AttractionTypes)

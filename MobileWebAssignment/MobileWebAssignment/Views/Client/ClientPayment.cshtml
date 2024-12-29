@@ -92,10 +92,10 @@
                         <div class="orderContainer@(count) orderContainer p-3 rounded mb-2" style="background-color:#b6b6b6;cursor: pointer"
                              onclick="updateProductDetail(this,'@s.Ticket.ticketName', 'RM @s.Ticket.ticketPrice', '@s.imagepath')">
                             <p class="form-control-plaintext fw-bold">@s.Ticket.ticketName</p>
-                            <p class="form-control-plaintext text-end">RM @s.Subtotal</p>
+                            <p class="form-control-plaintext text-end ticketPrice">RM @s.Subtotal</p>
                             <p class="form-control-plaintext">x @s.Quantit</p>
                             <input type="hidden" value="@s.imagepath" />
-                            <p class="form-control-plaintext">RM @s.Ticket.ticketPrice</p>
+                            <p class="form-control-plaintext ">RM @s.Ticket.ticketPrice</p>
                         </div>
                     }
                 </div>
@@ -160,12 +160,12 @@
                     </div>
                     @{
                         // Safely get the item count from ViewBag.CartItems
-                        int itemCount = (ViewBag.CartItems as List<CartVM>)?.Count ?? 0;
+                        int itemCount = (ViewBag.CartItems as List<CartPaymentVM>)?.Count ?? 0;
 
                         // Determine if the button should be disabled
                         var isDisabled = itemCount == 0; // Disable if no items in the cart
                     }
-                    <button class="btn btn-primary w-100" disabled="@isDisabled">Pay RM 00.00 </button>
+                    <button class="btn btn-primary w-100" disabled="@isDisabled" id="payButton" >Pay RM 00.00 </button>
                 </form>
             </div>
         </div>
@@ -212,6 +212,44 @@
             container.style.border = '2px solid black';
         }
 
+              // Function to calculate the subtotal
+        function calculateSubtotal() {
+            let total = 0;
+
+            // Loop through each order container to get ticket prices
+            document.querySelectorAll('.orderContainer').forEach(function (container) {
+                // Get the ticket price from the container
+                const ticketPriceElement = container.querySelector('.ticketPrice');
+                const ticketPrice = parseFloat(ticketPriceElement.innerText.replace('RM', '').trim()); // Remove 'RM' and parse as float
+                total += ticketPrice; // Add the price to the total
+            });
+
+            // Update the subtotal field with the calculated total
+            const subtotalField = document.getElementById('subtotalcal');
+            subtotalField.value = 'RM ' + total.toFixed(2); // Format the total to 2 decimal places
+        }
+
+       
+            function updateTotal() {
+            // Get the current subtotal and shipping fee values
+            var subtotal = parseFloat(document.getElementById('subtotalcal').value.replace('RM', '').trim());
+            var shippingFee = parseFloat(document.getElementById('shiping').value.replace('RM', '').trim());
+
+            // Calculate the total
+            var total = subtotal + shippingFee;
+            var payButton = document.getElementById('payButton');
+            // Update the totalcal input with the calculated total
+            document.getElementById('totalcal').value = 'RM ' + total.toFixed(2);
+         
+            payButton.innerText = 'Pay RM ' + total.toFixed(2);
+
+        }
+
+         // Call the calculateSubtotal function when the page loads
+        window.onload = function () {
+            calculateSubtotal();
+            updateTotal(); // Update the total based on the shipping fee
+        };
 
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>

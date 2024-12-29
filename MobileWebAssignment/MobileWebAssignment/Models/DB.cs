@@ -9,9 +9,11 @@ public class DB : DbContext
 
     // DbSet
     public DbSet<Feedback> Feedback { get; set; }
+    public DbSet<FeedbackReply> FeedbackReply { get; set; }
     public DbSet<Attraction> Attraction { get; set; }
     public DbSet<AttractionType> AttractionType { get; set; }
     public DbSet<Ticket> Ticket { get; set; }
+    public DbSet<Wish> Wish { get; set; }
     public DbSet<Cart> Cart { get; set; }
     public DbSet<User> User { get; set; }
     public DbSet<Promotion> Promotion { get; set; }
@@ -78,6 +80,7 @@ public class Attraction //A0001
     public AttractionType AttractionType { get; set; }
     public List<Feedback> Feedbacks { get; set; } = [];
     public List<Ticket> Tickets { get; set; } = [];
+    public List<Wish> Wishs { get; set; } = [];
 
 
 }//end of attractionType
@@ -114,9 +117,29 @@ public class Feedback//F0001
     //Navigation
     public Attraction Attraction { get; set; }
     public User User { get; set; }
+    public List<FeedbackReply> FeedbackReply { get; set; } = [];
 
 
 }// end of feedback
+
+public class FeedbackReply//FR001
+{
+    [Key, MaxLength(6)]
+    public string Id { get; set; }
+
+    [MaxLength(500)]
+    public string Comment { get; set; }
+
+    [MaxLength(8)]
+    public string Type { get; set; }
+
+    //FK
+    public string FeedbackId { get; set; }
+
+    //Navigation
+    public Feedback Feedback { get; set; }
+
+}
 
 
 public class Ticket //TK0001
@@ -143,6 +166,19 @@ public class Ticket //TK0001
 
 }//end of ticket
 
+public class Wish
+{
+    public string Id { get; set; }
+
+    // FK USER ID
+    public string UserId { get; set; }
+
+    // FK Ticket ID
+    public string AttractionId { get; set; }
+    // Navigation
+    public User User { get; set; }
+    public Attraction Attraction { get; set; }
+}
 public class Cart
 {
     [Key, MaxLength(8)] // Example: CART0001
@@ -246,7 +282,7 @@ public class User //U0001
     [Key, MaxLength(10)]
     public string Id { get; set; }
 
-    [Required, MaxLength(20)]
+    [Required, MaxLength(50)]
     public string Email { get; set; }
 
     [Required, MaxLength(30)]
@@ -272,6 +308,8 @@ public class User //U0001
     public List<Feedback> Feedbacks { get; set; } = [];
     public List<Purchase> Purchases { get; set; } = [];
     public List<Cart> Carts { get; set; } = [];
+    public List<Wish> Wishs { get; set; } = [];
+
 } //end of user
 
 public class Admin : User
