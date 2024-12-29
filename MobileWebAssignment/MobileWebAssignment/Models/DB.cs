@@ -164,6 +164,19 @@ public class Ticket //TK0001
 
 }//end of ticket
 
+public class Wish
+{
+    public string Id { get; set; }
+
+    // FK USER ID
+    public string UserId { get; set; }
+
+    // FK Ticket ID
+    public string AttractionId { get; set; }
+    // Navigation
+    public User User { get; set; }
+    public Attraction Attraction { get; set; }
+}
 public class Cart
 {
     [Key, MaxLength(8)] // Example: CART0001

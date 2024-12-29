@@ -630,20 +630,6 @@ nav.image_side {
     margin-left: 10px;
 }
 
-.tableTicketDetails {
-    margin-top: 20px;
-    width: 100%;
-    font-size: 18px;
-}
-
-.ticket-box {
-    border: 2px solid #c4c4c4;
-    border-radius: 10px;
-    width: 70%;
-    padding: 20px;
-}
-
-
 /* Slideshow container */
 .slideshow-container {
     width: 80%;
@@ -846,6 +832,58 @@ nav.image_side {
         margin-top: 15px;
     }
 
+
+/* Ticket */
+.ticket-box{
+    border:2px solid #555;
+    border-radius:10px;
+    width:70%;
+    padding:20px;
+}
+
+.addCartBtn {
+    width: 70%;
+}
+
+
+.container {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px; /* Adjust spacing between the sections */
+}
+
+.left-side {
+    flex: 2; /* Take up more space */
+}
+
+.right-side {
+    flex: 1; /* Take up less space */
+    margin-left: -150px;
+}
+
+.operating_time {
+    font-size: 18px;
+}
+
+.ticket-box {
+    margin-bottom: 20px;
+}
+
+.tableTicketDetails {
+    width: 100%;
+    margin-top: 10px;
+}
+
+.right-side table {
+    width: 100%;
+    text-align: left;
+}
+
+.addCartBtn {
+    margin-top: 20px;
+}
+=======
 button.delete-comment {
     float: right;
     background-color: #e74c3c; /* Red for delete action */

@@ -36,7 +36,8 @@
                 @if (cartItems != null)
                 {
                     foreach (var item in cartItems)
-                    {
+                    { 
+                        <form asp-action="deleteCart" asp-controller="Client"  method="post">
                         <tr>
                             <td>
                                 @{
@@ -47,36 +48,21 @@
                             <td>@item.TicketName - @item.TicketType</td>
                             <td>@item.Quantity</td>
                             <td>@item.Price</td>
-                            <td>@item.TotalPrice</td>
+                            <td>@item.TotalPrice.ToString("F2")</td>
                             <td>
                                 <button onclick="window.location.href='@Url.Action("ClientAttractionDetail", "Client", new { AttractionId = item.AttractionId })'" class="btn_update">Update</button>
-                                <button onclick="deleteCartItem('@item.Id')" class="btn_delete">Delete</button>
+                               
+                                    <input type="hidden" name="ticketId" value="@item.TicketId" style="display:none;"/>
+                                    <button type="submit" class="btn_delete">Delete</button>
+                                                              
                             </td>
                         </tr>
+                        </form>
                     }
                 }
             </tbody>
         </table>
 
-
-        <script>
-            function deleteCartItem(ticketId) {
-                if (confirm("Are you sure you want to delete this item?")) {
-                    fetch('/Client/DeleteCartItem', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ ticketId })
-                    })
-                    .then(response => {
-                        if (response.ok) {
-                            window.location.reload();
-                        } else {
-                            alert("Failed to delete item.");
-                        }
-                    });
-                }
-            }
-        </script>
         <div class="cart-summary">
             <h3>Total: @totalPrice.ToString("C")</h3>
             <button class="checkout-btn" onclick="location.href='@Url.Action("Checkout", "Client")'">Proceed to Checkout</button>
