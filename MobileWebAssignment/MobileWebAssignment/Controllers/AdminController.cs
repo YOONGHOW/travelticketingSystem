@@ -996,6 +996,7 @@ public class AdminController : Controller
     }
 
     // GET Admin/CreateAccount
+    [Authorize(Roles = "Admin")]
     public IActionResult CreateAccount()
     {
         return View();
@@ -1034,21 +1035,38 @@ public class AdminController : Controller
     }
 
     //GET Admin/MemberList
-    public IActionResult MemberList(int MemberPage = 1, int AdminPage = 1)
+    [Authorize(Roles = "Admin")]
+    public IActionResult MemberList(int MemberPage = 1, int AdminPage = 1, string MemberSearch = "", string AdminSearch = "")
     {
         // Ensure the page numbers are at least 1
         if (MemberPage < 1) MemberPage = 1;
         if (AdminPage < 1) AdminPage = 1;
 
-        // Get paginated lists of members and admins
-        var members = db.User.OfType<Member>().ToPagedList(MemberPage, 5);
-        var admins = db.User.OfType<Admin>().ToPagedList(AdminPage, 5);
+        // Filter and paginate members
+        var membersQuery = db.User.OfType<Member>().AsQueryable(); //convert all "Member" into queryable object allowing filtering
+        if (!string.IsNullOrEmpty(MemberSearch))
+        {
+            membersQuery = membersQuery.Where(m =>
+                m.Name.Contains(MemberSearch) ||  //Match Member name contains the search string
+                m.Email.Contains(MemberSearch) || //Match Member email 
+                m.PhoneNumber.Contains(MemberSearch)); //Match Member Phone number
+        }
+        var members = membersQuery.ToPagedList(MemberPage, 5); //convert filtered memberQuery into paginated list, MemberPage specifies the number of member for current page
 
+        // Filter and paginate admins
+        var adminsQuery = db.User.OfType<Admin>().AsQueryable(); 
+        if (!string.IsNullOrEmpty(AdminSearch))
+        {
+            adminsQuery = adminsQuery.Where(a =>
+                a.Name.Contains(AdminSearch) ||
+                a.Email.Contains(AdminSearch) ||
+                a.PhoneNumber.Contains(AdminSearch));
+        }
+        var admins = adminsQuery.ToPagedList(AdminPage, 5);
 
         // Pass the lists as a tuple to the view
         return View((members, admins));
     }
-
 
     //POST : UserStatus
     [HttpPost]
@@ -1075,6 +1093,7 @@ public class AdminController : Controller
     }
 
     //GET Admin/AdminUpdateMember
+    [Authorize(Roles = "Admin")]
     [HttpGet]
     public IActionResult AdminUpdateMember()
     {
@@ -1141,6 +1160,7 @@ public class AdminController : Controller
     }
 
     //GET Admin/MemberDetails
+    [Authorize(Roles = "Admin")]
     [HttpGet("Admin/MemberDetails/{Id?}")]
     public IActionResult MemberDetails(string? Id)
     {
@@ -1173,7 +1193,7 @@ public class AdminController : Controller
     }
 
     //POST Admin/AdminChangePassword
-    [Authorize]
+    [Authorize(Roles = "Admin")]
     [HttpPost]
     public IActionResult AdminChangePassword(ChangePassword vm)
     {
