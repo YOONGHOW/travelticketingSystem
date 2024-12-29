@@ -1,130 +1,121 @@
-﻿/* Admin Discount Delete Page Styles */
-div {
-    max-width: 600px; /* Limit the width of the content */
-    margin: 0 auto; /* Center horizontally */
-    padding: 20px;
-    font-family: Arial, sans-serif;
-    background-color: #fff;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Add a subtle shadow for focus */
-    border-radius: 8px;
-    text-align: left; /* Ensure text alignment remains left */
+﻿/* General Styles */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* More professional font */
+    background-color: #f4f4f9; /* Lighter background color for overall contrast */
+    color: #333;
+    line-height: 1.6;
 }
 
+/* Main Content Container */
+div {
+    max-width: 700px; /* Increased max width for better readability */
+    margin: 40px auto; /* Center the content with added space above and below */
+    padding: 25px;
+    background-color: #ffffff;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow for focus */
+    border-radius: 12px;
+    text-align: left;
+}
+
+/* Header */
 h2 {
     font-size: 2rem;
     color: #333;
-    margin-bottom: 20px;
-    text-align: center; /* Center the title */
+    margin-bottom: 30px; /* Added more spacing */
+    text-align: center;
+    font-weight: 600;
+    border-bottom: 2px solid #e0e0e0; /* Subtle border beneath header */
+    padding-bottom: 15px;
 }
 
+/* Paragraph */
 p {
-    font-size: 1.1rem;
+    font-size: 1.125rem; /* Slightly larger font size */
     color: #555;
-    margin-bottom: 20px;
-    text-align: center; /* Center the paragraph */
+    margin-bottom: 30px;
+    text-align: center;
 }
 
+/* Definition List Styles */
 dl.row {
-    background-color: #f9f9f9;
-    padding: 20px;
-    border-radius: 8px;
-    margin-bottom: 30px;
+    background-color: #fafafa; /* Soft background color */
+    padding: 25px;
+    border-radius: 10px;
+    margin-bottom: 40px; /* More space before buttons */
+    border: 1px solid #ddd;
 }
 
 dt {
-    font-weight: bold;
-    color: #555;
-    font-size: 1.1rem;
+    font-weight: 600;
+    font-size: 1.125rem;
+    color: #444;
 }
 
 dd {
-    margin-left: 10px;
+    margin-left: 15px;
     font-size: 1rem;
-    color: #333;
-    padding-bottom: 10px;
+    color: #555;
+    padding-bottom: 12px;
 }
 
     dd:last-child {
         padding-bottom: 0;
     }
 
+/* Button Styling */
 button {
-    padding: 10px 20px;
-    font-size: 1rem;
-    border: none;
-    border-radius: 5px;
+    padding: 12px 25px;
+    font-size: 1.125rem;
+    border-radius: 6px;
     cursor: pointer;
-    margin-right: 10px;
-    transition: background-color 0.3s;
+    border: none;
+    font-weight: 500;
+    transition: background-color 0.3s, transform 0.2s ease-in-out;
+    display: inline-block;
+    text-align: center; /* Ensure text is centered */
 }
 
-/* Delete button */
+/* Delete Button */
 .btn-danger {
     background-color: #dc3545;
     color: white;
+    width: 48%; /* Reduced width for both buttons */
+    font-weight: bold;
+    text-align: center;
 }
 
     .btn-danger:hover {
         background-color: #c82333;
+        transform: translateY(-2px);
     }
 
-/* Cancel button */
+/* Cancel Button */
 .btn-secondary {
-    background-color: #6c757d;
+    background-color: #007bff; /* Changed to a professional blue color */
     color: white;
+    width: 48%; /* Same width as the delete button */
+    font-weight: bold; /* Make the text bold */
+    text-align: center; /* Center the text */
 }
 
     .btn-secondary:hover {
-        background-color: #5a6268;
+        background-color: #0056b3; /* Darker blue for hover effect */
+        transform: translateY(-2px);
     }
 
-/* Form Styling */
+/* Form Layout */
 form {
+    display: flex;
+    justify-content: space-between; /* Place buttons side by side */
     margin-top: 20px;
 }
 
-    /* Add some spacing between the buttons */
-    form a,
-    form button {
-        margin-right: 10px;
-    }
-
+/* Link Styling */
 a {
+    color: #007bff; /* Professional blue for links */
     text-decoration: none;
 }
 
     a:hover {
         text-decoration: underline;
     }
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    div {
-        margin: 20px auto;
-        padding: 15px;
-    }
-
-    .row {
-        display: block;
-        margin-bottom: 15px;
-    }
-
-    dt, dd {
-        display: block;
-        width: 100%;
-        margin-bottom: 10px;
-    }
-
-    dt {
-        font-size: 1rem;
-    }
-
-    dd {
-        font-size: 0.9rem;
-    }
-
-    button {
-        width: 100%;
-        margin-bottom: 10px;
-    }
-}
