@@ -681,16 +681,11 @@ namespace MobileWebAssignment.Controllers
         //  [Authorize(Roles = "Member")] 
         public IActionResult ClientCart()
         {
-            //var userId = User.Identity!.Name;
-            var userId = "U001";
-            //if (userId == null)
-            //{
-            //    TempData["Error"] = "You must log in to view your cart.";
-            //    return RedirectToAction("Login");
-            //}
+            var userId = "U001"; // Replace this with actual logic to get logged-in user's ID.
 
             var cartItems = db.Cart
                               .Include(c => c.Ticket)
+                              .ThenInclude(t => t.Attraction)
                               .Where(c => c.UserId == userId)
                               .Select(c => new
                               {
@@ -699,7 +694,9 @@ namespace MobileWebAssignment.Controllers
                                   Quantity = c.Quantity,
                                   Price = c.Ticket.ticketPrice,
                                   TotalPrice = c.Quantity * c.Ticket.ticketPrice,
-                                  StockAvailable = c.Ticket.stockQty
+                                  StockAvailable = c.Ticket.stockQty,
+                                  ImagePath = c.Ticket.Attraction.ImagePath,
+                                  AttractionId = c.Ticket.AttractionId
                               })
                               .ToList();
 
@@ -709,6 +706,21 @@ namespace MobileWebAssignment.Controllers
             return View();
         }
 
+        [HttpPost]
+        public IActionResult DeleteCartItem([FromBody] string ticketId)
+        {
+            var userId = "U001"; // Replace with the logic to get the logged-in user ID.
+            var cartItem = db.Cart.SingleOrDefault(c => c.UserId == userId && c.TicketId == ticketId);
+
+            if (cartItem != null)
+            {
+                db.Cart.Remove(cartItem);
+                db.SaveChanges();
+                return Ok();
+            }
+
+            return BadRequest();
+        }
         //------------------------------------------ FeedBack start ----------------------------------------------
 
         // Manually generate next id for feedback
