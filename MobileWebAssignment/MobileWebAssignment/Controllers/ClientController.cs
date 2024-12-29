@@ -589,6 +589,7 @@ namespace MobileWebAssignment.Controllers
                     SubmitDate = f.SubmitDate,
                     AttractionId = f.AttractionId,
                     commentDetail = hp.ConvertComment(f.Comment),
+                    feedbackReplyList = db.FeedbackReply.Where(fr => fr.FeedbackId == f.Id).Where(fr => fr.Type == "Public").ToList(),
                 });
             }
 
@@ -836,6 +837,7 @@ namespace MobileWebAssignment.Controllers
                     SubmitDate = f.SubmitDate,
                     AttractionId = f.AttractionId,
                     commentDetail = hp.ConvertComment(f.Comment),
+                    feedbackReplyList = db.FeedbackReply.Where(fr => fr.FeedbackId == f.Id).ToList(),
                 });
             }
 
