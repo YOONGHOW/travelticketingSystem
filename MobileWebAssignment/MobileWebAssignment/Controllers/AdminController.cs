@@ -44,7 +44,7 @@ public class AdminController : Controller
         {
             return RedirectToAction(null, new { ATpage = ViewBag.AttractionTypes.PageCount });
         }
-    
+
 
         // Searching for attraction
         ViewBag.aname = Aname = Aname?.Trim() ?? "";
@@ -73,7 +73,7 @@ public class AdminController : Controller
         {
             return RedirectToAction(null, new { Apage = 1 });
         }
-        
+
         var attractions = at.ToPagedList(Apage, 5);
 
         if (Apage > attractions.PageCount && attractions.PageCount > 0)
@@ -400,7 +400,6 @@ public class AdminController : Controller
     }
 
     // POST: Attraction/Update
-    [HttpPost]
     public IActionResult AdminAttractionUpdate(AttractionUpdateVM vm)
     {
 
@@ -726,11 +725,58 @@ public class AdminController : Controller
                 SubmitDate = f.SubmitDate,
                 AttractionId = f.AttractionId,
                 commentDetail = hp.ConvertComment(f.Comment),
+                insertReplyFeedback = new FeedbackReplyVM(),
+                feedbackReplyList = db.FeedbackReply.Where(fr => fr.FeedbackId == f.Id).ToList(),
             });
         }
 
-
         return View(vm);
+    }
+
+    private string NextFeedbackReplyId()
+    {
+        string max = db.FeedbackReply.Max(fr => fr.Id) ?? "FR000";
+        int n = int.Parse(max[2..]);
+        return (n + 1).ToString("'FR'000");
+    }
+
+    [HttpPost]
+    public IActionResult AddComment(string reply, string feedbackId, string comment)
+    {
+        ViewBag.attractions = db.Attraction.ToList();
+
+
+        db.FeedbackReply.Add(new FeedbackReply
+        {
+            Id = NextFeedbackReplyId(),
+            Comment = comment,
+            Type = reply.Trim(),
+            FeedbackId = feedbackId,
+        });
+        db.SaveChanges();
+
+        TempData["Info"] = "Comment send successfully.";
+
+
+        return RedirectToAction("AdminFeedback");
+    }
+
+    [HttpPost] 
+    public IActionResult DeleteComment(string replyId)
+    {
+        ViewBag.attractions = db.Attraction.ToList();
+
+        var fr = db.FeedbackReply.Find(replyId);
+
+        if (fr != null)
+        {
+            db.FeedbackReply.Remove(fr);
+            db.SaveChanges();
+            TempData["Info"] = "Record Deleted.";
+            return RedirectToAction("AdminFeedback");
+        }
+
+        return RedirectToAction("AdminFeedback");
     }
     //============================================ Feedback end =========================================================
 
