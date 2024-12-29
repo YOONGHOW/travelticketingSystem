@@ -196,14 +196,15 @@
 		let selectedLocation = null;
 
 		// Initialize Azure Maps
-		var map = new atlas.Map('mapContainer', {
-			center: [101.6869, 3.139], // Default center: Kuala Lumpur, Malaysia (Longitude, Latitude)
+			var map = new atlas.Map('mapContainer', {
+			center: [100.3327, 5.4164], // Penang, Malaysia (Longitude, Latitude)
 			zoom: 12,
 			authOptions: {
 				authType: 'subscriptionKey',
 				subscriptionKey: subscriptionKey
 			}
 		});
+
 
 		// Add a click event to place a marker when the user clicks on the map
 		map.events.add('click', function (e) {

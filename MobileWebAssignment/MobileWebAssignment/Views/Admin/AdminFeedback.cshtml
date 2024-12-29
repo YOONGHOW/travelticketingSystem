@@ -22,16 +22,36 @@
 		</div>
 
 		<!-- Filter Section -->
-		<div class="filtering">
-			<label for="attraction"><b>Attraction:</b></label>
-			<select id="attraction" name="attraction">
-				<option value="all">All Attractions</option>
-				@foreach (var a in ViewBag.attractions)
-				{
-					<option value="@a.Id">@a.Name</option>
-				}
-			</select>
-		</div>
+		<form data-ajax="true"
+			  data-ajax-update="#target"
+			  data-ajax-loading="#loader"
+			  action="FilterFeedback"
+			  id="filterFeedback">
+			<div class="filtering">
+				<label for="attraction"><b>Attraction:</b></label>
+				<select id="attraction" name="attractionId">
+					<option value="all">All Attractions</option>
+					@foreach (var a in ViewBag.attractions)
+					{
+						<option value="@a.Id">@a.Name</option>
+					}
+				</select>
+				<select name="dateSort">
+					<option value="dec">Newest to Oldest</option>
+					<option value="asc">Oldest to Newest</option>
+					</select>
+				<select name="star">
+					<option value="5">5 star</option>
+					<option value="4">4 star</option>
+					<option value="3">3 star</option>
+					<option value="2">2 star</option>
+					<option value="1">1 star</option>
+				</select>
+				<button form="filterFeedback" class="enhanced-button">Search</button>
+				<img src="/images/loader.gif" id="loader" style="display: none">
+			</div>
+		</form>
+
 
 		<!-- Stats Section -->
 		<div class="stats">
@@ -127,39 +147,38 @@
 	</div>
 </body>
 </html>
+
 <script>
-		// Get all 'Reply' buttons on the page
-	const replyButtons = document.querySelectorAll('#replyButton');
+			// Get all forms on the page
+	const forms = document.querySelectorAll('form');
 
-	// Get all 'View Comment' buttons on the page
-	const viewCommentButtons = document.querySelectorAll('#viewComment');
+	// Check if there are any forms
+	if (forms.length > 0) {
+		// Attach event listener to each form
+		forms.forEach(form => {
+			form.addEventListener('submit', function(event) {
+				// Skip validation for the form with ID 'filterFeedback'
+				if (this.id === 'filterFeedback') {
+					return; // Allow form submission without further checks
+				}
 
-		// Reply Button Logic
-	replyButtons.forEach(button => {
-		button.addEventListener('click', function() {
-			const actionsDiv = this.closest('.review').querySelector('.actions');
-			actionsDiv.style.display = (actionsDiv.style.display === 'none' || actionsDiv.style.display === '') ? 'block' : 'none';
+				// Apply validation for other forms
+				const commentField = this.querySelector('textarea[name="comment"]');
+				if (commentField) {
+					const commentValue = commentField.value.trim();
+					if (!commentValue) { // Check if the textarea is empty or contains only spaces
+						alert("Comment cannot be empty.");
+						event.preventDefault(); // Prevent form submission
+					}
+				} else {
+					console.error("Textarea with name 'comment' not found in the form.");
+				}
+			});
 		});
-	});
-
-	// View Comment Button Logic
-	viewCommentButtons.forEach(button => {
-		button.addEventListener('click', function() {
-			const replyListDiv = this.closest('.review').querySelector('#replyList');
-			replyListDiv.style.display = (replyListDiv.style.display === 'none' || replyListDiv.style.display === '') ? 'block' : 'none';
-		});
-	});
-
+	} else {
+		console.log('No forms found on the page.');
+	}
 </script>
-<script>
-	// Attach event listener to form submit
-	document.querySelector('form').addEventListener('submit', function(event) {
-		var commentField = document.querySelector('textarea[name="comment"]');
-		if (!commentField.value.trim()) {  // Check if the textarea is empty or only spaces
-			alert("Comment cannot be empty.");
-			event.preventDefault();  // Prevent form submission
-		}
-	});
-</script>
+
 
 
