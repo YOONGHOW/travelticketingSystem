@@ -368,12 +368,15 @@ public class PaymentVM()
     public string CVV { get; set; }
 }
 
-public class CartPVM()
+public class CartPaymentVM()
 {
     public Ticket Ticket { get; set; }
+    [Required(ErrorMessage = "Quantity is required.")]
+    [RegularExpression(@"^\d+$", ErrorMessage = "Only accept integers.")]
     public int Quantit { get; set; }
     public decimal Subtotal { get; set; }
-
+    [ Required(ErrorMessage = "Date is required.")]
+    public DateOnly Dateonly { get; set; }
     public string imagepath { get; set; }
 }
 
@@ -401,5 +404,6 @@ public class PurchaseViewModel
     public PurchaseUpdateVM PurchaseUpdate { get; set; }
 
     public string? PhotoURL { get; set; }
+    public IEnumerable<Payment> Payment { get; set; } = new List<Payment>();
 
 }
