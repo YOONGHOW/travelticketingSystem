@@ -13,8 +13,6 @@
 </head>
 <body>
     <div class="content">
-
-        @* Define the options variable only once *@
         @{
             var options = PagedListRenderOptions.ClassicPlusFirstAndLast;
             options.LinkToFirstPageFormat = "First";
@@ -23,14 +21,25 @@
             options.LinkToNextPageFormat = "Next";
         }
 
+
+
         <div class="MemberListData">
             <h3 class="MemberListTitle">Users with Role: Member</h3>
+
+            <!-- Search bar for Members -->
+            <div class="search-container">
+                <form method="get" asp-action="MemberList" asp-controller="Admin">
+                    <input type="text" name="MemberSearch" placeholder="Search Members..." value="@ViewContext.HttpContext.Request.Query["MemberSearch"]" />
+
+                    <button type="submit">Search</button>
+                </form>
+            </div>
 
             <span class="tableNav">
                 @Model.Item1.Count() of @Model.Item1.TotalItemCount record(s) |
                 Page @Model.Item1.PageNumber of @Model.Item1.PageCount
             </span>
-            <br/>
+            <br />
 
             <div class="MemberListTable">
                 <table>
@@ -84,7 +93,7 @@
 
                 @Html.PagedListPager(
                          Model.Item1,
-                         page => $"?MemberPage={page}",
+                         page => $"?MemberPage={page}&MemberSearch={@ViewContext.HttpContext.Request.Query["MemberSearch"]}&AdminSearch={@ViewContext.HttpContext.Request.Query["AdminSearch"]}",
                          options
                          )
             </div>
@@ -92,17 +101,26 @@
 
         <hr style="margin: 20px 0; border: 1px solid #ccc;" />
 
+
+
         <div class="MemberListData">
             <h3 class="MemberListTitle">Users with Role: Admin</h3>
+            <!-- Search bar for Admins -->
+
+            <div class="search-container">
+                <form method="get" asp-action="MemberList" asp-controller="Admin">
+                    <input type="text" name="AdminSearch" placeholder="Search Admins..." value="@ViewContext.HttpContext.Request.Query["AdminSearch"]" />
+                    <button type="submit">Search</button>
+                </form>
+            </div>
 
             <span class="tableNav">
                 @Model.Item2.Count() of @Model.Item2.TotalItemCount record(s) |
                 Page @Model.Item2.PageNumber of @Model.Item2.PageCount
                 <button class="create" data-get="/Admin/AdminUpdateMember">Update Your Account</button>
                 <button class="create" data-get="/Admin/CreateAccount">Create New Admin Account</button>
-
             </span>
-            </br>
+            <br />
             <div class="MemberListTable">
                 <table>
                     <thead>
@@ -143,7 +161,7 @@
 
                 @Html.PagedListPager(
                          Model.Item2,
-                         page => $"?AdminPage={page}",
+                         page => $"?AdminPage={page}&MemberSearch={@ViewContext.HttpContext.Request.Query["MemberSearch"]}&AdminSearch={@ViewContext.HttpContext.Request.Query["AdminSearch"]}",
                          options
                          )
             </div>

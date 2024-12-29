@@ -332,14 +332,13 @@ namespace MobileWebAssignment.Controllers
         }
 
         //GET Client/ChangePassword
-        [Authorize]
+        [Authorize(Roles = "Member")]
         public IActionResult ChangePassword()
         {
             return View();
         }
 
         //POST Client/ChangePassword
-        [Authorize]
         [HttpPost]
         public IActionResult ChangePassword(ChangePassword vm)
         {
