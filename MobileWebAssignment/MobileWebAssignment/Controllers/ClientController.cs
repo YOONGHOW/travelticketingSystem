@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Globalization;
 using System.Net.Mail;
+using System.Reflection.Metadata.Ecma335;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Authorization;
@@ -644,9 +645,14 @@ namespace MobileWebAssignment.Controllers
             var userId = hp.GetUserID();// Replace with actual user ID retrieval logic.
             string attractionId = null; // Initialize AttractionId.
             int count = 1;
+            bool itemsAdded = false;
+
             foreach (var ticket in tickets)
             {
-                if (ticket.Quantity <= 0) continue; // Skip tickets with zero or negative quantities.
+                if (ticket.Quantity <= 0)
+                {
+                    continue;
+                }
 
                 var dbTicket = db.Ticket.SingleOrDefault(t => t.Id == ticket.TicketId);
                 if (dbTicket == null || dbTicket.stockQty < ticket.Quantity)
@@ -655,7 +661,7 @@ namespace MobileWebAssignment.Controllers
                     continue;
                 }
 
-                attractionId = dbTicket.AttractionId; // Capture the AttractionId from a valid ticket.
+                attractionId = dbTicket.AttractionId; 
 
                 var existingCart = db.Cart.SingleOrDefault(c => c.UserId == userId && c.TicketId == ticket.TicketId);
                 if (existingCart != null)
@@ -673,32 +679,26 @@ namespace MobileWebAssignment.Controllers
                     });
                 }
                 count++;
+                itemsAdded = true;
+            }
+
+            if (!itemsAdded)
+            {
+                TempData["Info"] = "No ticket were added to the cart.";
+                return RedirectToAction("ClientAttraction");
             }
 
             db.SaveChanges();
 
-            TempData["Info"] = "Selected items added to cart successfully.";
+            TempData["Info"] = "Selected ticket(s) added to cart successfully.";
             return RedirectToAction("ClientAttractionDetail", new { AttractionId = attractionId });
         }
 
-
-
-        //  [Authorize(Roles = "Member")] 
+        [Authorize(Roles = "Member")] 
         public IActionResult ClientCart()
         {
-            var userId = "U001"; // Replace this with actual logic to get logged-in user's ID.
-
-            //var userId = User.Identity!.Name;
-            //if (userId == null)
-            //{
-            //    TempData["Error"] = "You must log in to view your cart.";
-            //    return RedirectToAction("Login");
-            //}
-            //getUserID(); //to get the cookie email save the id to session
-
-            //var userId = hp.GetUserID();
-
-
+            getUserID();
+            var userId = hp.GetUserID();
             var cartItems = db.Cart
                               .Include(c => c.Ticket)
                               .ThenInclude(t => t.Attraction)
@@ -706,6 +706,7 @@ namespace MobileWebAssignment.Controllers
                               .Select(c => new
                               {
                                   c.Id,
+                                  TicketId = c.Ticket.Id,
                                   TicketName = c.Ticket.ticketName,
                                   TicketType = c.Ticket.ticketType,
                                   Quantity = c.Quantity,
@@ -719,24 +720,26 @@ namespace MobileWebAssignment.Controllers
 
             ViewBag.CartItems = cartItems;
             ViewBag.TotalPrice = cartItems.Sum(c => c.TotalPrice);
-
+            ViewBag.TotalCount = cartItems.Sum(c => c.Quantity);
             return View();
         }
 
         [HttpPost]
-        public IActionResult DeleteCartItem([FromBody] string ticketId)
+        public IActionResult deleteCart(string TicketId)
         {
-            var userId = "U001"; // Replace with the logic to get the logged-in user ID.
-            var cartItem = db.Cart.SingleOrDefault(c => c.UserId == userId && c.TicketId == ticketId);
+            getUserID();
+            var userId = hp.GetUserID();
+            var cartItem = db.Cart.SingleOrDefault(c => c.UserId == userId && c.TicketId == TicketId);
 
             if (cartItem != null)
             {
                 db.Cart.Remove(cartItem);
                 db.SaveChanges();
-                return Ok();
+                TempData["Info"] = "Selected ticket is successfully removed";
+                return RedirectToAction("ClientCart");
             }
 
-            return BadRequest();
+            return RedirectToAction("ClientCart");
         }
 
         //[HttpPost]

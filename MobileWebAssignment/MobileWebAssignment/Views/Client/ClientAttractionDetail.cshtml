@@ -44,8 +44,6 @@
 			</div>
 			}
 		<br />
-
-		<div class="details-container">
 				@if (Model.Photo.imagePaths.Count() == 1)
 				{
 				<img src="/attractionImages/@Model.ImagePath" alt="@Model.Name" class="detailsImg">
@@ -77,88 +75,84 @@
 
 					</div>
 				</div>
-				<br>
-				}
-			<br />
-
-			<div class="operating-hours">
-				<h4><b>Operating Hours</b></h4>
 				<br />
-				<p>
-					<table style="text-align:left;">
-							@foreach (var op in Model.operatingTimes)
+				}
+		<div class="container">
+			<!-- Left Side: Package Option -->
+			<div class="left-side">
+				<h2>Package Option</h2><br />
+				<form asp-action="AddMultipleToCart" method="post">
+						@{
+							var loopIndex = 0;
+						}
+						@foreach (var ticket in ViewBag.Tickets as List<TicketVM>)
+						{
+							
+
+						<div class="ticket-box">
+							<p style="font-size:18px;"><b>@ticket.ticketName</b></p>
+							<table class="tableTicketDetails">
+								<tr>
+									<td><b>@ticket.ticketType</b></td>
+									<td style="font-size:18px;"><b><span>RM </span>@ticket.ticketPrice</b></td>
+									<td>
+                                        <label for="quantity_@ticket.Id" class="qty"><b>Quantity:</b></label>
+										<input type="number" id="quantity_@ticket.Id" name="tickets[@loopIndex].Quantity" value="0" min="0" max="@ticket.stockQty" />
+										<input type="hidden" name="tickets[@loopIndex].TicketId" value="@ticket.Id" />
+									</td>
+								</tr>
+							</table>
+						</div>
+							loopIndex++;
+						}
+					<audio id="myAudio" preload="auto">
+						<source src="/sound/button.wav" type="audio/wav">
+					</audio>
+					<button onclick="handleButtonClick(event)" type="submit" class="addCartBtn">Add to Cart</button>
+
+					<script>
+						function handleButtonClick(event) {
+						  event.preventDefault();
+						  var audio = document.getElementById("myAudio");
+						  var form = event.target.closest('form');
+						  audio.playbackRate = 2;
+						  audio.play();
+
+						  audio.onended = function () {
+							form.submit();
+						  };
+						}
+					</script>
+				</form>
+			</div>
+
+			<!-- Right Side: Operating Hours -->
+			<div class="right-side">
+				<h4 style="font-size:20px;"><b>Operating Hours</b></h4><br />
+				<table>
+						@foreach (var op in Model.operatingTimes)
+						{
+							string operateDetail = "";
+
+							if (op.Status.Equals("open"))
 							{
-								string operateDetail = "";
-
-								if (op.Status.Equals("open"))
-								{
-									operateDetail += " " + op.StartTime + " - " + op.EndTime;
-								}
-								else
-								{
-									operateDetail += " Closed";
-								}
-
-							<tr>
-								<th>@op.Day</th>
-								<td style="padding-left:50px;">@operateDetail</td>
-							</tr>
-
+								operateDetail += " " + op.StartTime + " - " + op.EndTime;
 							}
-					</table>
-				</p>
+							else
+							{
+								operateDetail += " Closed";
+							}
+
+						<tr class="operating_time">
+							<th>@op.Day</th>
+							<td style="padding-left:50px;">@operateDetail</td>
+						</tr>
+						}
+				</table>
 			</div>
 		</div>
 
-
-		<!-- Add to Cart Section -->
-
-		<h2>Package Option</h2>
-		<br />
-		<form asp-action="AddMultipleToCart" method="post">
-				@{
-					var loopIndex = 0;
-				}
-				@foreach (var ticket in ViewBag.Tickets as List<TicketVM>)
-				{
-				<div class="ticket-box">
-					<p style="font-size:18px;">@ticket.ticketName</p>
-					<table class="tableTicketDetails">
-						<tr>
-							<td>@ticket.ticketType</td>
-							<td><span>RM</span>@ticket.ticketPrice</td>
-							<td>
-								<label for="quantity_@ticket.Id" class="qty">Quantity:</label>
-								<input type="number" id="quantity_@ticket.Id" name="tickets[@loopIndex].Quantity" value="0" min="0" max="100" />
-								<input type="hidden" name="tickets[@loopIndex].TicketId" value="@ticket.Id" />
-							</td>
-						</tr>
-					</table>
-				</div>
-					loopIndex++;
-				}
-			<audio id="myAudio" preload="auto">
-				<source src="/sound/button.wav" type="audio/wav">
-			</audio>
-			<button onclick="handleButtonClick(event)" type="submit">Add All to Cart</button>
-
-			<script>
-				function handleButtonClick(event) {
-					event.preventDefault();
-					var audio = document.getElementById("myAudio");
-					var form = event.target.closest('form');
-					audio.playbackRate = 2;
-					audio.play();
-
-					audio.onended = function () {
-						form.submit();
-					};
-				}
-			</script>
-
-		</form>
-
-
+		
 
 	</div>
 	<!-- Review Section -->
