@@ -442,14 +442,14 @@ nav.image_side {
 
 
 .review-container {
-    display: flex; 
-    align-items: center; 
-    gap: 10px; 
-    font-size:18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 18px;
 }
 
 .review-head {
-    margin: 0; 
+    margin: 0;
 }
 
 .location {
@@ -475,7 +475,7 @@ nav.image_side {
 }
 
 .review-score {
-    text-align:center;
+    text-align: center;
     margin-right: 20px;
     flex-shrink: 0;
 }
@@ -517,7 +517,6 @@ nav.image_side {
     .stars[data-rating="3"]::before {
         content: "★★★☆☆"; /* 3 filled stars */
         color: #ffcc00; /* Yellow for average rating */
-
     }
 
     .stars[data-rating="3.5"]::before {
@@ -561,9 +560,9 @@ nav.image_side {
     color: #666;
 }
 
-.review-meta li {
-    margin-bottom: 5px;
-}
+    .review-meta li {
+        margin-bottom: 5px;
+    }
 
 .review-comment h4 {
     font-size: 1.2em;
@@ -602,8 +601,8 @@ nav.image_side {
         background-color: #0056b3;
     }
 
-.attaraction_details{
-    margin-top:2%;
+.attaraction_details {
+    margin-top: 2%;
     margin-left: 10%;
 }
 
@@ -612,23 +611,23 @@ nav.image_side {
     align-items: center;
 }
 
-.detailsImg{
-    width:70%;
-    height:400px;
-    border-radius:3%;
+.detailsImg {
+    width: 70%;
+    height: 400px;
+    border-radius: 3%;
 }
 
 .details-container {
-    display: flex; 
-    gap: 20px; 
-    align-items: flex-start; 
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
 }
 
 .operating-hours {
-    margin-top:5%;
-    flex-grow: 1; 
-    font-size:18px;
-    margin-left:10px;
+    margin-top: 5%;
+    flex-grow: 1;
+    font-size: 18px;
+    margin-left: 10px;
 }
 
 /* Slideshow container */
@@ -645,10 +644,10 @@ nav.image_side {
 }
 
     .mySlides img {
-        width: 70%; 
-        height: 400px; 
-        object-fit: cover; 
-        display: block; 
+        width: 70%;
+        height: 400px;
+        object-fit: cover;
+        display: block;
         margin: 0 auto;
     }
 
@@ -677,7 +676,7 @@ nav.image_side {
     /* On hover, add a black background color with a little bit see-through */
     .prev:hover, .next:hover {
         background-color: rgba(0,0,0,0.8);
-        color:whitesmoke;
+        color: whitesmoke;
     }
 
 /* Caption text */
@@ -752,7 +751,7 @@ nav.image_side {
     letter-spacing: 1px;
     margin-top: 10px;
     animation: fadeIn 0.5s ease-in-out;
-    margin-bottom:0;
+    margin-bottom: 0;
 }
 
 /* Fade-in effect for smoother appearance */
@@ -788,7 +787,7 @@ nav.image_side {
     color: #666;
     text-align: center;
     margin: 5px 0;
-    vertical-align:bottom;
+    vertical-align: bottom;
 }
 
 .feedback-star {
@@ -821,21 +820,18 @@ nav.image_side {
         transform: scale(1.02);
     }
 
-button {
-    
-    font-size: 0.9rem;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    width: 100%;
-    margin-top: 10px;
+/*    form comment section*/
+#replyList {
+    border-top: 2px solid gray;
 }
 
-    button:hover {
-        opacity: 0.9;
-        background-color:#DEDEDE;
+    #replyList .review-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 15px;
     }
+
 
 /* Ticket */
 .ticket-box{
@@ -886,4 +882,49 @@ button {
 
 .addCartBtn {
     margin-top: 20px;
+}
+=======
+button.delete-comment {
+    float: right;
+    background-color: #e74c3c; /* Red for delete action */
+    color: #fff; /* White text color */
+    padding: 8px 16px; /* Padding for better spacing */
+    font-size: 14px; /* Legible font size */
+    border: none; /* Remove default button border */
+    border-radius: 4px; /* Slightly rounded corners */
+    cursor: pointer; /* Pointer cursor for interactivity */
+    text-transform: uppercase; /* Make text uppercase for emphasis */
+    transition: background-color 0.3s ease, transform 0.2s ease; /* Smooth hover effect */
+    align-self: flex-start; /* Align the button at the top */
+}
+
+    button.delete-comment:hover {
+        background-color: #c0392b; /* Darker red on hover */
+        transform: scale(1.05); /* Slight zoom effect */
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Add slight shadow for hover */
+    }
+
+#replyList .review-header .delete-comment:active {
+    background-color: #a93226; /* Even darker red on click */
+    transform: scale(0.98); /* Shrink slightly when clicked */
+}
+
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+    .review-header .user-info {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+img.user-image {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }

@@ -184,7 +184,7 @@
 			<!-- Add Review Button -->
 			if (ViewBag.User != null)
 			{
-			<button id="add-review-btn" data-get="/Client/ClientFeedbackForm?attractionId=@Model.Id">Add Review</button>
+				<button id="add-review-btn" data-get="/Client/ClientFeedbackForm?attractionId=@Model.Id">Add Review</button>
 			}
 			<div class="review-cards">
 				@foreach (var f in ViewBag.Feedbacks)
@@ -200,16 +200,40 @@
 							</div>
 							<ul class="review-meta">
 								<li>👪 @f.commentDetail.Partner</li>
-								<li>🎫 Two Adults Ticket</li>
-								<li>🎚️ Premium Ticket</li>
 								<li>🤷‍♂ @f.commentDetail.Reason</li>
 							</ul>
 							<div class="review-comment">
-								<h4>"@f.commentDetail.Title"</h4>
+								<h4>@f.commentDetail.Title</h4>
 								<p>@f.commentDetail.Review</p>
 								<span class="review-date">Written @f.SubmitDate</span>
 							</div>
+							<br />
+							@if (f.feedbackReplyList.Count != 0)
+							{
+								<div>
+									<a id="viewComment" href="">View @f.feedbackReplyList.Count more replies</a>
+								</div>
+							}
+							<div id="replyList" style="display: none;">
+								@if (f.feedbackReplyList.Count != 0)
+								{
+									@foreach (var fr in f.feedbackReplyList)
+									{
+										<div class="review-header" data-comment-id="@fr.Id">
+											<div class="user-info">
+												<img src="/images/miyabi.jpeg" alt="User" class="user-image">
+												<div class="details">
+													<span class="user-name">Miyabi Admin</span>
+												</div>
+											</div>
+										</div>
+										<span class="review-text">@fr.Comment</span>
+									}
+								}
+
+							</div>
 						</div>
+
 					</div>
 				}
 
@@ -217,6 +241,26 @@
 		}
 	</section>
 </main>
+<script>
+
+	document.addEventListener('DOMContentLoaded', function () {
+		const viewCommentButtons = document.querySelectorAll('#viewComment');
+
+		// View Comment Button Logic
+		viewCommentButtons.forEach(button => {
+			button.addEventListener('click', function (event) {
+				event.preventDefault(); // Prevent the default action of the <a> tag
+				const replyListDiv = this.closest('.review-card').querySelector('#replyList');
+				if (replyListDiv) {
+					replyListDiv.style.display = (replyListDiv.style.display === 'none' || replyListDiv.style.display === '')
+						? 'block'
+						: 'none';
+				}
+			});
+		});
+	});
+
+</script>
 <script>
 		document.querySelectorAll('.stars').forEach(function(starElement) {
 		let rating = starElement.getAttribute('data-rating');

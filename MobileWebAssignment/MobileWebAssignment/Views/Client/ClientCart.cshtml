@@ -30,6 +30,7 @@
                     <th>Total</th>
                     <th>Actions</th>
                 </tr>
+
             </thead>
             <tbody>
                 @if (cartItems != null)
@@ -61,6 +62,7 @@
                 }
             </tbody>
         </table>
+
         <div class="cart-summary">
             <h3>Total: @totalPrice.ToString("C")</h3>
             <button class="checkout-btn" onclick="location.href='@Url.Action("Checkout", "Client")'">Proceed to Checkout</button>
