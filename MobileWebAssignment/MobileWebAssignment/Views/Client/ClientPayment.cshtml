@@ -10,8 +10,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="/js/Paypal.js" type="text/javascript" defer></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
     <title>Payment Page</title>
+    <script src="https://www.paypal.com/sdk/js?client-id=AZcS3pdbVUWyMLj-vHkZd-6nbwdyosowOUOZ8qsmy6ibUjYY8PilqXUMANBLJu5XlQRP7ZTVI5ojZsdE&disable-funding=card"></script>
+   
     <style>
         html body {
             background-color: #0d131a;
@@ -62,7 +65,7 @@
     @*     <img src="/images/loading.gif" alt="Loading"> *@
     @*     <p>Connection...</p> *@
     @* </div> *@
-
+  
     <div class="container my-5">
         <div class="row rounded-3" style="box-shadow: 10px 10px 10px #fbf6f6;background-color: #eeebeb;">
             <!-- Left Panel -->
@@ -166,7 +169,10 @@
                         var isDisabled = itemCount == 0; // Disable if no items in the cart
                     }
                     <button class="btn btn-primary w-100" disabled="@isDisabled" id="payButton" >Pay RM 00.00 </button>
+                    <div id="paypal-button-container">
+                    </div>
                 </form>
+
             </div>
         </div>
     </div>
@@ -253,7 +259,6 @@
 
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
-
 </body>
 </html>
 
