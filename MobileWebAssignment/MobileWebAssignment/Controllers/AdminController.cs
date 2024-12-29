@@ -2,13 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using MobileWebAssignment.Models;
-using System.Net.Sockets;
 using X.PagedList.Extensions;
-using Microsoft.AspNetCore.Hosting.Server;
-using System.Media;
-using Microsoft.IdentityModel.Tokens;
-using Azure;
 using Microsoft.AspNetCore.Authorization;
 
 
