@@ -11,6 +11,7 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<link rel="stylesheet" href="/css/ClientCss/ClientAttraction.css" asp-append-version="true">
+	<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 </head>
 <body>
 </body>
@@ -23,7 +24,10 @@
 			@Model.Description<br /> <br />
 			@if (ViewBag.Feedbacks.Count == 0)
 			{
-			<p>No review yet.</p>
+				<div class="review-container">
+					<p>No review yet.</p>
+					<p class="location">📍@Model.Location</p>
+				</div>
 			}
 			else
 			{
@@ -37,13 +41,19 @@
 
 				averageRating = (double)total / ViewBag.Feedbacks.Count;
 
-			<div class="review-container">
-				<p class="review-head">⭐@averageRating.ToString("F1") (@ViewBag.Feedbacks.Count reviews)</p>
-				<p class="location">📍@Model.Location</p>
+				<div class="review-container">
+					<p class="review-head">⭐@averageRating.ToString("F1") (@ViewBag.Feedbacks.Count reviews)</p>
+					<p class="location">📍@Model.Location</p>
+					<form method="post">
+							<input type="hidden" name="attractionID" value="@Model.Id" style="display:none;" />
+							<button type="submit" class="wishlist-btn" id="wishlistButton" asp-action="addWish" asp-controller="Client">❤️ Save to wishlist</button>
+					</form>
+				
 
 			</div>
 			}
 		<br />
+			<br />
 				@if (Model.Photo.imagePaths.Count() == 1)
 				{
 				<img src="/attractionImages/@Model.ImagePath" alt="@Model.Name" class="detailsImg">

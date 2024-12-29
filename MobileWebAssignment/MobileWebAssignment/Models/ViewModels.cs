@@ -314,6 +314,14 @@ public class CartVM
     public int quantity { get; set; }
 }
 
+public class WishVM
+{
+    public string Id { get; set; }
+    public string UserId { get; set; }
+    public string AttractionId { get; set; }
+
+}
+
 public class CartItem
 {
     public string TicketId { get; set; }
