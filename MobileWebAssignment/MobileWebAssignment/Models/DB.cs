@@ -129,7 +129,7 @@ public class FeedbackReply//FR001
     public string Comment { get; set; }
 
     [MaxLength(8)]
-    public int Type { get; set; }
+    public string Type { get; set; }
 
     //FK
     public string FeedbackId { get; set; }
