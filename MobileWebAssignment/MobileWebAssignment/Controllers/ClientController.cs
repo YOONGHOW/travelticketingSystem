@@ -1,6 +1,8 @@
 
+using System.ComponentModel;
 using System.Globalization;
 using System.Net.Mail;
+using System.Security.Claims;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -628,19 +630,20 @@ namespace MobileWebAssignment.Controllers
         }
         //------------------------------------------ Cart start ----------------------------------------------
         //Auto generate id
-        private string NextCartId()
+        private string NextCartId(int count)
         {
             string max = db.Cart.Max(s => s.Id) ?? "C0000";
             int n = int.Parse(max[2..]);
-            return (n + 1).ToString("'C'0000");
+            return (n + count).ToString("'C'0000");
         }
 
         [HttpPost]
         public IActionResult AddMultipleToCart(List<CartItem> tickets)
         {
-            var userId = "U001"; // Replace with actual user ID retrieval logic.
+            getUserID();
+            var userId = hp.GetUserID();// Replace with actual user ID retrieval logic.
             string attractionId = null; // Initialize AttractionId.
-
+            int count = 1;
             foreach (var ticket in tickets)
             {
                 if (ticket.Quantity <= 0) continue; // Skip tickets with zero or negative quantities.
@@ -663,12 +666,13 @@ namespace MobileWebAssignment.Controllers
                 {
                     db.Cart.Add(new Cart
                     {
-                        Id = NextCartId(),
+                        Id = NextCartId(count),
                         UserId = userId,
                         TicketId = ticket.TicketId,
                         Quantity = ticket.Quantity,
                     });
                 }
+                count++;
             }
 
             db.SaveChanges();
@@ -682,25 +686,34 @@ namespace MobileWebAssignment.Controllers
         //  [Authorize(Roles = "Member")] 
         public IActionResult ClientCart()
         {
+            var userId = "U001"; // Replace this with actual logic to get logged-in user's ID.
+
             //var userId = User.Identity!.Name;
-            var userId = "U001";
             //if (userId == null)
             //{
             //    TempData["Error"] = "You must log in to view your cart.";
             //    return RedirectToAction("Login");
             //}
+            //getUserID(); //to get the cookie email save the id to session
+
+            //var userId = hp.GetUserID();
+
 
             var cartItems = db.Cart
                               .Include(c => c.Ticket)
+                              .ThenInclude(t => t.Attraction)
                               .Where(c => c.UserId == userId)
                               .Select(c => new
                               {
                                   c.Id,
                                   TicketName = c.Ticket.ticketName,
+                                  TicketType = c.Ticket.ticketType,
                                   Quantity = c.Quantity,
                                   Price = c.Ticket.ticketPrice,
                                   TotalPrice = c.Quantity * c.Ticket.ticketPrice,
-                                  StockAvailable = c.Ticket.stockQty
+                                  StockAvailable = c.Ticket.stockQty,
+                                  ImagePath = c.Ticket.Attraction.ImagePath,
+                                  AttractionId = c.Ticket.AttractionId
                               })
                               .ToList();
 
@@ -709,6 +722,31 @@ namespace MobileWebAssignment.Controllers
 
             return View();
         }
+
+        [HttpPost]
+        public IActionResult DeleteCartItem([FromBody] string ticketId)
+        {
+            var userId = "U001"; // Replace with the logic to get the logged-in user ID.
+            var cartItem = db.Cart.SingleOrDefault(c => c.UserId == userId && c.TicketId == ticketId);
+
+            if (cartItem != null)
+            {
+                db.Cart.Remove(cartItem);
+                db.SaveChanges();
+                return Ok();
+            }
+
+            return BadRequest();
+        }
+
+        //[HttpPost]
+        //public IActionResult ClientCart()
+        //{
+        //    getUserID(); //to get the cookie email save the id to session
+
+        //    var userId = hp.GetUserID();
+
+        //}
 
         //------------------------------------------ FeedBack start ----------------------------------------------
 
@@ -1247,6 +1285,19 @@ namespace MobileWebAssignment.Controllers
             string max = db.PurchaseItem.Max(t => t.Id) ?? "PI0000";
             int n = int.Parse(max[2..]);
             return (n + count).ToString("'PI'0000");
+        }
+        public void getUserID()
+        {
+            string email = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
+            string role = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
+            if (!string.IsNullOrEmpty(email)&&!string.IsNullOrEmpty(role))
+            {
+                var userID = db.User.Where(p=>p.Email==email).Select(p => p.Id).FirstOrDefault();
+                if (userID != null)
+                {
+                    hp.SetUserID(userID);
+                }
+            }
         }
 
         public void CheckOut()
