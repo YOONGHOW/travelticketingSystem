@@ -3,7 +3,6 @@
     ViewBag.Title = "Admin | Discounts and Promotions";
 }
 
-
 @model List<MobileWebAssignment.Models.PromotionInsertVM>
 
 <html>
@@ -18,12 +17,23 @@
         <div class="discountTable">
             <h3 class="discountTitle">
                 Discounts List
-                <span>
-                    <a href="@Url.Action("AdminDiscountCreate", "Admin")">
-                        <button class="create">Create New</button>
-                    </a>
-                </span>
             </h3>
+
+            <div class="create-search-container">
+                <div class="search-container">
+                    <form method="get">
+                        @Html.TextBox("name", "", new { @class = "search-box", placeholder = "Search by Title or Code", type = "search", autofocus = "" })
+                        <button type="submit" class="search-button">Search</button>
+                    </form>
+				</div>
+                
+                <span>
+					<a href="@Url.Action("AdminDiscountCreate", "Admin")">
+						<button class="create">Create New</button>
+					</a>
+				</span>
+            </div>
+
             <br />
             <div class="discountTableContent">
                 <table>
