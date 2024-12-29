@@ -6,14 +6,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/css/AdminCss/AdminDiscountCreate.css" asp-append-version="true">
+    <link rel="stylesheet" href="/css/AdminCss/AdminDiscountCreate.css">
     <title>Add New Promotion</title>
 </head>
 
 <body>
     <div class="container">
         <div class="header">
-            <a href="/Admin/AdminDiscount" class="back-arrow"><img src="/images/back-arrow.png" alt="Back"></a>
             <div class="title">Add New Promotion</div>
         </div>
 
@@ -36,7 +35,7 @@
 
                     <div class="input-box">
                         <label class="details" asp-for="Code">Promotion Code</label>
-                        <input asp-for="Code">
+                        <input asp-for="Code" readonly style="caret-color: transparent;color:#797777">
                         <span asp-validation-for="Code"></span>
                     </div>
 
@@ -58,7 +57,20 @@
                         <span asp-validation-for="EndDate"></span>
                     </div>
 
-                    <input asp-for="PromoStatus" type="hidden" value="available"/>
+                    <div class="input-box">
+                        <label class="details">Promotion Status</label>
+                        <div class="radio-group">
+                            <label>
+                                <input asp-for="PromoStatus" type="radio" value="Active" checked>
+                                Active
+                            </label>
+                            <label>
+                                <input asp-for="PromoStatus" type="radio" value="Inactive">
+                                Inactive
+                            </label>
+                        </div>
+                        <span asp-validation-for="PromoStatus"></span>
+                    </div>
                 </div>
 
                 <div class="button">

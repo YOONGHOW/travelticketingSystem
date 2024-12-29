@@ -136,27 +136,54 @@ button {
             background-color: #5a6268;
         }
 
-/* Align "Create New" Button */
-.discountTitle span button,
-.promotionTitle span button {
-    float: right;
-    margin-left: auto;
+/* Search Section */
+.create-search-container {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 15px; /* Space between the search bar and create button */
+    margin-bottom: 20px;
 }
 
-/* Responsive Design for Small Screens */
-@media (max-width: 768px) {
-    table {
-        font-size: 12px;
-    }
-
-    button {
-        font-size: 12px;
-        padding: 8px 12px;
-    }
-
-    .content {
-        margin-left: 0;
-        padding: 5%;
-    }
-
+.search-container {
+    display: flex;
+    align-items: center;
 }
+
+.search-box {
+    padding: 8px 12px;
+    font-size: 16px;
+    width: 300px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.search-button {
+    padding: 8px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+    .search-button:hover {
+        background-color: #45a049;
+    }
+
+/* Create New button */
+.create {
+    padding: 8px 16px;
+    font-size: 14px;
+    background-color: #28a745; /* Green */
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+    .create:hover {
+        background-color: #218838;
+    }
