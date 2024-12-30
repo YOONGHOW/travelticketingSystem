@@ -793,6 +793,46 @@ namespace MobileWebAssignment.Controllers
             return RedirectToAction("ClientAttractionDetail", new { AttractionId = attractionId });
         }
 
+        [Authorize(Roles = "Member")]
+        public IActionResult ClientWish()
+        {
+            getUserID();
+            var userId = hp.GetUserID();
+            var wishItems = db.Wish
+                              .Include(t => t.Attraction)
+                              .Where(w => w.UserId == userId)
+                              .Select(w => new
+                              {
+                                  w.Id,
+                                  AttractionName = w.Attraction.Name,
+                                  Description = w.Attraction.Description,
+                                  ImagePath = w.Attraction.ImagePath,
+                                  AttractionId = w.AttractionId,
+                              })
+                              .ToList();
+
+            ViewBag.WishItems = wishItems; 
+            return View();
+        }
+
+
+        [HttpPost]
+        public IActionResult deleteWish(string AttractionId)
+        {
+            getUserID();
+            var userId = hp.GetUserID();
+            var wishItem = db.Wish.SingleOrDefault(c => c.UserId == userId && c.AttractionId == AttractionId);
+
+            if (wishItem != null)
+            {
+                db.Wish.Remove(wishItem);
+                db.SaveChanges();
+                TempData["Info"] = "The attraction has been removed from your wishlist";
+                return RedirectToAction("ClientWish");
+            }
+
+            return RedirectToAction("ClientWIsh");
+        }
         //------------------------------------------ FeedBack start ----------------------------------------------
 
         // Manually generate next id for feedback
