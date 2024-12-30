@@ -1063,8 +1063,6 @@ namespace MobileWebAssignment.Controllers
 
 
         [HttpPost]
-
-        [Authorize(Roles = "Member")]
         public IActionResult ClientPayment(PaymentVM vm)
 
         {
@@ -1212,6 +1210,8 @@ namespace MobileWebAssignment.Controllers
             return View(viewModel);
 
         }
+
+        [Authorize(Roles = "Member")]
         public ActionResult ClientPurchaseDetail(string purchaseID)
         {
             if (string.IsNullOrEmpty(purchaseID))
@@ -1249,6 +1249,8 @@ namespace MobileWebAssignment.Controllers
             return Json(groupedItems);
 
         }
+
+        [Authorize(Roles = "Member")]
         public ActionResult ClientPurchaseTicket(string? purchaseId, DateTime validDate)
         {
             if (string.IsNullOrEmpty(purchaseId))
@@ -1285,6 +1287,7 @@ namespace MobileWebAssignment.Controllers
             return Json(purchaseItems);
         }
 
+        [Authorize(Roles = "Member")]
         public IActionResult ClientPurchaseUpdate(string ticketID, string purcahseItemID)
         {
             if (string.IsNullOrEmpty(purcahseItemID) && string.IsNullOrEmpty(ticketID))
