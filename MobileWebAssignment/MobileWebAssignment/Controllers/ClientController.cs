@@ -1140,7 +1140,7 @@ namespace MobileWebAssignment.Controllers
                     {
                         Ticket = p,
 
-                        Quantit = cart[p.Id].Quantity,
+                        Quantity = cart[p.Id].Quantity,
 
                         Subtotal = p.ticketPrice * cart[p.Id].Quantity,
                         imagepath = p.Attraction.ImagePath,
@@ -1433,7 +1433,7 @@ namespace MobileWebAssignment.Controllers
                .Select(p => new CartPaymentVM
                {
                    Ticket = p,
-                   Quantit = cart[p.Id].Quantity,
+                   Quantity = cart[p.Id].Quantity,
 
                    Subtotal = p.ticketPrice * cart[p.Id].Quantity,
                })
