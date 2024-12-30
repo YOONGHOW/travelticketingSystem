@@ -1,10 +1,12 @@
 
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.Net.Mail;
 using System.Reflection.Metadata.Ecma335;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
+using System.Threading.Channels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -741,14 +743,37 @@ namespace MobileWebAssignment.Controllers
             return RedirectToAction("ClientCart");
         }
 
-        //[HttpPost]
-        //public IActionResult ClientCart()
-        //{
-        //    getUserID(); //to get the cookie email save the id to session
+        [HttpPost]
+        public IActionResult ClientCart([FromBody] List<CartItem> ticketData)
+        {
+        
 
-        //    var userId = hp.GetUserID();
+            var cartItems = new Dictionary<string, CartItem>(); ;
 
-        //}
+            if (ticketData == null || ticketData.Count == 0)
+            {
+                return BadRequest("No tickets received.");
+            }
+
+            foreach (var item in ticketData)
+            {
+                var newCartItem = new CartItem
+                {
+                    TicketId = item.TicketId,
+                    Quantity = item.Quantity,
+                    DateOnly = item.DateOnly
+                };
+
+                // Add the newCartItem to the cartItem list
+                cartItems[item.TicketId] = newCartItem;
+
+            }
+
+            hp.SetCart(cartItems);
+
+            return Json(new { message = "Checkout successful!" });
+        }
+
 
         //------------------------------------------ FeedBack start ----------------------------------------------
 
@@ -970,16 +995,19 @@ namespace MobileWebAssignment.Controllers
         //------------------------------------------ FeedBack end ----------------------------------------------
 
         //add cart
-        public void UpdateCart(string productId, int quantity)
+        public void UpdateCart(CartItem cartItem)
         {
             var cart = hp.GetCart();
-            if (quantity >= 1 && quantity <= 1000)
+            if (cartItem.Quantity >= 1 && cartItem.Quantity <= 1000)
             {
-                cart[productId] = quantity;
+                if (cart.ContainsKey(cartItem.TicketId))
+                {
+                    cart[cartItem.TicketId].Quantity = cartItem.Quantity;
+                }
             }
             else
             {
-                cart.Remove(productId);
+                cart.Remove(cartItem.TicketId);
             }
             hp.SetCart(cart);
 
@@ -989,14 +1017,12 @@ namespace MobileWebAssignment.Controllers
         [Authorize(Roles = "Member")]
         public IActionResult ClientPayment()
         {
-            UpdateCart("T002", 22);
-            UpdateCart("T001", 9);
             var cart = hp.GetCart();
-
             // Check if the cart is valid and contains data
             if (cart == null || !cart.Any())
             {
                 ViewBag.CartItems = new List<CartPaymentVM>(); // Assign an empty list to avoid null issues
+
             }
             else
             {
@@ -1006,11 +1032,16 @@ namespace MobileWebAssignment.Controllers
                     .Select(p => new CartPaymentVM
                     {
                         Ticket = p,
-                        Quantit = cart[p.Id],
-                        Subtotal = p.ticketPrice * cart[p.Id],
+                        Quantity = cart[p.Id].Quantity,
+                        Subtotal = p.ticketPrice * cart[p.Id].Quantity,
                         imagepath = p.Attraction.ImagePath,
                     }).ToList();
-
+                getUserID();
+                var UserInfo = db.User
+                    .Where(p => p.Id == hp.GetUserID())
+                    .Select(p => p as Member)
+                    .FirstOrDefault();
+                ViewBag.UserInfo = UserInfo;
                 ViewBag.CartItems = m;
             }
 
@@ -1025,39 +1056,29 @@ namespace MobileWebAssignment.Controllers
         public IActionResult ClientPayment(PaymentVM vm)
 
         {
+            int changes = 0;
             if (ModelState.IsValid)
             {
                 // Process the payment (e.g., save to the database)
-                hp.SetUserID("U001");
+                getUserID();
+                var userID = hp.GetUserID();
                 if (hp.GetUserID == null)
                 {
                     return View();
                 }
-                CheckOut();
+                 changes = CheckOut(userID);
             }
-            var cart = hp.GetCart();
-
-            // Check if the cart is valid and contains data
-            if (cart == null || !cart.Any())
+            if (changes>0)
             {
-                ViewBag.CartItems = new List<CartPaymentVM>(); // Assign an empty list to avoid null issues
+                TempData["Message"] = "Successfully make Payment.";
+                return RedirectToAction("ClientPaymentHIS");
             }
             else
             {
-                var m = db.Ticket
-                    .Include(t => t.Attraction)
-                    .Where(t => cart.Keys.Contains(t.Id))
-                    .Select(p => new CartPaymentVM
-                    {
-                        Ticket = p,
-                        Quantit = cart[p.Id],
-                        Subtotal = p.ticketPrice * cart[p.Id],
-                        imagepath = p.Attraction.ImagePath,
-                    }).ToList();
-
-                ViewBag.CartItems = m;
+                TempData["Message"] = "Process error try again.";
+                return RedirectToAction("ClientCart");
             }
-            return View();
+            
         }
 
         /// ------------------------------------------------
@@ -1065,7 +1086,7 @@ namespace MobileWebAssignment.Controllers
         /// ------------------------------------------------
         public List<Purchase> getAllPurcahse(bool? unpaid, string? statusTicket)
         {
-            hp.SetUserID("U001");
+            getUserID();
             var userID = hp.GetUserID();
             var allPurchases = db.Purchase
                 .Include(p => p.PurchaseItems)
@@ -1075,7 +1096,6 @@ namespace MobileWebAssignment.Controllers
                 .Where(p => p.UserId == userID && p.User is Member)
                 .OrderByDescending(p => p.PaymentDateTime)
                 .ToList();
-
 
             if (unpaid == true)
             {
@@ -1302,18 +1322,17 @@ namespace MobileWebAssignment.Controllers
             }
         }
 
-        public void CheckOut()
+        public int CheckOut(string userID)
         {
             var cart = hp.GetCart();
-
             var m = db.Ticket
                .Include(t => t.Attraction)
                .Where(t => cart.Keys.Contains(t.Id))
                .Select(p => new CartPaymentVM
                {
                    Ticket = p,
-                   Quantit = cart[p.Id],
-                   Subtotal = p.ticketPrice * cart[p.Id],
+                   Quantity = cart[p.Id].Quantity,
+                   Subtotal = p.ticketPrice * cart[p.Id].Quantity,
                })
                .ToList();
 
@@ -1324,20 +1343,20 @@ namespace MobileWebAssignment.Controllers
                 PaymentDateTime = DateTime.Now,
                 Status = "F",
                 Amount = total,
-                UserId = hp.GetUserID(),
+                UserId = userID,
                 PurchaseItems = new List<PurchaseItem>() // Initialize the list
 
             };
             var count = 1;
-            foreach (var (productId, quantity) in cart)
+            foreach (var (productId, item) in cart)
             {
                 var p = db.Ticket.Find(productId);
                 if (p == null) continue;
                 purchase.PurchaseItems.Add(new PurchaseItem()
                 {
                     Id = NextPurchaseItem_Id(count),
-                    Quantity = quantity,
-                    validDate = DateTime.Now,
+                    Quantity = item.Quantity,
+                    validDate = (DateTime)(item.DateOnly?.ToDateTime(TimeOnly.MinValue)),
                     TicketId = p.Id,
                     PurchaseId = purchase.Id,
                 });
@@ -1345,8 +1364,19 @@ namespace MobileWebAssignment.Controllers
             }
 
             db.Purchase.Add(purchase);
-            db.SaveChanges();
-            hp.SetCart(cart);
+            int changes = db.SaveChanges();
+            if (changes > 0)
+            {
+                hp.SetCart(cart);
+                return changes;
+            }
+            else
+            {
+                // No changes were made
+                Console.WriteLine("No changes were made to the database.");
+                return changes;
+            }
+
         }
     }
 
