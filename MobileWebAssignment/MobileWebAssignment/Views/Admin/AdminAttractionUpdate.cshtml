@@ -71,9 +71,13 @@
 						<span asp-validation-for="Description"></span>
 					</div>
 
+					<!-- Map container -->
+					<div id="mapContainer" style="width: 100%; height: 400px;"></div>
+
 					<div class="input-box">
 						<label class="details" asp-for="Location">Location</label>
 						<textarea asp-for="Location" rows="3"></textarea>
+						<button type="button" id="searchButton">Search Location</button>
 						<span asp-validation-for="Location"></span>
 					</div>
 				</div>
@@ -189,40 +193,97 @@
 			}
 
 		});
-
 	</script>
-	@* <script> *@
-	@* 		document.addEventListener('DOMContentLoaded', () => { *@
-	@* 		const imageList = document.getElementById('imageList'); *@
-
-	@* 		imageList.addEventListener('click', (event) => { *@
-	@* 			if (event.target.classList.contains('delete-btn')) { *@
-	@* 				const imagePath = event.target.getAttribute('data-id'); *@
-
-	@* 				if (confirm('Are you sure you want to delete this image?')) { *@
-	@* 					fetch(`AdminController`, { *@
-	@* 						method: 'POST', *@
-	@* 						headers: { *@
-	@* 							'Content-Type': 'application/json', *@
-	@* 							'X-CSRF-TOKEN': document.querySelector('input[name="__RequestVerificationToken"]').value *@
-	@* 						}, *@
-	@* 						body: JSON.stringify({ imagePath: imagePath }) *@
-	@* 					}) *@
-	@* 						.then(response => { *@
-	@* 							if (response.ok) { *@
-	@* 								// Remove the element from the DOM *@
-	@* 								event.target.closest('.image-item').remove(); *@
-	@* 							} else { *@
-	@* 								alert('Failed to delete the image.'); *@
-	@* 							} *@
-	@* 						}) *@
-	@* 						.catch(error => console.error('Error:', error)); *@
-	@* 				} *@
-	@* 			} *@
-	@* 		}); *@
-	@* 	}); *@
-	@* </script> *@
 
 </body>
 
 </html>
+@* map api *@
+<script src="https://atlas.microsoft.com/sdk/javascript/mapcontrol/2/atlas.min.js"></script>
+<link rel="stylesheet" href="https://atlas.microsoft.com/sdk/javascript/mapcontrol/2/atlas.min.css">
+
+
+<script>
+	// Replace with your Azure Maps subscription key
+	const subscriptionKey = '6vAoTcX8f06OO59G3nxZnpomsOza1t6aO8jIQUQ3mFhur7lcuC45JQQJ99ALACYeBjFNNgXKAAAgAZMP4VXz';
+
+	// Initialize Azure Maps
+	let map = new atlas.Map('mapContainer', {
+		center: [100.3327, 5.4164], // Penang, Malaysia (Longitude, Latitude)
+		zoom: 12,
+		authOptions: {
+			authType: 'subscriptionKey',
+			subscriptionKey: subscriptionKey
+		}
+	});
+
+	// Geocode address input and place a marker
+	document.getElementById('searchButton').addEventListener('click', function () {
+		const address = document.getElementById('Location').value;
+		if (!address.trim()) {
+			document.getElementById('locationError').textContent = 'Please enter a location.';
+			return;
+		}
+		document.getElementById('locationError').textContent = ''; // Clear any previous errors
+		geocodeAddress(address);
+	});
+
+	// Function to geocode the address entered by the user
+	function geocodeAddress(address) {
+		// Reference point for proximity ranking (Penang, Malaysia)
+		const referenceLatitude = 5.4164;
+		const referenceLongitude = 100.3327;
+
+		const searchURL = `https://atlas.microsoft.com/search/address/json?subscription-key=${subscriptionKey}&api-version=1.0&query=${encodeURIComponent(address)}&lat=${referenceLatitude}&lon=${referenceLongitude}&rankBy=Proximity`;
+
+		fetch(searchURL)
+			.then(response => response.json())
+			.then(data => {
+				if (data.results && data.results.length > 0) {
+					// Get coordinates of the closest match
+					const coordinates = data.results[0].position;
+
+					// Debugging: Check the returned coordinates in the console
+					console.log("Coordinates:", coordinates);
+
+					if (coordinates) {
+						// Set the camera to the geocoded coordinates
+						map.setCamera({
+							center: [coordinates.lon, coordinates.lat],
+							zoom: 15
+						});
+
+						// Add marker
+						addMarker([coordinates.lon, coordinates.lat]);
+
+						// Display coordinates in the textarea
+						// displayCoordinates([coordinates.lon, coordinates.lat]);
+					}
+				} else {
+					alert('Address not found.');
+				}
+			})
+			.catch(err => {
+				console.error('Error during geocoding: ', err);
+				alert('An error occurred while searching for the address.');
+			});
+	}
+
+	// Function to add a marker to the map
+	function addMarker(coordinates) {
+		var marker = new atlas.HtmlMarker({
+			position: coordinates,
+			popup: new atlas.Popup({
+				content: `<h3>Selected Location</h3><p>Latitude: ${coordinates[1]}<br/>Longitude: ${coordinates[0]}</p>`
+			})
+		});
+
+		map.markers.add(marker);
+	}
+
+	// Function to display coordinates in the textarea
+	function displayCoordinates(coordinates) {
+		const locationText = `Latitude: ${coordinates[1]}, Longitude: ${coordinates[0]}`;
+		document.getElementById('Location').value = locationText; // Set the value of the textarea
+	}
+</script>

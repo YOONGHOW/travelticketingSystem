@@ -47,15 +47,15 @@
 		<button id="replyButton">Reply</button>
 		<button id="viewComment">View All Comment</button>
 		<div class="actions" style="display: none;">
-			<form method="post" action="addComment">
+			<form method="post" action="addComment" id="addReply">
 				<div class="input-box">
 					<label class="details">Comment</label>
 					<br />
 					<textarea name="comment" class="title"></textarea>
 				</div>
 				<input type="hidden" name="feedbackId" value="@f.Id" />
-				<button class="public" name="reply" value="Public">Public Comment</button>
-				<button class="private" name="reply" value="Private">Direct Message</button>
+				<button class="public" name="reply" form="addReply" value="Public">Public Comment</button>
+				<button class="private" name="reply" form="addReply" value="Private">Direct Message</button>
 			</form>
 		</div>
 		<br />
@@ -91,3 +91,27 @@
 
 	</div>
 }
+<script>
+		// Get all 'Reply' buttons on the page
+	const replyButtons = document.querySelectorAll('#replyButton');
+
+	// Get all 'View Comment' buttons on the page
+	const viewCommentButtons = document.querySelectorAll('#viewComment');
+
+		// Reply Button Logic
+	replyButtons.forEach(button => {
+		button.addEventListener('click', function() {
+			const actionsDiv = this.closest('.review').querySelector('.actions');
+			actionsDiv.style.display = (actionsDiv.style.display === 'none' || actionsDiv.style.display === '') ? 'block' : 'none';
+		});
+	});
+
+	// View Comment Button Logic
+	viewCommentButtons.forEach(button => {
+		button.addEventListener('click', function() {
+			const replyListDiv = this.closest('.review').querySelector('#replyList');
+			replyListDiv.style.display = (replyListDiv.style.display === 'none' || replyListDiv.style.display === '') ? 'block' : 'none';
+		});
+	});
+
+</script>
