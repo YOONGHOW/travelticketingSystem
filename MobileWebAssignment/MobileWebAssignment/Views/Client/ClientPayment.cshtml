@@ -3,6 +3,7 @@
 @{
     Layout = "_ClientLayout";
     ViewBag.Title = "Client | Payment";
+    var userInfo = ViewBag.UserInfo as Member;
 }
 
 <!DOCTYPE html>
@@ -65,16 +66,17 @@
     @*     <img src="/images/loading.gif" alt="Loading"> *@
     @*     <p>Connection...</p> *@
     @* </div> *@
-  
+   
     <div class="container my-5">
         <div class="row rounded-3" style="box-shadow: 10px 10px 10px #fbf6f6;background-color: #eeebeb;">
             <!-- Left Panel -->
             <div class="col-md-6 p-4 rounded-3" style="background-color: #eeebeb;">
                 <div class="d-flex align-items-center mb-4">
-                    <img src="https://picsum.photos/400/250" class="me-2" alt="User Image" style="width: 40px; height: 40px; border-radius: 100%;" />
-                    <p class="mb-0">User Name</p>
+                    <img src="/images/@userInfo.PhotoURL" alt="User" class="me-2"
+                         onerror="this.onerror=null; this.src='/images/error.png';" style="width: 40px; height: 40px; border-radius: 100%;">
+                    <p class="mb-0">@userInfo.Name</p>
                 </div>
-
+              
                 <div class="productDetail mb-4">
                     <div class="mb-3">
                         <p id="productName">Product Name</p>
@@ -96,7 +98,7 @@
                              onclick="updateProductDetail(this,'@s.Ticket.ticketName', 'RM @s.Ticket.ticketPrice', '@s.imagepath')">
                             <p class="form-control-plaintext fw-bold">@s.Ticket.ticketName</p>
                             <p class="form-control-plaintext text-end ticketPrice">RM @s.Subtotal</p>
-                            <p class="form-control-plaintext">x @s.Quantit</p>
+                            <p class="form-control-plaintext">x @s.Quantity</p>
                             <input type="hidden" value="@s.imagepath" />
                             <p class="form-control-plaintext ">RM @s.Ticket.ticketPrice</p>
                         </div>
@@ -124,7 +126,7 @@
                             <option value="paypal">PayPal</option>
                         </select>
                     </div>
-
+                    <div id="cardDetailsSection" class="mb-3" style="display: none;">
                     <div class="mb-3">
                         <label asp-for="CardNumber" for="cardNumber" class="form-label">Card Details</label>
                         <input asp-for="CardNumber" type="text" id="cardNumber" class="form-control" placeholder="Card Number">
@@ -145,6 +147,7 @@
                         <label asp-for="CardholderName" for="cardHolderName" class="form-label">Cardholder Name</label>
                         <input asp-for="CardholderName"  type="text" id="cardHolderName" class="form-control" placeholder="Cardholder Name">
                         <span asp-validation-for="CardholderName" class="text-danger form-control " style="background:none"></span>
+                        </div>
                     </div>
 
                     <div class="paymentCalculation mb-3">
@@ -168,9 +171,12 @@
                         // Determine if the button should be disabled
                         var isDisabled = itemCount == 0; // Disable if no items in the cart
                     }
-                    <button class="btn btn-primary w-100" disabled="@isDisabled" id="payButton" >Pay RM 00.00 </button>
-                    <div id="paypal-button-container">
+                    <button class="btn btn-primary w-100" disabled="@isDisabled" id="payButton" style="display: none;">Pay RM 00.00 </button>
+                    <div id="paypalbutton">
+                        <div id="paypal-button-container">
+                        </div>
                     </div>
+                    
                 </form>
 
             </div>
@@ -256,7 +262,43 @@
             calculateSubtotal();
             updateTotal(); // Update the total based on the shipping fee
         };
+        //==================================================
+        // Payment selection
+        //==================================================
 
+        const paymentMethodSelect = document.getElementById("paymentMethod");
+        const cardDetailsSection = document.getElementById("cardDetailsSection");
+        const payButton = document.getElementById("payButton");
+        const paypalSection = document.getElementById("paypalbutton");
+       
+
+        // Listen for changes in the payment method select
+        paymentMethodSelect.addEventListener("change", function () {
+                   if (this.value === "card") {
+            // Show card details section and pay button if 'Bank Card' is selected
+            cardDetailsSection.style.display = "block";
+            payButton.style.display = "block";
+            paypalSection.style.display = "none"; // Hide PayPal button
+        } else if (this.value === "paypal") {
+            // Show PayPal button if 'PayPal' is selected
+            paypalSection.style.display = "block";
+            cardDetailsSection.style.display = "none"; // Hide card details section
+            payButton.style.display = "none"; // Hide the Pay button
+        }
+
+        });
+
+        // Initialize visibility based on default selection
+        if (paymentMethodSelect.value === "card") {
+            cardDetailsSection.style.display = "block";
+                payButton.style.display = "block";
+                 paypalSection.style.display = "none";
+        } else {
+            cardDetailsSection.style.display = "none";
+                 payButton.style.display = "none";
+                  paypalSection.style.display = "block";
+        }
+     
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
