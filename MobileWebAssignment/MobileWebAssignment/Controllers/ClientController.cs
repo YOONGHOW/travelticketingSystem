@@ -576,6 +576,9 @@ namespace MobileWebAssignment.Controllers
             var a = db.Attraction.Find(AttractionId);
             var feedbacks = db.Feedback.Where(f => f.AttractionId == AttractionId).ToList();
 
+            bool isInWishlist = db.Wish.Any(w => w.AttractionId == AttractionId && w.UserId == user.Id);
+            ViewBag.IsInWishlist = isInWishlist;
+
             if (a == null)
             {
                 return RedirectToAction("ClientAttractionDetail");
@@ -778,6 +781,13 @@ namespace MobileWebAssignment.Controllers
                 TempData["Error"] = "User is not logged in.";
                 return RedirectToAction("ClientAttractionDetail", new { AttractionId = attractionId });
             }
+            var existingWish = db.Wish.SingleOrDefault(w => w.UserId == userId && w.AttractionId == attractionId);
+
+            if (existingWish != null)
+            {
+                TempData["Info"] = "Attraction already in wishlist";
+                return RedirectToAction("ClientAttractionDetail", new { AttractionId = attractionId });
+            }
 
             db.Wish.Add(new Wish
             {
@@ -793,6 +803,46 @@ namespace MobileWebAssignment.Controllers
             return RedirectToAction("ClientAttractionDetail", new { AttractionId = attractionId });
         }
 
+        [Authorize(Roles = "Member")]
+        public IActionResult ClientWish()
+        {
+            getUserID();
+            var userId = hp.GetUserID();
+            var wishItems = db.Wish
+                              .Include(t => t.Attraction)
+                              .Where(w => w.UserId == userId)
+                              .Select(w => new
+                              {
+                                  w.Id,
+                                  AttractionName = w.Attraction.Name,
+                                  Description = w.Attraction.Description,
+                                  ImagePath = w.Attraction.ImagePath,
+                                  AttractionId = w.AttractionId,
+                              })
+                              .ToList();
+
+            ViewBag.WishItems = wishItems; 
+            return View();
+        }
+
+
+        [HttpPost]
+        public IActionResult deleteWish(string AttractionId)
+        {
+            getUserID();
+            var userId = hp.GetUserID();
+            var wishItem = db.Wish.SingleOrDefault(c => c.UserId == userId && c.AttractionId == AttractionId);
+
+            if (wishItem != null)
+            {
+                db.Wish.Remove(wishItem);
+                db.SaveChanges();
+                TempData["Info"] = "The attraction has been removed from your wishlist";
+                return RedirectToAction("ClientWish");
+            }
+
+            return RedirectToAction("ClientWIsh");
+        }
         //------------------------------------------ FeedBack start ----------------------------------------------
 
         // Manually generate next id for feedback
