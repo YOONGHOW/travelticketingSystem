@@ -1,124 +1,126 @@
 ﻿@{
-    ViewBag.Title = "My Cart";
-    Layout = "_ClientLayout";
-    var totalPrice = ViewBag.TotalPrice;
-    @model CartPaymentVM   
-    var cartItems = ViewBag.CartItems as IEnumerable<dynamic>;
+	ViewBag.Title = "My Cart";
+	Layout = "_ClientLayout";
+	var totalPrice = ViewBag.TotalPrice;
+	@model CartPaymentVM
+	var cartItems = ViewBag.CartItems as IEnumerable<dynamic>;
 
-    string min = DateTime.Today.ToString("yyyy-MM-dd");
-    string max = DateTime.Today.AddDays(+1).AddYears(+1).ToString("yyyy-MM-dd");
+	string min = DateTime.Today.ToString("yyyy-MM-dd");
+	string max = DateTime.Today.AddDays(+1).AddYears(+1).ToString("yyyy-MM-dd");
 
 }
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="~/css/clientcss/cart.css" rel="stylesheet" asp-append-version="true" />
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link href="~/css/clientcss/cart.css" rel="stylesheet" asp-append-version="true" />
 </head>
 <body>
-    <div class="cart-container">
-        <div class="cart-header">
-            <h2>My Cart</h2>
-        </div>
-        <table class="cart-table">
-            <thead>
-                <tr>
-                    <th>Image</th>
-                    <th>Ticket Name</th>
-                    <th>Quantity</th>
-                    <th>Date</th>
-                    <th>Price</th>
-                    <th>Total</th>
-                    <th>Actions</th>
-                </tr>
+	<div class="cart-container">
+		<div class="cart-header">
+			<h2>My Cart</h2>
+		</div>
+		<table class="cart-table">
+			<thead>
+				<tr>
+					<th>Image</th>
+					<th>Ticket Name</th>
+					<th>Quantity</th>
+					<th>Date</th>
+					<th>Price</th>
+					<th>Total</th>
+					<th>Actions</th>
+				</tr>
 
-            </thead>
-           
-            <tbody>
-                 @if (cartItems != null){
-                    foreach (var item in cartItems) { 
-                        
-                        <tr data-ticket-id="@item.TicketId">
-                            <td>
-                                @{
-                                    var imagePaths = @item.ImagePath.Split('|');
-                                }
-                                <img src="/attractionImages/@imagePaths[0]" alt="@item.TicketName" style="width:100px; height:auto;" />
-                            </td>
-                            <td>@item.TicketName - @item.TicketType</td>
-                            <td>@item.Quantity</td>
-                            <td>
-                                <input style="background-color:#d3d8de; border-radius:4px;padding-left:5px" class="date-input" type="date" id="validDate" name="Dateonly" min="@min" max="@max" value="@min" />
-                            </td>
-                            <td>@item.Price</td>
-                            <td>@item.TotalPrice.ToString("F2")</td>
-                            <td>
-                                <span style="display:flex;">
-                                    <button onclick="window.location.href='@Url.Action("ClientAttractionDetail", "Client", new { AttractionId = item.AttractionId })'" class="btn_update">Update</button>
-                                    <form method="post">
-                                        <input type="hidden" name="ticketId" value="@item.TicketId" style="display:none;" />
-                                        <button asp-action="deleteCart" asp-controller="Client" type="submit" class="btn_delete">Delete</button>
-                                    </form>
-                                </span>
-                                
-                            </td>
-                        </tr>
-                       
-                    }
-                }
-            </tbody>
-        </table>
 
-        <div class="cart-summary">
-            <h3>Total: @totalPrice.ToString("C")</h3>
-            <button class="checkout-btn" id="checkoutButton">Proceed to Checkout</button>
-        </div>
-    </div>
+			</thead>
+
+			<tbody>
+
+				@if (cartItems != null)
+				{
+					foreach (var item in cartItems)
+					{
+						<tr data-ticket-id="@item.TicketId">
+
+							<td>
+								@{
+									var imagePaths = @item.ImagePath.Split('|');
+								}
+								<img src="/attractionImages/@imagePaths[0]" alt="@item.TicketName" style="width:100px; height:auto;" />
+							</td>
+							<td>@item.TicketName - @item.TicketType</td>
+							<td>@item.Quantity</td>
+							<td>
+								<input style="background-color:#d3d8de; border-radius:4px;padding-left:5px" class="date-input" type="date" id="validDate" name="Dateonly" min="@min" max="@max" value="@min" />
+							</td>
+							<td>@item.Price</td>
+							<td>@item.TotalPrice.ToString("F2")</td>
+							<td>
+								<span style="display:flex;">
+									<button onclick="window.location.href='@Url.Action("ClientAttractionDetail", "Client", new { AttractionId = item.AttractionId })'" class="btn_update">Update</button>
+									<form method="post">
+										<input type="hidden" name="ticketId" value="@item.TicketId" style="display:none;" />
+										<button asp-action="deleteCart" asp-controller="Client" type="submit" class="btn_delete">Delete</button>
+									</form>
+								</span>
+							</td>
+						</tr>
+					}
+				}
+			</tbody>
+		</table>
+
+		<div class="cart-summary">
+			<h3>Total: @totalPrice.ToString("C")</h3>
+			<button class="checkout-btn" id="checkoutButton">Proceed to Checkout</button>
+		</div>
+	</div>
 </body>
 </html>
 <script>
-       document.getElementById("checkoutButton").addEventListener("click", function (e) {
-        e.preventDefault(); // Prevent default form submission if in a form
+	   document.getElementById("checkoutButton").addEventListener("click", function (e) {
+		e.preventDefault(); // Prevent default form submission if in a form
 
-        const rows = document.querySelectorAll(".cart-table tbody tr");
-        const ticketData = [];
+		const rows = document.querySelectorAll(".cart-table tbody tr");
+		const ticketData = [];
 
-        rows.forEach(row => {
-            const ticketId = row.dataset.ticketId; // Get TicketID from the data attribute
-            const quantity = row.querySelector("td:nth-child(3)").innerText.trim();
-            const date = row.querySelector(".date-input").value;
+		rows.forEach(row => {
+			const ticketId = row.dataset.ticketId; // Get TicketID from the data attribute
+			const quantity = row.querySelector("td:nth-child(3)").innerText.trim();
+			const date = row.querySelector(".date-input").value;
 
-            ticketData.push({
-                TicketId: ticketId,
-                Quantity: parseInt(quantity, 10),
-                DateOnly: date
-            });
-        });
+			ticketData.push({
+				TicketId: ticketId,
+				Quantity: parseInt(quantity, 10),
+				DateOnly: date
+			});
+		});
 
-        // Send data to the server
-        fetch("/Client/ClientCart", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(ticketData) // Send the array of ticket data
-        })
-        .then(response => {
-            if (response.ok) {
-                return response.json();
-            } else {
-                throw new Error("Checkout failed.");
-            }
-        })
-        .then(data => {
-            console.log("Server Response:", data);
-           window.location.href = "/Client/ClientPayment";
-        })
-        .catch(error => {
-            console.error("Error:", error);
-            alert("An error occurred during checkout.");
-        });
-    });
+		// Send data to the server
+		fetch("/Client/ClientCart", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json"
+			},
+			body: JSON.stringify(ticketData) // Send the array of ticket data
+		})
+		.then(response => {
+			if (response.ok) {
+				return response.json();
+			} else {
+				throw new Error("Checkout failed.");
+			}
+		})
+		.then(data => {
+			console.log("Server Response:", data);
+		   window.location.href = "/Client/ClientPayment";
+		})
+		.catch(error => {
+			console.error("Error:", error);
+			alert("An error occurred during checkout.");
+		});
+	});
 
 </script>

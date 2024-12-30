@@ -322,6 +322,11 @@ public class WishVM
 
 }
 
+public class WishItem
+{
+    public string AttractionId { get; set; }
+}
+
 public class CartItem
 {
     public string TicketId { get; set; }
