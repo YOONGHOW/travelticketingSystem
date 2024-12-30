@@ -454,12 +454,12 @@ public class Helper
     // Cart
     //------------------------------------
 
-    public Dictionary<string, int> GetCart()
+    public Dictionary<string, CartItem> GetCart()
     {
-        return ct.HttpContext!.Session.Get<Dictionary<string, int>>("Cart") ?? [];
+        return ct.HttpContext!.Session.Get<Dictionary<string, CartItem>>("Cart") ?? [];
     }
 
-    public void SetCart(Dictionary<string, int>? dict = null)
+    public void SetCart(Dictionary<string, CartItem>? dict = null)
     {
         if (dict == null)
         {
