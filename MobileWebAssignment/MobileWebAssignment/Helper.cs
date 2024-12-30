@@ -43,9 +43,9 @@ public class Helper
         {
             return "Only JPG and PNG photo is allowed.";
         }
-        else if (f.Length > 1 * 1024 * 1024)
+        else if (f.Length > 2 * 1024 * 1024)
         {
-            return "Photo size cannot more than 1MB.";
+            return "Photo size cannot more than 2MB.";
         }
 
         return "";
@@ -454,12 +454,12 @@ public class Helper
     // Cart
     //------------------------------------
 
-    public Dictionary<string, int> GetCart()
+    public Dictionary<string, CartItem> GetCart()
     {
-        return ct.HttpContext!.Session.Get<Dictionary<string, int>>("Cart") ?? [];
+        return ct.HttpContext!.Session.Get<Dictionary<string, CartItem>>("Cart") ?? [];
     }
 
-    public void SetCart(Dictionary<string, int>? dict = null)
+    public void SetCart(Dictionary<string, CartItem>? dict = null)
     {
         if (dict == null)
         {

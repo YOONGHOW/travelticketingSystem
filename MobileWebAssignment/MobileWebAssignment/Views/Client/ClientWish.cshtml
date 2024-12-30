@@ -1,0 +1,57 @@
+﻿@{
+    ViewBag.Title = "Wishlist";
+    Layout = "_ClientLayout";
+    @model WishVM
+    var wishItems = ViewBag.WishItems as IEnumerable<dynamic>;
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="~/css/clientcss/Wishlist.css" rel="stylesheet" asp-append-version="true" />
+</head>
+<body>
+    <div class="wish-container">
+        <div class="wish-header">
+            <h2>My Wishlist</h2>
+        </div>
+        <table class="wish-table">
+            <thead>
+                <tr>
+                    <th>Image</th>
+                    <th>Attraction Name</th>
+                    <th>Description</th>
+                    <th>Actions</th>
+                </tr>
+
+            </thead>
+            <tbody>
+                @if (wishItems != null)
+                {
+                    foreach (var item in wishItems)
+                    {
+                        <tr onclick="window.location.href='ClientAttractionDetail?attractionId=@item.AttractionId'">
+                            <td>
+                                @{
+                                    var imagePaths = @item.ImagePath.Split('|');
+                                }
+                            <img src="/attractionImages/@imagePaths[0]" alt="@item.AttractionName" style="width:100px; height:auto;" />
+                            </td>
+                            <td>@item.AttractionName</td>
+                            <td>@item.Description</td>
+                            <td>
+                                    <form method="post">
+                                    <input type="hidden" name="AttractionId" value="@item.AttractionId" style="display:none;" />
+                                        <button asp-action="deleteWish" asp-controller="Client" type="submit" class="btn_delete">Remove</button>
+                                    </form>
+                            </td>
+                        </tr>
+
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
