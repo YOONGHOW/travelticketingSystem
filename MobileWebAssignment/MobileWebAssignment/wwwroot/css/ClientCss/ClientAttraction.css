@@ -928,3 +928,121 @@ img.user-image {
     border-radius: 50%;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
+
+/* General Styles */
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    background-color: #f9f9f9;
+    color: #333;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 20px;
+    background: #fff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+/* Attraction Section */
+.attraction {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+    .attraction .image {
+        flex: 1 1 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+        .attraction .image img {
+            max-width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+
+    .attraction .map {
+        flex: 1 1 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+        .attraction .map iframe {
+            width: 100%;
+            height: 400px;
+            border: 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+
+/* Attraction Details */
+.attraction-details {
+    margin-top: 20px;
+    padding: 20px;
+    background-color: #f3f3f3;
+    border-radius: 8px;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+    .attraction-details h2 {
+        margin-top: 0;
+        color: #444;
+    }
+
+    .attraction-details p {
+        margin: 10px 0;
+        line-height: 1.8;
+    }
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .attraction {
+        flex-direction: column;
+    }
+
+        .attraction .image, .attraction .map {
+            flex: 1 1 100%;
+        }
+
+            .attraction .map iframe {
+                height: 300px;
+            }
+}
+
+.container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+.image-section {
+    flex: 1;
+}
+
+.map-section {
+    flex: 1;
+    height: 400px; /* Set height to make it proportional to the image */
+}
+
+.detailsImg {
+    width: 100%;
+    height: 400px;
+    border-radius: 10px; /* Optional for rounded corners */
+}
+
+#mapContainer {
+    width: 100%;
+    height: 100%;
+    border-radius: 10px; /* Optional for rounded corners */
+}
+
