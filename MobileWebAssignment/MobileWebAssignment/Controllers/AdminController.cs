@@ -24,6 +24,8 @@ public class AdminController : Controller
 
 
     //==================================== Attraction Type start =========================================================
+    
+    [Authorize(Roles = "Admin")]
     public IActionResult AdminAttraction(string? Aname, string? Asort, string? Adir, int ATpage = 1, int Apage = 1)
     {
         //page list for Attraction Types
@@ -131,6 +133,7 @@ public class AdminController : Controller
     }
 
     // GET: AttractionType/Insert
+    [Authorize(Roles = "Admin")]
     public IActionResult AdminAttractionTypeCreate()
     {
         var vm = new AttractionTypeInsertVM
@@ -167,6 +170,7 @@ public class AdminController : Controller
     }
 
     // GET: AttractionType/Update
+    [Authorize(Roles = "Admin")]
     public IActionResult AdminAttractionTypeUpdate(string? Id)
     {
         var at = db.AttractionType.Find(Id);
@@ -215,6 +219,7 @@ public class AdminController : Controller
 
 
     // GET: AttractionType/Delete
+    [Authorize(Roles = "Admin")]
     public IActionResult AdminAttractionTypeDelete(string? Id)
     {
         var at = db.AttractionType.Find(Id);
@@ -260,6 +265,7 @@ public class AdminController : Controller
     }
 
     // GET: AttractionType/Insert
+    [Authorize(Roles = "Admin")]
     public IActionResult AdminAttractionCreate()
     {
         ViewBag.AttractionTypes = db.AttractionType.ToList();
@@ -365,6 +371,7 @@ public class AdminController : Controller
 
 
     // GET: Attraction/Update
+    [Authorize(Roles = "Admin")]
     public IActionResult AdminAttractionUpdate(string? Id)
     {
         var a = db.Attraction.Find(Id);
@@ -394,6 +401,7 @@ public class AdminController : Controller
     }
 
     // POST: Attraction/Update
+    [HttpPost]
     public IActionResult AdminAttractionUpdate(AttractionUpdateVM vm)
     {
 
@@ -482,6 +490,7 @@ public class AdminController : Controller
 
 
     // GET: Attraction/Delete
+    [Authorize(Roles = "Admin")]
     public IActionResult AdminAttractionDelete(string? Id)
     {
         var a = db.Attraction.Find(Id);
@@ -528,7 +537,8 @@ public class AdminController : Controller
 
     //============================================ Attraction end =========================================================
     //============================================ Ticket start =========================================================
-
+    
+    [Authorize(Roles = "Admin")]
     public IActionResult AdminTicket()
     {
         ViewBag.AttractionTypes = db.AttractionType;
@@ -544,6 +554,7 @@ public class AdminController : Controller
         return (n + 1).ToString("'TK'0000");
     }
     // Insert ticket
+    [Authorize(Roles = "Admin")]
     [HttpGet]
     public IActionResult AdminTicketInsert(string id)
     {
@@ -588,6 +599,7 @@ public class AdminController : Controller
     //Update ticket
 
     //Get ticket
+    [Authorize(Roles = "Admin")]
     public IActionResult AdminTicketUpdate(string? Id)
     {
         var t = db.Ticket.Find(Id);
@@ -642,6 +654,7 @@ public class AdminController : Controller
     }
 
     //display attraction and ticket details
+    [Authorize(Roles = "Admin")]
     public IActionResult AdminTicketDetails(string id)
     {
         var attraction = db.Attraction.Include(a => a.AttractionType)
@@ -662,6 +675,7 @@ public class AdminController : Controller
     }
 
     //Delete ticket
+    [Authorize(Roles = "Admin")]
     public ActionResult AdminTicketDelete(string? Id)
     {
         var t = db.Ticket.Find(Id);
@@ -702,6 +716,8 @@ public class AdminController : Controller
         return RedirectToAction("AdminTicketDetails", new { id = vm.AttractionId });
     }
     //============================================ Feedback start =========================================================
+
+    [Authorize(Roles = "Admin")]
     public IActionResult AdminFeedback()
     {
         var feedbacks = db.Feedback.Include(a => a.Attraction).Include(u => u.User).ToList();
@@ -725,6 +741,41 @@ public class AdminController : Controller
         }
 
         return View(vm);
+    }
+
+    public IActionResult FilterFeedback(string? attractionId, string dateSort, string star)
+    {
+
+        var feedbacks = db.Feedback.Include(a => a.Attraction)
+                                   .Include(u => u.User)
+                                   .Where(f => attractionId == "all" || f.AttractionId == attractionId)
+                                   .Where(f => f.Rating == int.Parse(star))
+                                   .ToList();
+
+        //sorting
+        var sortedFeedbacks = dateSort.ToLower() == "asc"
+           ? feedbacks.OrderBy(f => f.SubmitDate)
+           : feedbacks.OrderByDescending(f => f.SubmitDate);
+
+        ViewBag.attractions = db.Attraction.ToList();
+
+        var vm = new List<FeedbackInsertVM>();
+        foreach (var f in sortedFeedbacks)
+        {
+            vm.Add(new FeedbackInsertVM
+            {
+                Id = f.Id,
+                Comment = f.Comment,
+                Rating = f.Rating,
+                SubmitDate = f.SubmitDate,
+                AttractionId = f.AttractionId,
+                commentDetail = hp.ConvertComment(f.Comment),
+                insertReplyFeedback = new FeedbackReplyVM(),
+                feedbackReplyList = db.FeedbackReply.Where(fr => fr.FeedbackId == f.Id).ToList(),
+            });
+        }
+
+        return PartialView("_AdminFeedback", vm);
     }
 
     private string NextFeedbackReplyId()
@@ -758,6 +809,7 @@ public class AdminController : Controller
     [HttpPost] 
     public IActionResult DeleteComment(string replyId)
     {
+
         ViewBag.attractions = db.Attraction.ToList();
 
         var fr = db.FeedbackReply.Find(replyId);
@@ -775,6 +827,8 @@ public class AdminController : Controller
     //============================================ Feedback end =========================================================
 
     //============================================ Promotion start =========================================================
+    
+    [Authorize(Roles = "Admin")]
     public IActionResult AdminDiscount(string name = "")
     {
         // Filter promotions by Title or Code based on the search term
@@ -807,6 +861,7 @@ public class AdminController : Controller
     }
 
     // GET: Admin/AdminDiscountCreate
+    [Authorize(Roles = "Admin")]
     public IActionResult AdminDiscountCreate()
     {
         var autoGeneratedId = $"PM{(db.Promotion.Count() + 1).ToString("D4")}"; // Example of auto-generating ID
@@ -887,6 +942,7 @@ public class AdminController : Controller
 
 
     // GET: Admin/AdminDiscountDelete/{id}
+    [Authorize(Roles = "Admin")]
     public IActionResult AdminDiscountDelete(string id)
     {
         if (string.IsNullOrEmpty(id))
@@ -935,6 +991,7 @@ public class AdminController : Controller
         return RedirectToAction("AdminDiscount");
     }
     // GET: Admin/DiscountUpdate
+    [Authorize(Roles = "Admin")]
     public IActionResult AdminDiscountUpdate(string? id)
     {
         var promotion = db.Promotion.Find(id);
@@ -1232,13 +1289,8 @@ public class AdminController : Controller
 
     //============================================ Member Maintenance End =========================================================
 
-
-
-
-
-
-
     //multiple photo upload
+    [Authorize(Roles = "Admin")]
     public IActionResult MultiplePhotoUpload(IFormFile[] images)
     {
 
@@ -1292,6 +1344,8 @@ public class AdminController : Controller
 
         return allPurchases;
     }
+
+    [Authorize(Roles = "Admin")]
     public IActionResult AdminPurchase(string? purchaseID, DateTime? validdate, string? payment)
     {
 
@@ -1338,6 +1392,8 @@ public class AdminController : Controller
         return View(viewModel);
 
     }
+
+    [Authorize(Roles = "Admin")]
     public ActionResult AdminPurchaseDetail(string purchaseID)
     {
         if (string.IsNullOrEmpty(purchaseID))
@@ -1375,6 +1431,8 @@ public class AdminController : Controller
         return Json(groupedItems);
 
     }
+
+    [Authorize(Roles = "Admin")]
     public ActionResult AdminPurchaseTicket(string? purchaseId, DateTime validDate)
     {
         if (string.IsNullOrEmpty(purchaseId))
@@ -1411,6 +1469,7 @@ public class AdminController : Controller
         return Json(purchaseItems);
     }
 
+    [Authorize(Roles = "Admin")]
     public IActionResult AdminPurchaseUpdate(string ticketID, string purcahseItemID)
     {
         if (string.IsNullOrEmpty(purcahseItemID) && string.IsNullOrEmpty(ticketID))

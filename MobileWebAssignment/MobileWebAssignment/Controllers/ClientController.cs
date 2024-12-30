@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.Net.Mail;
+using System.Net.Sockets;
 using System.Reflection.Metadata.Ecma335;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
@@ -630,6 +631,19 @@ namespace MobileWebAssignment.Controllers
 
             return View(vm);
         }
+        public void getUserID()
+        {
+            string email = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
+            string role = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
+            if (!string.IsNullOrEmpty(email) && !string.IsNullOrEmpty(role))
+            {
+                var userID = db.User.Where(p => p.Email == email).Select(p => p.Id).FirstOrDefault();
+                if (userID != null)
+                {
+                    hp.SetUserID(userID);
+                }
+            }
+        }
         //------------------------------------------ Cart start ----------------------------------------------
         //Auto generate id
         private string NextCartId(int count)
@@ -726,27 +740,9 @@ namespace MobileWebAssignment.Controllers
         }
 
         [HttpPost]
-        public IActionResult deleteCart(string TicketId)
-        {
-            getUserID();
-            var userId = hp.GetUserID();
-            var cartItem = db.Cart.SingleOrDefault(c => c.UserId == userId && c.TicketId == TicketId);
-
-            if (cartItem != null)
-            {
-                db.Cart.Remove(cartItem);
-                db.SaveChanges();
-                TempData["Info"] = "Selected ticket is successfully removed";
-                return RedirectToAction("ClientCart");
-            }
-
-            return RedirectToAction("ClientCart");
-        }
-
-        [HttpPost]
         public IActionResult ClientCart([FromBody] List<CartItem> ticketData)
         {
-        
+
 
             var cartItems = new Dictionary<string, CartItem>(); ;
 
@@ -773,8 +769,67 @@ namespace MobileWebAssignment.Controllers
 
             return Json(new { message = "Checkout successful!" });
         }
+        [HttpPost]
+        public IActionResult deleteCart(string TicketId)
+        {
+            getUserID();
+            var userId = hp.GetUserID();
+            var cartItem = db.Cart.SingleOrDefault(c => c.UserId == userId && c.TicketId == TicketId);
+
+            if (cartItem != null)
+            {
+                db.Cart.Remove(cartItem);
+                db.SaveChanges();
+                TempData["Info"] = "Selected ticket is successfully removed";
+                return RedirectToAction("ClientCart");
+            }
+
+            return RedirectToAction("ClientCart");
+        }
 
 
+        //------------------------------------------ Wishlist start ----------------------------------------------
+
+        private string NextWishId(int count)
+        {
+            string max = db.Wish.Max(s => s.Id) ?? "W0000";
+            int n = int.Parse(max[2..]);
+            return (n + count).ToString("'W'0000");
+        }
+
+        [HttpPost]
+        public IActionResult addWish(string attractionId)
+        {
+
+            getUserID();
+            int count = 1;
+            var userId = hp.GetUserID();// Replace with actual user ID retrieval logic.
+
+            if (string.IsNullOrEmpty(attractionId))
+            {
+                TempData["Error"] = "Attraction ID is required.";
+                return RedirectToAction("ClientAttractionDetail", new { AttractionId = attractionId });
+            }
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                TempData["Error"] = "User is not logged in.";
+                return RedirectToAction("ClientAttractionDetail", new { AttractionId = attractionId });
+            }
+
+            db.Wish.Add(new Wish
+            {
+                Id = NextWishId(count),
+                UserId = userId,
+                AttractionId = attractionId,
+            });
+
+
+            db.SaveChanges();
+
+            TempData["Info"] = "Attraction added to Wishlist";
+            return RedirectToAction("ClientAttractionDetail", new { AttractionId = attractionId });
+        }
         //------------------------------------------ FeedBack start ----------------------------------------------
 
         // Manually generate next id for feedback
@@ -1051,8 +1106,6 @@ namespace MobileWebAssignment.Controllers
 
 
         [HttpPost]
-
-        [Authorize(Roles = "Member")]
         public IActionResult ClientPayment(PaymentVM vm)
 
         {
@@ -1189,6 +1242,8 @@ namespace MobileWebAssignment.Controllers
             return View(viewModel);
 
         }
+
+        [Authorize(Roles = "Member")]
         public ActionResult ClientPurchaseDetail(string purchaseID)
         {
             if (string.IsNullOrEmpty(purchaseID))
@@ -1226,6 +1281,8 @@ namespace MobileWebAssignment.Controllers
             return Json(groupedItems);
 
         }
+
+        [Authorize(Roles = "Member")]
         public ActionResult ClientPurchaseTicket(string? purchaseId, DateTime validDate)
         {
             if (string.IsNullOrEmpty(purchaseId))
@@ -1262,6 +1319,7 @@ namespace MobileWebAssignment.Controllers
             return Json(purchaseItems);
         }
 
+        [Authorize(Roles = "Member")]
         public IActionResult ClientPurchaseUpdate(string ticketID, string purcahseItemID)
         {
             if (string.IsNullOrEmpty(purcahseItemID) && string.IsNullOrEmpty(ticketID))
@@ -1308,19 +1366,7 @@ namespace MobileWebAssignment.Controllers
             int n = int.Parse(max[2..]);
             return (n + count).ToString("'PI'0000");
         }
-        public void getUserID()
-        {
-            string email = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
-            string role = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
-            if (!string.IsNullOrEmpty(email)&&!string.IsNullOrEmpty(role))
-            {
-                var userID = db.User.Where(p=>p.Email==email).Select(p => p.Id).FirstOrDefault();
-                if (userID != null)
-                {
-                    hp.SetUserID(userID);
-                }
-            }
-        }
+      
 
         public int CheckOut(string userID)
         {
