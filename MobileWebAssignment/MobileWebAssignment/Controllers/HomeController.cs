@@ -13,8 +13,7 @@ namespace MobileWebAssignment.Controllers
         }
         public IActionResult Index()
         {
-            //return RedirectToAction("Client/Homepage");
-            return View();
+            return RedirectToAction("Homepage", "Client");
         }
     }
 }
