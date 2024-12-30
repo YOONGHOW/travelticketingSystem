@@ -144,18 +144,6 @@ section::after {
     clear: both;
 }
 
-input#addCartBtn {
-    margin-top: 20px;
-    width: 70%;
-    border: none;
-    padding: 10px;
-    color: #ffffff;
-    font-weight: bold;
-    background-color: #000000;
-    font-family: "Times New Roman", Times, serif;
-    font-size: 17px;
-}
-
 input#wishBtn {
     margin-top: 20px;
     width: 60%;
@@ -841,10 +829,17 @@ nav.image_side {
     padding:20px;
 }
 
-.addCartBtn {
+button.addCartBtn {
+    margin-top: 20px;
     width: 70%;
+    border: none;
+    padding: 10px;
+    color: #ffffff;
+    font-weight: bold;
+    background-color: #000000;
+    font-family: "Times New Roman", Times, serif;
+    font-size: 17px;
 }
-
 
 .container {
     display: flex;
@@ -880,10 +875,6 @@ nav.image_side {
     text-align: left;
 }
 
-.addCartBtn {
-    margin-top: 20px;
-}
-=======
 button.delete-comment {
     float: right;
     background-color: #e74c3c; /* Red for delete action */
@@ -928,6 +919,25 @@ img.user-image {
     border-radius: 50%;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
+
+
+/* Wish list */
+.wishlist-btn {
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 18px;
+    margin-left:400px;
+}
+
+    .wishlist-btn .fa-heart {
+        color: white;
+        transition: color 0.3s;
+    }
+
+    .wishlist-btn.saved .fa-heart {
+        color: red; /* Change to your desired color */
+    }
 
 /* General Styles */
 body {
