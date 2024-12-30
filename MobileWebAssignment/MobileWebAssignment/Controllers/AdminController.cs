@@ -394,6 +394,7 @@ public class AdminController : Controller
     }
 
     // POST: Attraction/Update
+    [HttpPost]
     public IActionResult AdminAttractionUpdate(AttractionUpdateVM vm)
     {
 
