@@ -576,6 +576,9 @@ namespace MobileWebAssignment.Controllers
             var a = db.Attraction.Find(AttractionId);
             var feedbacks = db.Feedback.Where(f => f.AttractionId == AttractionId).ToList();
 
+            bool isInWishlist = db.Wish.Any(w => w.AttractionId == AttractionId && w.UserId == user.Id);
+            ViewBag.IsInWishlist = isInWishlist;
+
             if (a == null)
             {
                 return RedirectToAction("ClientAttractionDetail");
@@ -776,6 +779,13 @@ namespace MobileWebAssignment.Controllers
             if (string.IsNullOrEmpty(userId))
             {
                 TempData["Error"] = "User is not logged in.";
+                return RedirectToAction("ClientAttractionDetail", new { AttractionId = attractionId });
+            }
+            var existingWish = db.Wish.SingleOrDefault(w => w.UserId == userId && w.AttractionId == attractionId);
+
+            if (existingWish != null)
+            {
+                TempData["Info"] = "Attraction already in wishlist";
                 return RedirectToAction("ClientAttractionDetail", new { AttractionId = attractionId });
             }
 
