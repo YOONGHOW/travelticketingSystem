@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Globalization;
 using System.Net.Mail;
+using System.Net.Sockets;
 using System.Reflection.Metadata.Ecma335;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
@@ -749,6 +750,48 @@ namespace MobileWebAssignment.Controllers
         //    var userId = hp.GetUserID();
 
         //}
+        //------------------------------------------ Wishlist start ----------------------------------------------
+
+        private string NextWishId(int count)
+        {
+            string max = db.Wish.Max(s => s.Id) ?? "W0000";
+            int n = int.Parse(max[2..]);
+            return (n + count).ToString("'W'0000");
+        }
+
+        [HttpPost]
+        public IActionResult addWish(string attractionId)
+        {
+
+            getUserID();
+            int count = 1;
+            var userId = hp.GetUserID();// Replace with actual user ID retrieval logic.
+
+            if (string.IsNullOrEmpty(attractionId))
+            {
+                TempData["Error"] = "Attraction ID is required.";
+                return RedirectToAction("ClientAttractionDetail", new { AttractionId = attractionId });
+            }
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                TempData["Error"] = "User is not logged in.";
+                return RedirectToAction("ClientAttractionDetail", new { AttractionId = attractionId });
+            }
+
+            db.Wish.Add(new Wish
+            {
+                Id = NextWishId(count),
+                UserId = userId,
+                AttractionId = attractionId,
+            });
+
+
+            db.SaveChanges();
+
+            TempData["Info"] = "Attraction added to Wishlist";
+            return RedirectToAction("ClientAttractionDetail", new { AttractionId = attractionId });
+        }
 
         //------------------------------------------ FeedBack start ----------------------------------------------
 
