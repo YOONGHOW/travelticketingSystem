@@ -11,6 +11,7 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<link rel="stylesheet" href="/css/ClientCss/ClientAttraction.css" asp-append-version="true">
+	<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 </head>
 <body>
 </body>
@@ -23,11 +24,13 @@
 			@Model.Description<br /> <br />
 			@if (ViewBag.Feedbacks.Count == 0)
 			{
-			<p>No review yet.</p>
+				<div class="review-container">
+					<p>No review yet.</p>
+					<p class="location">📍@Model.Location</p>
+				</div>
 			}
 			else
 			{
-
 				int total = 0;
 				double averageRating = 0.0;
 				foreach (var f in ViewBag.Feedbacks)
@@ -37,13 +40,19 @@
 
 				averageRating = (double)total / ViewBag.Feedbacks.Count;
 
-			<div class="review-container">
-				<p class="review-head">⭐@averageRating.ToString("F1") (@ViewBag.Feedbacks.Count reviews)</p>
-				<p class="location">📍@Model.Location</p>
+				<div class="review-container">
+					<p class="review-head">⭐@averageRating.ToString("F1") (@ViewBag.Feedbacks.Count reviews)</p>
+					<p class="location">📍@Model.Location</p>
+					<form method="post">
+							<input type="hidden" name="attractionID" value="@Model.Id" style="display:none;" />
+							<button type="submit" class="wishlist-btn" id="wishlistButton" asp-action="addWish" asp-controller="Client">❤️ Save to wishlist</button>
+					</form>
+				
 
 			</div>
 			}
 		<br />
+			<br />
 				@if (Model.Photo.imagePaths.Count() == 1)
 				{
 				<img src="/attractionImages/@Model.ImagePath" alt="@Model.Name" class="detailsImg">
@@ -62,21 +71,29 @@
 						}
 
 
-					<!-- Next and previous buttons -->
-					<a class="prev" onclick="plusSlides(-1)">&#10094;</a>
-					<a class="next" onclick="plusSlides(1)">&#10095;</a>
+					}
+						<!-- Next and previous buttons -->
+						<a class="prev" onclick="plusSlides(-1)">&#10094;</a>
+						<a class="next" onclick="plusSlides(1)">&#10095;</a>
 
-					<!-- The dots/circles -->
-					<div style="text-align:center" class="dots">
-							@for (int i = 1; i <= Model.Photo.imagePaths.Count; i++)
-							{
-							<span class="dot" onclick="currentSlide(@i)"></span>
-							}
-
+						<!-- The dots/circles -->
+						<div style="text-align:center" class="dots">
+								@for (int i = 1; i <= Model.Photo.imagePaths.Count; i++)
+								{
+								<span class="dot" onclick="currentSlide(@i)"></span>
+								}
+						</div>
 					</div>
-				</div>
-				<br />
-				}
+
+					<br />
+					}
+			</div>
+
+			<!-- Map container -->
+			<div class="map-section">
+				<div id="mapContainer" style="width: 100%; height: 400px;"></div>
+			</div>
+		</div>
 		<div class="container">
 			<!-- Left Side: Package Option -->
 			<div class="left-side">
@@ -87,7 +104,7 @@
 						}
 						@foreach (var ticket in ViewBag.Tickets as List<TicketVM>)
 						{
-							
+
 
 						<div class="ticket-box">
 							<p style="font-size:18px;"><b>@ticket.ticketName</b></p>
@@ -96,7 +113,7 @@
 									<td><b>@ticket.ticketType</b></td>
 									<td style="font-size:18px;"><b><span>RM </span>@ticket.ticketPrice</b></td>
 									<td>
-                                        <label for="quantity_@ticket.Id" class="qty"><b>Quantity:</b></label>
+										<label for="quantity_@ticket.Id" class="qty"><b>Quantity:</b></label>
 										<input type="number" id="quantity_@ticket.Id" name="tickets[@loopIndex].Quantity" value="0" min="0" max="@ticket.stockQty" />
 										<input type="hidden" name="tickets[@loopIndex].TicketId" value="@ticket.Id" />
 									</td>
@@ -152,7 +169,7 @@
 			</div>
 		</div>
 
-		
+
 
 	</div>
 	<!-- Review Section -->
@@ -298,3 +315,85 @@
 	  dots[slideIndex-1].className += " active";
 	}
 </script>
+@* map api *@
+<script src="https://atlas.microsoft.com/sdk/javascript/mapcontrol/2/atlas.min.js"></script>
+<link rel="stylesheet" href="https://atlas.microsoft.com/sdk/javascript/mapcontrol/2/atlas.min.css">
+
+<script>
+	document.addEventListener('DOMContentLoaded', function () {
+		// Get the location from the Razor model
+		const modelLocation = "@Model.Location"; // Razor will replace this with the model's Location property
+
+		// If a location exists in the model, geocode it
+		if (modelLocation) {
+			geocodeAddress(modelLocation);
+		} else {
+			console.error("Model location is not available.");
+		}
+	});
+
+	// Replace with your Azure Maps subscription key
+	const subscriptionKey = '6vAoTcX8f06OO59G3nxZnpomsOza1t6aO8jIQUQ3mFhur7lcuC45JQQJ99ALACYeBjFNNgXKAAAgAZMP4VXz';
+
+	// Initialize Azure Maps
+	let map = new atlas.Map('mapContainer', {
+		center: [100.3327, 5.4164], // Default center (Penang, Malaysia)
+		zoom: 12,
+		authOptions: {
+			authType: 'subscriptionKey',
+			subscriptionKey: subscriptionKey
+		}
+	});
+
+		function cleanAddress(address) {
+		// Remove unnecessary details and just use the building and city name
+		return address.replace(/Lower Ground \(Concourse\) Level, /, '').replace(/\s+/g, ' ').trim();
+	}
+
+	// In the geocodeAddress function:
+	function geocodeAddress(address) {
+		const cleanedAddress = cleanAddress(address);
+
+		const searchURL = `https://atlas.microsoft.com/search/address/json?subscription-key=${subscriptionKey}&api-version=1.0&query=${encodeURIComponent(cleanedAddress)}`;
+
+		fetch(searchURL)
+			.then(response => response.json())
+			.then(data => {
+				if (data.results && data.results.length > 0) {
+					const coordinates = data.results[0].position; // Extract coordinates (latitude, longitude)
+
+					if (coordinates && coordinates.lat && coordinates.lon) {
+						map.setCamera({
+							center: [coordinates.lon, coordinates.lat],
+							zoom: 15
+						});
+
+						// Add a marker at the geocoded location
+						addMarker([coordinates.lon, coordinates.lat]);
+					} else {
+						console.error('No coordinates found for the address:', cleanedAddress);
+					}
+				} else {
+					console.error('No results found for the address:', cleanedAddress);
+				}
+			})
+			.catch(err => {
+				console.error('Error during geocoding:', err);
+			});
+	}
+
+
+	// Function to add a marker to the map
+	function addMarker(coordinates) {
+		const marker = new atlas.HtmlMarker({
+			position: coordinates,
+			popup: new atlas.Popup({
+				content: `<h3>Location</h3><p>Latitude: ${coordinates[1]}<br/>Longitude: ${coordinates[0]}</p>`
+			})
+		});
+
+		// Add the marker to the map
+		map.markers.add(marker);
+	}
+</script>
+

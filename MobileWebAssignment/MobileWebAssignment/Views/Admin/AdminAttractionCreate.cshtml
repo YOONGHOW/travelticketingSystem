@@ -191,13 +191,14 @@
 	<script src="https://atlas.microsoft.com/sdk/javascript/mapcontrol/2/atlas.min.js"></script>
 	<link rel="stylesheet" href="https://atlas.microsoft.com/sdk/javascript/mapcontrol/2/atlas.min.css">
 
+
 	<script>
-		const subscriptionKey = '6vAoTcX8f06OO59G3nxZnpomsOza1t6aO8jIQUQ3mFhur7lcuC45JQQJ99ALACYeBjFNNgXKAAAgAZMP4VXz'; // Replace with your Azure Maps subscription key
-		let selectedLocation = null;
+		// Replace with your Azure Maps subscription key
+		const subscriptionKey = '6vAoTcX8f06OO59G3nxZnpomsOza1t6aO8jIQUQ3mFhur7lcuC45JQQJ99ALACYeBjFNNgXKAAAgAZMP4VXz';
 
 		// Initialize Azure Maps
-		var map = new atlas.Map('mapContainer', {
-			center: [101.6869, 3.139], // Default center: Kuala Lumpur, Malaysia (Longitude, Latitude)
+		let map = new atlas.Map('mapContainer', {
+			center: [100.3327, 5.4164], // Penang, Malaysia (Longitude, Latitude)
 			zoom: 12,
 			authOptions: {
 				authType: 'subscriptionKey',
@@ -205,64 +206,77 @@
 			}
 		});
 
-		// Add a click event to place a marker when the user clicks on the map
-		map.events.add('click', function (e) {
-			const coordinates = e.position;
-			selectedLocation = coordinates;
-			addMarker(coordinates);
-			displayCoordinates(coordinates);
+		// Geocode address input and place a marker
+		document.getElementById('searchButton').addEventListener('click', function () {
+			const address = document.getElementById('Location').value;
+			if (!address.trim()) {
+				document.getElementById('locationError').textContent = 'Please enter a location.';
+				return;
+			}
+			document.getElementById('locationError').textContent = ''; // Clear any previous errors
+			geocodeAddress(address);
 		});
+
+		// Function to geocode the address entered by the user
+		function geocodeAddress(address) {
+			// Reference point for proximity ranking (Penang, Malaysia)
+			const referenceLatitude = 5.4164;
+			const referenceLongitude = 100.3327;
+
+			const searchURL = `https://atlas.microsoft.com/search/address/json?subscription-key=${subscriptionKey}&api-version=1.0&query=${encodeURIComponent(address)}&lat=${referenceLatitude}&lon=${referenceLongitude}&rankBy=Proximity`;
+
+			fetch(searchURL)
+				.then(response => response.json())
+				.then(data => {
+					if (data.results && data.results.length > 0) {
+						// Get coordinates of the closest match
+						const coordinates = data.results[0].position;
+
+						// Debugging: Check the returned coordinates in the console
+						console.log("Coordinates:", coordinates);
+
+						if (coordinates) {
+							// Set the camera to the geocoded coordinates
+							map.setCamera({
+								center: [coordinates.lon, coordinates.lat],
+								zoom: 15
+							});
+
+							// Add marker
+							addMarker([coordinates.lon, coordinates.lat]);
+
+							// Display coordinates in the textarea
+							// displayCoordinates([coordinates.lon, coordinates.lat]);
+						}
+					} else {
+						alert('Address not found.');
+					}
+				})
+				.catch(err => {
+					console.error('Error during geocoding: ', err);
+					alert('An error occurred while searching for the address.');
+				});
+		}
 
 		// Function to add a marker to the map
 		function addMarker(coordinates) {
 			var marker = new atlas.HtmlMarker({
 				position: coordinates,
 				popup: new atlas.Popup({
-					content: '<h3>Selected Location</h3><p>Latitude: ' + coordinates[1] + '<br/>Longitude: ' + coordinates[0] + '</p>'
+					content: `<h3>Selected Location</h3><p>Latitude: ${coordinates[1]}<br/>Longitude: ${coordinates[0]}</p>`
 				})
 			});
+
 			map.markers.add(marker);
 		}
 
-		// Function to display coordinates in the form
+		// Function to display coordinates in the textarea
 		function displayCoordinates(coordinates) {
-			document.getElementById('Location').value = `Latitude: ${coordinates[1]}, Longitude: ${coordinates[0]}`;
+			const locationText = `Latitude: ${coordinates[1]}, Longitude: ${coordinates[0]}`;
+			document.getElementById('Location').value = locationText; // Set the value of the textarea
 		}
-
-		// Geocode address input and place a marker
-		document.getElementById('searchButton').addEventListener('click', function () {
-			const address = document.getElementById('Location').value;
-			geocodeAddress(address);
-		});
-
-		// Function to geocode the address entered by the user
-				function geocodeAddress(address) {
-			if (!address.trim()) {
-				alert('Please enter an address.');
-				return;
-			}
-
-			const searchURL = `https://atlas.microsoft.com/search/address/json?subscription-key=${subscriptionKey}&api-version=1.0&query=${encodeURIComponent(address)}`;
-
-			fetch(searchURL)
-				.then(response => response.json())
-				.then(data => {
-					if (data.results && data.results.length > 0) {
-						const coordinates = data.results[0].position;
-						map.setCamera({ center: [coordinates.lon, coordinates.lat], zoom: 15 });
-						addMarker({ longitude: coordinates.lon, latitude: coordinates.lat });
-						displayCoordinates([coordinates.lon, coordinates.lat]);
-					} else {
-						alert('Address not found.');
-					}
-				})
-				// .catch(err => {
-				// 	console.error('Error during geocoding: ', err);
-				// 	alert('An error occurred while searching for the address.');
-				// });
-		}
-
 	</script>
+
 </body>
 
 </html>

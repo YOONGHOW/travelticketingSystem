@@ -36,8 +36,8 @@
                 @if (cartItems != null)
                 {
                     foreach (var item in cartItems)
-                    { 
-                        <form asp-action="deleteCart" asp-controller="Client"  method="post">
+                    {  
+                       
                         <tr>
                             <td>
                                 @{
@@ -50,14 +50,17 @@
                             <td>@item.Price</td>
                             <td>@item.TotalPrice.ToString("F2")</td>
                             <td>
-                                <button onclick="window.location.href='@Url.Action("ClientAttractionDetail", "Client", new { AttractionId = item.AttractionId })'" class="btn_update">Update</button>
-                               
-                                    <input type="hidden" name="ticketId" value="@item.TicketId" style="display:none;"/>
-                                    <button type="submit" class="btn_delete">Delete</button>
-                                                              
+                                <span style="display:flex;">
+                                    <button onclick="window.location.href='@Url.Action("ClientAttractionDetail", "Client", new { AttractionId = item.AttractionId })'" class="btn_update">Update</button>
+                                    <form method="post">
+                                        <input type="hidden" name="ticketId" value="@item.TicketId" style="display:none;" />
+                                        <button asp-action="deleteCart" asp-controller="Client" type="submit" class="btn_delete">Delete</button>
+                                    </form>
+                                </span>
+                                
                             </td>
                         </tr>
-                        </form>
+                       
                     }
                 }
             </tbody>

@@ -2,13 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using MobileWebAssignment.Models;
-using System.Net.Sockets;
 using X.PagedList.Extensions;
-using Microsoft.AspNetCore.Hosting.Server;
-using System.Media;
-using Microsoft.IdentityModel.Tokens;
-using Azure;
 using Microsoft.AspNetCore.Authorization;
 
 
@@ -400,6 +394,7 @@ public class AdminController : Controller
     }
 
     // POST: Attraction/Update
+    [HttpPost]
     public IActionResult AdminAttractionUpdate(AttractionUpdateVM vm)
     {
 
@@ -733,6 +728,41 @@ public class AdminController : Controller
         return View(vm);
     }
 
+    public IActionResult FilterFeedback(string? attractionId, string dateSort, string star)
+    {
+
+        var feedbacks = db.Feedback.Include(a => a.Attraction)
+                                   .Include(u => u.User)
+                                   .Where(f => attractionId == "all" || f.AttractionId == attractionId)
+                                   .Where(f => f.Rating == int.Parse(star))
+                                   .ToList();
+
+        //sorting
+        var sortedFeedbacks = dateSort.ToLower() == "asc"
+           ? feedbacks.OrderBy(f => f.SubmitDate)
+           : feedbacks.OrderByDescending(f => f.SubmitDate);
+
+        ViewBag.attractions = db.Attraction.ToList();
+
+        var vm = new List<FeedbackInsertVM>();
+        foreach (var f in sortedFeedbacks)
+        {
+            vm.Add(new FeedbackInsertVM
+            {
+                Id = f.Id,
+                Comment = f.Comment,
+                Rating = f.Rating,
+                SubmitDate = f.SubmitDate,
+                AttractionId = f.AttractionId,
+                commentDetail = hp.ConvertComment(f.Comment),
+                insertReplyFeedback = new FeedbackReplyVM(),
+                feedbackReplyList = db.FeedbackReply.Where(fr => fr.FeedbackId == f.Id).ToList(),
+            });
+        }
+
+        return PartialView("_AdminFeedback", vm);
+    }
+
     private string NextFeedbackReplyId()
     {
         string max = db.FeedbackReply.Max(fr => fr.Id) ?? "FR000";
@@ -764,6 +794,7 @@ public class AdminController : Controller
     [HttpPost] 
     public IActionResult DeleteComment(string replyId)
     {
+
         ViewBag.attractions = db.Attraction.ToList();
 
         var fr = db.FeedbackReply.Find(replyId);
