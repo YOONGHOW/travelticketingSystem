@@ -237,7 +237,7 @@ namespace MobileWebAssignment.Controllers
 
             if (role == "Admin")
             {
-                return RedirectToAction("AdminAttraction", "Admin");
+                return RedirectToAction("MemberList", "Admin");
             }
             else
             {
@@ -1018,7 +1018,7 @@ namespace MobileWebAssignment.Controllers
             var cart = hp.GetCart();
             if (quantity >= 1 && quantity <= 1000)
             {
-                cart[productId] = quantity;
+                cart[productId].Quantity = quantity;
             }
             else
             {
@@ -1049,8 +1049,8 @@ namespace MobileWebAssignment.Controllers
                     .Select(p => new CartPaymentVM
                     {
                         Ticket = p,
-                        Quantit = cart[p.Id],
-                        Subtotal = p.ticketPrice * cart[p.Id],
+                        Quantit = cart[p.Id].Quantity,
+                        Subtotal = p.ticketPrice * cart[p.Id].Quantity,
                         imagepath = p.Attraction.ImagePath,
                     }).ToList();
 
@@ -1091,8 +1091,8 @@ namespace MobileWebAssignment.Controllers
                     .Select(p => new CartPaymentVM
                     {
                         Ticket = p,
-                        Quantit = cart[p.Id],
-                        Subtotal = p.ticketPrice * cart[p.Id],
+                        Quantit = cart[p.Id].Quantity,
+                        Subtotal = p.ticketPrice * cart[p.Id].Quantity,
                         imagepath = p.Attraction.ImagePath,
                     }).ToList();
 
@@ -1358,8 +1358,8 @@ namespace MobileWebAssignment.Controllers
                .Select(p => new CartPaymentVM
                {
                    Ticket = p,
-                   Quantit = cart[p.Id],
-                   Subtotal = p.ticketPrice * cart[p.Id],
+                   Quantit = cart[p.Id].Quantity,
+                   Subtotal = p.ticketPrice * cart[p.Id].Quantity,
                })
                .ToList();
 
@@ -1382,7 +1382,7 @@ namespace MobileWebAssignment.Controllers
                 purchase.PurchaseItems.Add(new PurchaseItem()
                 {
                     Id = NextPurchaseItem_Id(count),
-                    Quantity = quantity,
+                    Quantity = quantity.Quantity,
                     validDate = DateTime.Now,
                     TicketId = p.Id,
                     PurchaseId = purchase.Id,
