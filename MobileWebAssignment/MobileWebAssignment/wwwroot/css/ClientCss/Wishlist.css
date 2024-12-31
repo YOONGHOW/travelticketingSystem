@@ -1,0 +1,77 @@
+﻿body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f8f9fa;
+}
+
+.wish-container {
+    max-width: 1200px;
+    margin: 50px auto;
+    padding: 20px;
+    background: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.wish-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+}
+
+    .cart-header h2 {
+        font-size: 24px;
+        color: #333;
+    }
+
+.wish-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+    .wish-table th, .wish-table td {
+        padding: 15px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .wish-table th {
+        font-size: 16px;
+        font-weight: bold;
+        color: #555;
+    }
+
+    .wish-table td {
+        font-size: 14px;
+        color: #666;
+    }
+
+
+@media (max-width: 768px) {
+    .cart-header h2 {
+        font-size: 20px;
+    }
+
+    .wish-table th, .wish-table td {
+        font-size: 12px;
+        padding: 10px;
+    }
+}
+
+.btn_delete {
+    width: 80px;
+    padding: 5px;
+    border-radius: 30px;
+    background-color: white;
+    color: black;
+    border: 2px solid #ff0000;
+}
+
+    .btn_delete:hover {
+        background-color: #ff0000;
+        color: white;
+    }

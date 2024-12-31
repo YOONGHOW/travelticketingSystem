@@ -39,14 +39,21 @@
 						<li><a href="/Client/ClientPaymentHIS">Order History</a></li>
 
 						<li><a href="/Client/ClientFeedback">Feedback</a></li>
-
+						<li><a href="/Client/ClientWish">Wishlist</a></li>
 						<li>
+							@if (User.IsInRole("Member"))
+							{
+								var member = db.Members.FirstOrDefault(m => m.Email == User.Identity!.Name);
+								var totalQuantity = db.Cart.Where(c => c.UserId == member.Id).Sum(c => c.Quantity);
+							
 							<a href="ClientCart">
 								Cart
 								<span style="background-color:red; border:none; border-radius:50%; padding:4px; font-size:10px; color:white;">
-									@ViewBag.TotalCount
+									
+									@totalQuantity
 								</span>
 							</a>
+							}
 						</li>
 						<li><a href="/Client/Logout">Logout</a></li>
 						<li>
