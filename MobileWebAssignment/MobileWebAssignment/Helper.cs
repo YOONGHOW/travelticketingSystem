@@ -538,6 +538,56 @@ public class Helper
         return ticketPrice;
     }
 
+    // Predefined list of Malaysian states
+    private string[] MalaysianStates = new string[]
+    {
+        "Johor", "Kedah", "Kelantan", "Melaka", "Negeri Sembilan", "Pahang", "Perak", "Perlis", "Pulau Pinang",
+        "Sabah", "Sarawak", "Selangor", "Terengganu", "Kuala Lumpur", "Labuan", "Putrajaya"
+    };
+
+    public string ValidateMalaysianAddress(string combinedAddress)
+    {
+
+
+        if (string.IsNullOrWhiteSpace(combinedAddress))
+        {
+            return ("Address is required.");
+        }
+
+        // Split the input by commas
+        var parts = combinedAddress.Split(',');
+
+        if (parts.Length <= 3)
+        {
+            return ("Address must include Postcode, State, and City separated by commas.");
+        }
+
+        // Trim each part
+        string postCode = parts[parts.Length-3].Trim();
+        string state = parts[parts.Length-1].Trim();
+        string city = parts[parts.Length-2].Trim();
+
+        // Validate PostCode (5 digits)
+        if (!Regex.IsMatch(postCode, @"^\d{5}$"))
+        {
+            return ("Postcode must be a 5-digit number.");
+        }
+
+        // Validate State (must be a valid Malaysian state)
+        if (!MalaysianStates.Contains(state))
+        {
+            return ("State is invalid. Please select a valid Malaysian state.");
+        }
+
+        // Validate City (letters, spaces, hyphens, and apostrophes allowed)
+        if (!Regex.IsMatch(city, @"^[a-zA-Z\s\-']+$"))
+        {
+            return ("City name can only contain letters, spaces, hyphens, and apostrophes.");
+        }
+
+        return ("valid");
+    }
+
 
 }
 

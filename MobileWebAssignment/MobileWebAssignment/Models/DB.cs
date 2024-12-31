@@ -150,7 +150,7 @@ public class Ticket //TK0001
     [MaxLength(200)]
     public string ticketName { get; set; }
     public int stockQty { get; set; }
-    [Precision(4, 2)]
+    [Precision(6, 2)]
     public decimal ticketPrice { get; set; }
     public string ticketStatus { get; set; }
     [MaxLength(1000)]

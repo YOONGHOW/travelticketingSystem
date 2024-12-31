@@ -26,13 +26,14 @@ public class AttractionInsertVM
     public string Id { get; set; }
 
     [StringLength(100)]
-    [RegularExpression(@"^[a-z A-Z]+$", ErrorMessage = "Invalid {0}.")]
+    [RegularExpression(@"^[a-zA-Z0-9\s]+$", ErrorMessage = "Attraction name can only contain letters, numbers, and spaces.")]
     public string Name { get; set; }
 
     [StringLength(1000)]
     public string Description { get; set; }
 
     [StringLength(1000)]
+    [RegularExpression(@"^[a-zA-Z0-9\s,.\-#]*$", ErrorMessage = "Address can only contain letters, numbers, spaces, commas, periods, dashes, and hash symbols.")]
     public string Location { get; set; }
     [StringLength(500)]
     public string? OperatingHours { get; set; }
@@ -72,13 +73,14 @@ public class AttractionUpdateVM
     public string Id { get; set; }
 
     [StringLength(100)]
-    [RegularExpression(@"^[a-z A-Z]+$", ErrorMessage = "Invalid {0}.")]
+    [RegularExpression(@"^[a-zA-Z0-9\s]+$", ErrorMessage = "Attraction name can only contain letters, numbers, and spaces.")]
     public string Name { get; set; }
 
     [StringLength(1000)]
     public string Description { get; set; }
 
     [StringLength(1000)]
+    [RegularExpression(@"^[a-zA-Z0-9\s,.\-#]*$", ErrorMessage = "Address can only contain letters, numbers, spaces, commas, periods, dashes, and hash symbols.")]
     public string Location { get; set; }
     [StringLength(500)]
     public string? OperatingHours { get; set; }
@@ -178,6 +180,17 @@ public class Comment()
     
     public string? Review { get; set; }
 }
+
+public class PurchaseItemList()
+{
+    public List<PurchaseItem> Items { get; set; }
+}
+
+public class TicketList()
+{
+    public List<Ticket> tickets { get; set; }
+}
+
 
 //================================== USER Account Features ===========================================================
 public class LoginVm
@@ -294,8 +307,10 @@ public class TicketVM {
     [StringLength(200)]
     [Required(ErrorMessage = "Ticket Name is required.")]
     public string ticketName { get; set; }
+    [Range(0, int.MaxValue, ErrorMessage = "Stock Quantity must be a non-negative number.")]
     public int stockQty { get; set; }
-    [Precision(4, 2)]
+    [Precision(6, 2)]
+    [Range(0.01, 9999.99, ErrorMessage = "Ticket Price must be between 0.00 and 9999.99.")]
     public decimal ticketPrice { get; set; }
     public string ticketStatus { get; set; }
     [StringLength(1000)]
