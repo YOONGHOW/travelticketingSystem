@@ -64,6 +64,8 @@
 										<input type="hidden" name="ticketId" value="@item.TicketId" style="display:none;" />
 										<button asp-action="deleteCart" asp-controller="Client" type="submit" class="btn_delete">Delete</button>
 									</form>
+
+									
 								</span>
 							</td>
 						</tr>
@@ -73,9 +75,19 @@
 		</table>
 
 		<div class="cart-summary">
-			<h3>Total: @totalPrice.ToString("C")</h3>
+    <div class="summary-item">
+        <span class="label">Total Quantity:</span>
+        <span class="value">@ViewBag.TotalCount</span>
+    </div>
+    <div class="summary-item">
+        <span class="label">Total Price:</span>
+        <span class="value">@totalPrice.ToString("C")</span>
+    </div>
 			<button class="checkout-btn" id="checkoutButton">Proceed to Checkout</button>
-		</div>
+
+</div>
+
+
 	</div>
 </body>
 </html>
