@@ -17,13 +17,6 @@
     <div class="navbar">
         <div class="main">
             <div class="selected">
-                <a href="ViewAdmin" class="bar" role="navigation" aria-label="Dashboard">
-                    <i class="fa fa-globe" aria-hidden="true"></i>
-                    <p>Dashboard</p>
-                </a>
-            </div>
-
-            <div>
                 <a href="MemberList" class="bar" role="navigation" aria-label="Member">
                     <i class="fa fa-user" aria-hidden="true"></i>
                     <p>Member</p>
@@ -63,6 +56,12 @@
                 </a>
             </div>
             <div>
+                <a href="/Admin/AdminReport" class="bar" role="navigation" aria-label="Report">
+                    <i class="fa fa-bar-chart" aria-hidden="true"></i>
+                    <p>Report</p>
+                </a>
+            </div>
+            <div>
                 @if(User.Identity!.IsAuthenticated){
                     <a href="/Client/Logout" class="bar" role="navigation" aria-label="Logout">
                         <i class="fa fa-sign-out" aria-hidden="true"></i>
@@ -90,6 +89,7 @@
     <script src="/js/jquery.validate.unobtrusive.min.js"></script>
     <script src="/js/app.js" asp-append-version="true"></script>
     @RenderSection("foot", false)
+    @RenderSection("Scripts", false)
 </body>
 </html>
 

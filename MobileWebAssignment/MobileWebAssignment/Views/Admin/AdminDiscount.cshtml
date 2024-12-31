@@ -9,6 +9,7 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <link rel="stylesheet" href="/css/AdminCss/AdminDiscount.css" asp-append-version="true">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
     <div class="content">
@@ -21,61 +22,83 @@
 
             <div class="create-search-container">
                 <div class="search-container">
-                    <form method="get">
-                        @Html.TextBox("name", "", new { @class = "search-box", placeholder = "Search by Title or Code", type = "search", autofocus = "" })
-                        <button type="submit" class="search-button">Search</button>
-                    </form>
-				</div>
-                
+                    <input id="search-box" class="search-box" placeholder="Search by Title or Code" type="search" autofocus />
+                    <button id="search-button" class="search-button">Search</button>
+                </div>
+
                 <span>
-					<a href="@Url.Action("AdminDiscountCreate", "Admin")">
-						<button class="create">Create New</button>
-					</a>
-				</span>
+                    <a href="@Url.Action("AdminDiscountCreate", "Admin")">
+                        <button class="create">Create New</button>
+                    </a>
+                </span>
             </div>
 
             <br />
             <div class="discountTableContent">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Discount ID</th>
-                            <th>Title</th>
-                            <th>Discount Amount</th>
-                            <th>Start Date</th>
-                            <th>End Date</th>
-                            <th>Status</th>
-                            <th colspan="2" style="text-align:center;">Action</th>
-                        </tr>
-                    </thead>
-
-                    <tbody>
-                        @foreach (var promotion in Model)
-                        {
+                <div id="discount-table">
+                    <!-- Initial table content rendered by the server -->
+                    <table>
+                        <thead>
                             <tr>
-                                <td>@promotion.Id</td>
-                                <td>@promotion.Title</td>
-                                <td>@promotion.PriceDeduction</td>
-                                <td>@promotion.StartDate.ToString("yyyy-MM-dd")</td>
-                                <td>@promotion.EndDate.ToString("yyyy-MM-dd")</td>
-                                <td>@promotion.PromoStatus</td>
-                                <td style="text-align:center;">
-                                    <a href="@Url.Action("AdminDiscountUpdate", "Admin", new { id = promotion.Id })">
-                                        <button class="update">Update</button>
-                                    </a>
-                                </td>
-                                <td style="text-align:center;">
-                                    <a href="@Url.Action("AdminDiscountDelete", "Admin", new { id = promotion.Id })">
-                                        <button class="delete">Delete</button>
-                                    </a>
-                                </td>
+                                <th>Discount ID</th>
+                                <th>Title</th>
+                                <th>Discount Amount</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
+                                <th>Status</th>
+                                <th colspan="2" style="text-align:center;">Action</th>
                             </tr>
-                        }
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            @foreach (var promotion in Model)
+                            {
+                                <tr>
+                                    <td>@promotion.Id</td>
+                                    <td>@promotion.Title</td>
+                                    <td>@promotion.PriceDeduction</td>
+                                    <td>@promotion.StartDate.ToString("yyyy-MM-dd")</td>
+                                    <td>@promotion.EndDate.ToString("yyyy-MM-dd")</td>
+                                    <td>@promotion.PromoStatus</td>
+                                    <td style="text-align:center;">
+                                        <a href="@Url.Action("AdminDiscountUpdate", "Admin", new { id = promotion.Id })">
+                                            <button class="update">Update</button>
+                                        </a>
+                                    </td>
+                                    <td style="text-align:center;">
+                                        <a href="@Url.Action("AdminDiscountDelete", "Admin", new { id = promotion.Id })">
+                                            <button class="delete">Delete</button>
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
     </div>
+
+    <!-- AJAX Script for search -->
+    <script>
+        $(document).ready(function () {
+            $('#search-button').on('click', function (e) {
+                e.preventDefault();
+                var query = $('#search-box').val();
+
+                $.ajax({
+                    url: '@Url.Action("AdminDiscount", "Admin")',
+                    type: 'GET',
+                    data: { name: query },
+                    success: function (response) {
+                        $('#discount-table').html(response);
+                    },
+                    error: function () {
+                        alert('Error while searching for discounts. Please try again.');
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>

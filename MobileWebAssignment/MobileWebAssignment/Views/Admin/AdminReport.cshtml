@@ -1,0 +1,122 @@
+﻿@{
+    Layout = "_AdminLayout";
+    ViewBag.Title = "Admin | Report";
+}
+
+<head>
+    <link rel="stylesheet" href="/css/AdminCss/AdminReport.css">
+</head>
+
+<div class="container">
+    <h2>Sales Report</h2>
+
+    <div class="filter-section">
+        <form method="get" action="@Url.Action("AdminReport")">
+            <label for="startDate">Start Date:</label>
+            <input type="date" id="startDate" name="startDate" value="@ViewBag.StartDate" required>
+
+            <label for="endDate">End Date:</label>
+            <input type="date" id="endDate" name="endDate" value="@ViewBag.EndDate" required>
+
+            <button type="submit" class="filter-button">Filter</button>
+        </form>
+        <form method="get" action="@Url.Action("DownloadSalesReport")" class="download-form">
+            <button type="submit" class="download-button">Download Excel</button>
+        </form>
+    </div>
+
+    <!-- Sales Chart -->
+    <canvas id="salesChart"></canvas>
+
+    <!-- Best Selling Attractions Chart -->
+    <h2>Best Selling Attractions</h2>
+    <canvas id="bestSellingChart"></canvas>
+
+    <!-- Containers for total sales of the month and year -->
+    <div class="sales-containers">
+        <div class="sales-container">
+            <h3>Total Sales This Month</h3>
+            <p id="monthly-sales">RM @ViewBag.TotalSalesThisMonth</p>
+        </div>
+        <div class="sales-container">
+            <h3>Total Sales This Year</h3>
+            <p id="yearly-sales">RM @ViewBag.TotalSalesThisYear</p>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Sales Chart (Bar)
+            const ctxSales = document.getElementById('salesChart').getContext('2d');
+            const labelsSales = @Html.Raw(Json.Serialize(ViewBag.Labels)); // Dates from Purchase table
+            const dataSales = @Html.Raw(Json.Serialize(ViewBag.Data));   // Total amounts
+
+            const salesChart = new Chart(ctxSales, {
+                type: 'bar',
+                data: {
+                    labels: labelsSales,
+                    datasets: [{
+                        label: 'Total Sales',
+                        data: dataSales,
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // Best Selling Attractions Chart (Pie)
+            const ctxBestSelling = document.getElementById('bestSellingChart').getContext('2d');
+            const labelsBestSelling = @Html.Raw(Json.Serialize(ViewBag.BestSellingAttractionsLabels)); // Attraction names
+            const dataBestSelling = @Html.Raw(Json.Serialize(ViewBag.BestSellingAttractionsData));   // Sales count
+
+            const bestSellingChart = new Chart(ctxBestSelling, {
+                type: 'pie',
+                data: {
+                    labels: labelsBestSelling,
+                    datasets: [{
+                        label: 'Best Selling Attractions',
+                        data: dataBestSelling,
+                        backgroundColor: [
+                            'rgba(75, 192, 192, 0.2)', 'rgba(153, 102, 255, 0.2)',
+                            'rgba(255, 159, 64, 0.2)', 'rgba(54, 162, 235, 0.2)',
+                            'rgba(255, 99, 132, 0.2)'
+                        ],
+                        borderColor: [
+                            'rgba(75, 192, 192, 1)', 'rgba(153, 102, 255, 1)',
+                            'rgba(255, 159, 64, 1)', 'rgba(54, 162, 235, 1)',
+                            'rgba(255, 99, 132, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(tooltipItem) {
+                                    return tooltipItem.label + ': ' + tooltipItem.raw + ' tickets sold';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+}
