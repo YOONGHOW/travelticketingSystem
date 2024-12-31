@@ -4,10 +4,16 @@
 	var totalPrice = ViewBag.TotalPrice;
 	@model CartPaymentVM
 	var cartItems = ViewBag.CartItems as IEnumerable<dynamic>;
-
+	var message = TempData["Message"];
 	string min = DateTime.Today.ToString("yyyy-MM-dd");
 	string max = DateTime.Today.AddDays(+1).AddYears(+1).ToString("yyyy-MM-dd");
 
+}
+@if (message != null)
+{
+	<div id="info">
+		@message
+	</div>
 }
 <!DOCTYPE html>
 <html>

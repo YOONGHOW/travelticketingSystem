@@ -14,6 +14,28 @@
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
+#info {
+    position: fixed;
+    color: #fff;
+    background: #666;
+    border: 1px solid #333;
+    border-radius: 5px;
+    padding: 10px 20px;
+    left: 50%;
+    transform: translateX(-50%); /* Correct the centering */
+    z-index: 999;
+    top: 100px;
+    opacity: 0;
+    pointer-events: none; /* Prevents interaction when invisible */
+    transition: opacity 2s ease-in-out; /* Smooth transition for fade effect */
+}
+
+    /* When the message is added, make it visible */
+    #info.fade-in {
+        opacity: 1;
+        pointer-events: auto; /* Enables interaction when visible */
+    }
+
 .cart-header {
     display: flex;
     justify-content: space-between;

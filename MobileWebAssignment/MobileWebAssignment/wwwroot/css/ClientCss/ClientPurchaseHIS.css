@@ -11,7 +11,7 @@
 .navbar {
     min-width: 1200px;
     max-width: 1800px;
-    font-weight:400;
+    font-weight:700;
 }
 .navbar ul a:hover{
     color:black;
@@ -19,9 +19,11 @@
     .navbar ul a {
         color: gray;
     }
-
+    .navbar ul a:active {
+        color: black;
+    }
     .custom-width {
-        height: 400px;
+        height: 800px;
     }
 .red-text {
     color: red;
