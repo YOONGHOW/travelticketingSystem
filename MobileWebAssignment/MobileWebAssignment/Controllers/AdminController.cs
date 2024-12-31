@@ -580,8 +580,8 @@ public class AdminController : Controller
     private string NextTicketId()
     {
         string max = db.Ticket.Max(s => s.Id) ?? "TK0000";
-        int n = int.Parse(max[2..]);
-        return (n + 1).ToString("'TK'0000");
+        int n = int.Parse(max.Substring(2)); // Skip the "TK" prefix
+        return $"TK{(n + 1):D4}"; // This ensures the next ID has a leading zero if necessary
     }
     // Insert ticket
     [Authorize(Roles = "Admin")]
@@ -744,6 +744,63 @@ public class AdminController : Controller
             return RedirectToAction("AdminTicketDetails", new { id = attractionId });
         }
         return RedirectToAction("AdminTicketDetails", new { id = vm.AttractionId });
+    }
+
+
+    [HttpPost]
+    public IActionResult Import(IFormFile file)
+    {
+        if (file != null
+            && file.FileName.EndsWith(".txt")
+            && file.ContentType == "text/plain")
+        {
+            int n = ImportTicket(file);
+            TempData["Info"] = $"{n} tickets imported.";
+        }
+
+        return RedirectToAction("AdminTicket");
+    }
+
+    private int ImportTicket(IFormFile file)
+    {
+        // Read from uploaded file --> import events
+        // Return number new events inserted
+        using var stream = file.OpenReadStream();
+        using var reader = new StreamReader(stream);
+
+        while (!reader.EndOfStream)
+        {
+            var line = reader.ReadLine() ?? "";
+            if (line.Trim() == "") continue;
+            var data = line.Split("\t", StringSplitOptions.TrimEntries);
+
+            if (!int.TryParse(data[1], out int stockQty))
+            {
+                throw new FormatException($"Invalid stock quantity: {data[1]}");
+            }
+
+            if (!decimal.TryParse(data[2], out decimal ticketPrice))
+            {
+                throw new FormatException($"Invalid ticket price: {data[2]}");
+            }
+
+
+
+            db.Ticket.Add(new()
+            {
+
+                Id = NextTicketId(),
+                ticketName = data[0],
+                stockQty = stockQty,
+                ticketPrice = ticketPrice,
+                ticketStatus = data[3],
+                ticketDetails = data[4],
+                ticketType = data[5],
+                AttractionId = data[6],
+            });
+        }
+
+        return db.SaveChanges();
     }
     //============================================ Feedback start =========================================================
 
