@@ -586,7 +586,7 @@ namespace MobileWebAssignment.Controllers
         }
 
         //GET: AttractionDetail
-        public IActionResult ClientAttractionDetail(string? AttractionId)
+        public IActionResult ClientAttractionDetail(string? attractionId)
         {
             // Retrieve the logged-in user's email
             var email = User.Identity!.Name;
@@ -596,15 +596,18 @@ namespace MobileWebAssignment.Controllers
 
             ViewBag.User = user;
 
-            var a = db.Attraction.Find(AttractionId);
-            var feedbacks = db.Feedback.Where(f => f.AttractionId == AttractionId).ToList();
-
-            bool isInWishlist = db.Wish.Any(w => w.AttractionId == AttractionId && w.UserId == user.Id);
-            ViewBag.IsInWishlist = isInWishlist;
+            var a = db.Attraction.Find(attractionId);
+            var feedbacks = db.Feedback.Where(f => f.AttractionId == attractionId).ToList();
 
             if (a == null)
             {
                 return RedirectToAction("ClientAttractionDetail");
+            }
+
+            if (user != null)
+            {
+                bool isInWishlist = db.Wish.Any(w => w.AttractionId == attractionId && w.UserId == user.Id);
+                ViewBag.IsInWishlist = isInWishlist;
             }
 
             ViewBag.Feedbacks = new List<FeedbackInsertVM>();
@@ -624,7 +627,7 @@ namespace MobileWebAssignment.Controllers
 
 
 
-            var tickets = db.Ticket.Where(t => t.AttractionId == AttractionId).ToList();
+            var tickets = db.Ticket.Where(t => t.AttractionId == attractionId).ToList();
             ViewBag.Tickets = tickets.Select(t => new TicketVM
             {
                 Id = t.Id,
@@ -652,6 +655,35 @@ namespace MobileWebAssignment.Controllers
             };
 
             vm.Photo.imagePaths = hp.SplitImagePath(a.ImagePath);
+
+            if (user != null)
+            {
+                //check whether user has purchase ticket for this attraction or not
+                //get all purchase record of this user
+                var purchaseHIS = db.Purchase.Where(ph => ph.UserId == user.Id).ToList();
+
+                //get all purchase item record of all the purchase record get just now  
+                var purchaseItems = new List<PurchaseItemList>();
+
+                foreach (var p in purchaseHIS)
+                {
+                    if (db.PurchaseItem.Any(pi => pi.PurchaseId == p.Id))
+                    {
+                        purchaseItems.Add(new PurchaseItemList
+                        {
+                            Items = db.PurchaseItem.Where(pi => pi.PurchaseId == p.Id).ToList(),
+                        });
+                    }
+                }
+            }
+            else
+            {
+                ViewBag.ValidCheck = false;
+            }
+
+
+
+
 
             return View(vm);
         }
@@ -1221,12 +1253,14 @@ namespace MobileWebAssignment.Controllers
             // Check if the user ID is null
             if (string.IsNullOrEmpty(userID))
             {
+
                 TempData["Message"] = "User is not logged in. Please log in to proceed with the payment.";
                 return RedirectToAction("ClientCart");
             }
 
             // Validate the model
             if (!ModelState.IsValid)
+
             {
                 TempData["Message"] = "Invalid payment details. Please correct the errors and try again.";
                 return RedirectToAction("ClientCart?Unpaid=unpaid");
@@ -1369,6 +1403,7 @@ namespace MobileWebAssignment.Controllers
                 });
                 count++;
             }
+
             
             db.Purchase.Add(purchase);
             int changes = db.SaveChanges();
@@ -1485,6 +1520,7 @@ namespace MobileWebAssignment.Controllers
                 }
             }
             return Json(new { success = false, message = "Failed to record purchase." });
+
         }
 
 
@@ -1765,11 +1801,13 @@ namespace MobileWebAssignment.Controllers
         [HttpPost]
         public IActionResult RefundPurchaseRequest(string? purchaseID)
         {
+
             if (purchaseID == null)
             {
                 TempData["SuccessMessage"] = "Purchase Not found!" + purchaseID;
                 return Json(new { success = false, message = TempData["SuccessMessage"] });
             }
+
 
             var purchaseItems = db.Purchase
                 .Where(pi => pi.Id == purchaseID)
