@@ -179,6 +179,12 @@ public class Comment()
     public string? Review { get; set; }
 }
 
+public class PurchaseItemList()
+{
+    public List<PurchaseItem> Items { get; set; }
+}
+   
+
 //================================== USER Account Features ===========================================================
 public class LoginVm
 {

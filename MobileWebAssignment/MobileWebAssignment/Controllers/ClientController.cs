@@ -586,7 +586,7 @@ namespace MobileWebAssignment.Controllers
         }
 
         //GET: AttractionDetail
-        public IActionResult ClientAttractionDetail(string? AttractionId)
+        public IActionResult ClientAttractionDetail(string? attractionId)
         {
             // Retrieve the logged-in user's email
             var email = User.Identity!.Name;
@@ -596,15 +596,18 @@ namespace MobileWebAssignment.Controllers
 
             ViewBag.User = user;
 
-            var a = db.Attraction.Find(AttractionId);
-            var feedbacks = db.Feedback.Where(f => f.AttractionId == AttractionId).ToList();
-
-            bool isInWishlist = db.Wish.Any(w => w.AttractionId == AttractionId && w.UserId == user.Id);
-            ViewBag.IsInWishlist = isInWishlist;
+            var a = db.Attraction.Find(attractionId);
+            var feedbacks = db.Feedback.Where(f => f.AttractionId == attractionId).ToList();
 
             if (a == null)
             {
                 return RedirectToAction("ClientAttractionDetail");
+            }
+
+            if (user != null)
+            {
+                bool isInWishlist = db.Wish.Any(w => w.AttractionId == attractionId && w.UserId == user.Id);
+                ViewBag.IsInWishlist = isInWishlist;
             }
 
             ViewBag.Feedbacks = new List<FeedbackInsertVM>();
@@ -624,7 +627,7 @@ namespace MobileWebAssignment.Controllers
 
 
 
-            var tickets = db.Ticket.Where(t => t.AttractionId == AttractionId).ToList();
+            var tickets = db.Ticket.Where(t => t.AttractionId == attractionId).ToList();
             ViewBag.Tickets = tickets.Select(t => new TicketVM
             {
                 Id = t.Id,
@@ -652,6 +655,35 @@ namespace MobileWebAssignment.Controllers
             };
 
             vm.Photo.imagePaths = hp.SplitImagePath(a.ImagePath);
+
+            if (user != null)
+            {
+                //check whether user has purchase ticket for this attraction or not
+                //get all purchase record of this user
+                var purchaseHIS = db.Purchase.Where(ph => ph.UserId == user.Id).ToList();
+
+                //get all purchase item record of all the purchase record get just now  
+                var purchaseItems = new List<PurchaseItemList>();
+
+                foreach (var p in purchaseHIS)
+                {
+                    if (db.PurchaseItem.Any(pi => pi.PurchaseId == p.Id))
+                    {
+                        purchaseItems.Add(new PurchaseItemList
+                        {
+                            Items = db.PurchaseItem.Where(pi => pi.PurchaseId == p.Id).ToList(),
+                        });
+                    }
+                }
+            }
+            else
+            {
+                ViewBag.ValidCheck = false;
+            }
+
+
+
+
 
             return View(vm);
         }
@@ -700,7 +732,7 @@ namespace MobileWebAssignment.Controllers
                     continue;
                 }
 
-                attractionId = dbTicket.AttractionId; 
+                attractionId = dbTicket.AttractionId;
 
                 var existingCart = db.Cart.SingleOrDefault(c => c.UserId == userId && c.TicketId == ticket.TicketId);
                 if (existingCart != null)
@@ -733,7 +765,7 @@ namespace MobileWebAssignment.Controllers
             return RedirectToAction("ClientAttractionDetail", new { AttractionId = attractionId });
         }
 
-        [Authorize(Roles = "Member")] 
+        [Authorize(Roles = "Member")]
         public IActionResult ClientCart()
         {
             getUserID();
@@ -881,7 +913,7 @@ namespace MobileWebAssignment.Controllers
                               })
                               .ToList();
 
-            ViewBag.WishItems = wishItems; 
+            ViewBag.WishItems = wishItems;
             return View();
         }
 
@@ -1194,9 +1226,9 @@ namespace MobileWebAssignment.Controllers
                 {
                     return View();
                 }
-                 changes = CheckOut(userID);
+                changes = CheckOut(userID);
             }
-            if (changes>0)
+            if (changes > 0)
             {
                 TempData["Message"] = "Successfully make Payment.";
                 return RedirectToAction("ClientPaymentHIS");
@@ -1208,7 +1240,7 @@ namespace MobileWebAssignment.Controllers
                 return RedirectToAction("ClientCart");
 
             }
-            
+
         }
 
         /// ------------------------------------------------
@@ -1443,7 +1475,7 @@ namespace MobileWebAssignment.Controllers
             int n = int.Parse(max[2..]);
             return (n + count).ToString("'PI'0000");
         }
-      
+
 
         public int CheckOut(string userID)
         {
