@@ -338,6 +338,7 @@ public class CartItem
     public string TicketId { get; set; }
     public int Quantity { get; set; }
     public DateOnly? DateOnly { get; set; }
+    public string? PurchaseID{ get; set; }
 }
 
 public class AdminTicketDetails
@@ -402,6 +403,8 @@ public class PaymentVM()
     [Required(ErrorMessage = "CVV is required.")]
     [RegularExpression(@"^\d{3,4}$", ErrorMessage = "Invalid CVV. Must be 3 or 4 digits.")]
     public string CVV { get; set; }
+
+    public string? DiscountID { get; set; }
 }
 
 public class CartPaymentVM()
@@ -444,4 +447,13 @@ public class PurchaseViewModel
     public string? PhotoURL { get; set; }
     public IEnumerable<Payment> Payment { get; set; } = new List<Payment>();
 
+}
+public class PurchasePaypal
+{
+    public string OrderId { get; set; }
+    public string TransactionId { get; set; }
+    public string Amount { get; set; }
+    public string Currency { get; set; }
+    public string PaymentStatus { get; set; }
+    public string PurchaseDetails { get; set; }
 }
