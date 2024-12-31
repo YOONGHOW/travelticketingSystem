@@ -123,8 +123,8 @@
 							<table class="tableTicketDetails">
 								<tr>
 									<td><b>@ticket.ticketType</b></td>
-									<td style="font-size:18px;"><b><span>RM </span>@ticket.ticketPrice</b></td>
-									<td>
+										<td style="font-size:18px;"><b><span class="ticket-price" data-base-price="@ticket.ticketPrice">@ticket.ticketPrice</span></b></td>
+										<td>
 										<label for="quantity_@ticket.Id" class="qty"><b>Quantity:</b></label>
 										<input type="number" id="quantity_@ticket.Id" name="tickets[@loopIndex].Quantity" value="0" min="0" max="@ticket.stockQty" />
 										<input type="hidden" name="tickets[@loopIndex].TicketId" value="@ticket.Id" />
