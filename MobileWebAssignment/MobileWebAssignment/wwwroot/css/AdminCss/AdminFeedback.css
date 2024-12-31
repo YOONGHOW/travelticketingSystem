@@ -2,12 +2,12 @@
 body {
     background: linear-gradient(to bottom, #f1f1f1, #e0e0e0);
     font-family: 'Arial', sans-serif;
-    padding: 20px 0;
+    padding: 0;
 }
 
 .reviews-container {
     max-width: 1200px;
-    margin: 1% auto;
+    margin: 0 auto;
     background: #fff;
     padding: 30px;
     border-radius: 12px;
