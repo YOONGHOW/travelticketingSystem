@@ -39,7 +39,7 @@
 				<select name="dateSort">
 					<option value="dec">Newest to Oldest</option>
 					<option value="asc">Oldest to Newest</option>
-					</select>
+				</select>
 				<select name="star">
 					<option value="5">5 star</option>
 					<option value="4">4 star</option>
@@ -53,97 +53,9 @@
 		</form>
 
 
-		<!-- Stats Section -->
-		<div class="stats">
-			<div class="stat">
-				<h3>@Model.Count()</h3>
-				<p>Total Reviews</p>
-			</div>
-			<div class="stat">
-				@{
-					int total = 0;
-					double averageRating = 0.0;
-					foreach (var f in Model)
-					{
-						total += f.Rating;
-					}
-
-					averageRating = (double)total / Model.Count();
-				}
-				<h3>@averageRating.ToString("F1") ★</h3>
-				<p>Average Rating</p>
-			</div>
+		<div id="target">
+			<partial name="_AdminFeedback" />
 		</div>
-
-		<!-- Reviews Section -->
-		@foreach (var f in Model)
-		{
-			<div class="review">
-				<div class="review-header">
-					<div class="user-info">
-						<img src="/images/miyabi.jpeg" alt="User">
-						<div class="details">
-							<span class="user-name">Miyabi</span>
-							<span>Total Spend: $200</span>
-							<span>Reviews Title: @f.commentDetail.Title</span>
-						</div>
-					</div>
-					<span class="rating">
-						@for (int i = 0; i < f.Rating; i++)
-						{
-							<b>★</b>
-						}
-					</span>
-				</div>
-				<p class="review-text">@f.commentDetail.Review</p>
-				<button id="replyButton">Reply</button>
-				<button id="viewComment">View All Comment</button>
-				<div class="actions" style="display: none;">
-					<form method="post" action="addComment">
-						<div class="input-box">
-							<label class="details">Comment</label>
-							<br />
-							<textarea name="comment" class="title"></textarea>
-						</div>
-						<input type="hidden" name="feedbackId" value="@f.Id" />
-						<button class="public" name="reply" value="Public">Public Comment</button>
-						<button class="private" name="reply" value="Private">Direct Message</button>
-					</form>
-				</div>
-				<br />
-				<br />
-				<div id="replyList" style="display: none;">
-					@if (f.feedbackReplyList.Count != 0)
-					{
-						@foreach (var fr in f.feedbackReplyList)
-						{
-							<div class="review-header" data-comment-id="@fr.Id">
-								<div class="user-info">
-									<img src="/images/miyabi.jpeg" alt="User">
-									<div class="details">
-										<span class="user-name">Miyabi Admin</span>
-									</div>
-								</div>
-								<form method="post" action="DeleteComment">
-									<input type="hidden" name="replyId" value="@fr.Id" />
-									<button class="delete-comment" onclick="return confirm('Are you sure you want to delete this comment?');">Delete</button>
-								</form>
-							</div>
-							<span class="review-text">@fr.Comment</span>
-						}
-					}
-					else
-					{
-						<div>
-							<p>No reply yet.</p>
-						</div>
-					}
-				</div>
-
-
-			</div>
-		}
-
 	</div>
 </body>
 </html>

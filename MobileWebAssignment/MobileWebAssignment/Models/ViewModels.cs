@@ -331,6 +331,7 @@ public class CartItem
 {
     public string TicketId { get; set; }
     public int Quantity { get; set; }
+    public DateOnly? DateOnly { get; set; }
 }
 
 public class AdminTicketDetails
@@ -399,10 +400,12 @@ public class PaymentVM()
 
 public class CartPaymentVM()
 {
-    public Ticket Ticket { get; set; }
+    public Ticket? Ticket { get; set; }
+    public string? TicketID { get; set; }
+
     [Required(ErrorMessage = "Quantity is required.")]
     [RegularExpression(@"^\d+$", ErrorMessage = "Only accept integers.")]
-    public int Quantit { get; set; }
+    public int Quantity { get; set; }
     public decimal Subtotal { get; set; }
     [ Required(ErrorMessage = "Date is required.")]
     public DateOnly Dateonly { get; set; }
