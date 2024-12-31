@@ -307,8 +307,10 @@ public class TicketVM {
     [StringLength(200)]
     [Required(ErrorMessage = "Ticket Name is required.")]
     public string ticketName { get; set; }
+    [Range(0, int.MaxValue, ErrorMessage = "Stock Quantity must be a non-negative number.")]
     public int stockQty { get; set; }
-    [Precision(4, 2)]
+    [Precision(6, 2)]
+    [Range(0.01, 9999.99, ErrorMessage = "Ticket Price must be between 0.00 and 9999.99.")]
     public decimal ticketPrice { get; set; }
     public string ticketStatus { get; set; }
     [StringLength(1000)]
