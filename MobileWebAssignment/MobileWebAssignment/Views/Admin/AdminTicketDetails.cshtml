@@ -27,10 +27,6 @@
 
         <div style="display:flex;">
             <button id="ticketAddBtn" class="clickable-row" data-href="@Url.Action("AdminTicketInsert", "Admin", new { id = Model.Attraction.Id })"> Add </button><br />
-            <form method="post">
-                <input type="file" name="file" accept="text/plain">
-                <button type="submit" asp-action="Import" asp-controller="Client">Import</button>
-            </form>
 
         </div>
        
