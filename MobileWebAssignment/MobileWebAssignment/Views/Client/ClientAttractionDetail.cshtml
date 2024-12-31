@@ -48,69 +48,71 @@
 
 				averageRating = (double)total / ViewBag.Feedbacks.Count;
 
+
 				<div class="review-container">
 					<p class="review-head">⭐@averageRating.ToString("F1") (@ViewBag.Feedbacks.Count reviews)</p>
 					<p class="location">📍@Model.Location</p>
+					@if (ViewBag.User != null){
 					<form method="post">
-							<input type="hidden" name="attractionID" value="@Model.Id" style="display:none;" />
+						<input type="hidden" name="attractionID" value="@Model.Id" style="display:none;" />
 						<button type="submit" class="wishlist-btn" id="wishlistButton" asp-action="addWish" asp-controller="Client">
 							<span>
 								@(ViewBag.IsInWishlist ? "❤️ Saved to Wishlist" : "🤍 Saved to Wishlist")
 							</span>
 						</button>
 					</form>
-				
+					}
+				</div>
 
-			</div>
 			}
-		<br />
+			<br />
 			<br />
 			<div class="container">
 				<div class="image-section">
-				@if (Model.Photo.imagePaths.Count() == 1)
-				{
-				<img src="/attractionImages/@Model.ImagePath" alt="@Model.Name" class="detailsImg">
-				}
-				else
-				{
-				<div class="slideshow-container">
-					<!-- Full-width images with number and caption text -->
-						@for (int i = 1; i <= Model.Photo.imagePaths.Count; i++)
-						{
-						<div class="mySlides fade">
-							<div class="numbertext">@i / @Model.Photo.imagePaths.Count</div>
-							<img src="/attractionImages/@Model.Photo.imagePaths[i-1]" style="width:70%">
-							<div class="text"></div>
-						</div>
-						}
-				
-						<!-- Next and previous buttons -->
-						<a class="prev" onclick="plusSlides(-1)">&#10094;</a>
-						<a class="next" onclick="plusSlides(1)">&#10095;</a>
+					@if (Model.Photo.imagePaths.Count() == 1)
+					{
+						<img src="/attractionImages/@Model.ImagePath" alt="@Model.Name" class="detailsImg">
+					}
+					else
+					{
+						<div class="slideshow-container">
+							<!-- Full-width images with number and caption text -->
+							@for (int i = 1; i <= Model.Photo.imagePaths.Count; i++)
+							{
+								<div class="mySlides fade">
+									<div class="numbertext">@i / @Model.Photo.imagePaths.Count</div>
+									<img src="/attractionImages/@Model.Photo.imagePaths[i-1]" style="width:70%">
+									<div class="text"></div>
+								</div>
+							}
 
-						<!-- The dots/circles -->
-						<div style="text-align:center" class="dots">
+							<!-- Next and previous buttons -->
+							<a class="prev" onclick="plusSlides(-1)">&#10094;</a>
+							<a class="next" onclick="plusSlides(1)">&#10095;</a>
+
+							<!-- The dots/circles -->
+							<div style="text-align:center" class="dots">
 								@for (int i = 1; i <= Model.Photo.imagePaths.Count; i++)
 								{
-								<span class="dot" onclick="currentSlide(@i)"></span>
+									<span class="dot" onclick="currentSlide(@i)"></span>
 								}
+							</div>
 						</div>
-					</div>
 
-					<br />
+						<br />
 					}
-			</div>
+				</div>
 
-			<!-- Map container -->
-			<div class="map-section">
-				<div id="mapContainer" style="width: 100%; height: 400px;"></div>
+				<!-- Map container -->
+				<div class="map-section">
+					<div id="mapContainer" style="width: 100%; height: 400px;"></div>
+				</div>
 			</div>
-		</div>
-		<div class="container">
-			<!-- Left Side: Package Option -->
-			<div class="left-side">
-				<h2>Package Option</h2><br />
-				<form asp-action="AddMultipleToCart" method="post">
+			<div class="container">
+				<!-- Left Side: Package Option -->
+				<div class="left-side">
+					<h2>Package Option</h2><br />
+					<form asp-action="AddMultipleToCart" method="post">
 						@{
 							var loopIndex = 0;
 						}
@@ -118,47 +120,47 @@
 						{
 
 
-						<div class="ticket-box">
-							<p style="font-size:18px;"><b>@ticket.ticketName</b></p>
-							<table class="tableTicketDetails">
-								<tr>
-									<td><b>@ticket.ticketType</b></td>
+							<div class="ticket-box">
+								<p style="font-size:18px;"><b>@ticket.ticketName</b></p>
+								<table class="tableTicketDetails">
+									<tr>
+										<td><b>@ticket.ticketType</b></td>
 										<td style="font-size:18px;"><b><span class="ticket-price" data-base-price="@ticket.ticketPrice">@ticket.ticketPrice</span></b></td>
 										<td>
-										<label for="quantity_@ticket.Id" class="qty"><b>Quantity:</b></label>
-										<input type="number" id="quantity_@ticket.Id" name="tickets[@loopIndex].Quantity" value="0" min="0" max="@ticket.stockQty" />
-										<input type="hidden" name="tickets[@loopIndex].TicketId" value="@ticket.Id" />
-									</td>
-								</tr>
-							</table>
-						</div>
+											<label for="quantity_@ticket.Id" class="qty"><b>Quantity:</b></label>
+											<input type="number" id="quantity_@ticket.Id" name="tickets[@loopIndex].Quantity" value="0" min="0" max="@ticket.stockQty" />
+											<input type="hidden" name="tickets[@loopIndex].TicketId" value="@ticket.Id" />
+										</td>
+									</tr>
+								</table>
+							</div>
 							loopIndex++;
 						}
-					<audio id="myAudio" preload="auto">
-						<source src="/sound/button.wav" type="audio/wav">
-					</audio>
-					<button onclick="handleButtonClick(event)" type="submit" class="addCartBtn">Add to Cart</button>
+						<audio id="myAudio" preload="auto">
+							<source src="/sound/button.wav" type="audio/wav">
+						</audio>
+						<button onclick="handleButtonClick(event)" type="submit" class="addCartBtn">Add to Cart</button>
 
-					<script>
-						function handleButtonClick(event) {
-						  event.preventDefault();
-						  var audio = document.getElementById("myAudio");
-						  var form = event.target.closest('form');
-						  audio.playbackRate = 2;
-						  audio.play();
+						<script>
+							function handleButtonClick(event) {
+							  event.preventDefault();
+							  var audio = document.getElementById("myAudio");
+							  var form = event.target.closest('form');
+							  audio.playbackRate = 2;
+							  audio.play();
 
-						  audio.onended = function () {
-							form.submit();
-						  };
-						}
-					</script>
-				</form>
-			</div>
+							  audio.onended = function () {
+								form.submit();
+							  };
+							}
+						</script>
+					</form>
+				</div>
 
-			<!-- Right Side: Operating Hours -->
-			<div class="right-side">
-				<h4 style="font-size:20px;"><b>Operating Hours</b></h4><br />
-				<table>
+				<!-- Right Side: Operating Hours -->
+				<div class="right-side">
+					<h4 style="font-size:20px;"><b>Operating Hours</b></h4><br />
+					<table>
 						@foreach (var op in Model.operatingTimes)
 						{
 							string operateDetail = "";
@@ -172,14 +174,14 @@
 								operateDetail += " Closed";
 							}
 
-						<tr class="operating_time">
-							<th>@op.Day</th>
-							<td style="padding-left:50px;">@operateDetail</td>
-						</tr>
+							<tr class="operating_time">
+								<th>@op.Day</th>
+								<td style="padding-left:50px;">@operateDetail</td>
+							</tr>
 						}
-				</table>
+					</table>
+				</div>
 			</div>
-		</div>
 
 
 
@@ -189,7 +191,7 @@
 		<h2>Most Recent Reviews</h2>
 		@if (ViewBag.Feedbacks.Count == 0)
 		{
-			if (ViewBag.User != null)
+			if (ViewBag.User != null && ViewBag.ValidCheck)
 			{
 				<button id="add-review-btn" data-get="/Client/ClientFeedbackForm?attractionId=@Model.Id">Add Review</button>
 			}
@@ -211,7 +213,7 @@
 			<p class="review-summary">@averageRating.ToString("F1") / 5 <span class="stars" data-rating="@averageRating.ToString("F1")" style="width: @averageRating.ToString("F1") * 20%;"></span> Based on @ViewBag.Feedbacks.Count review(s)</p>
 
 			<!-- Add Review Button -->
-			if (ViewBag.User != null)
+			if (ViewBag.User != null && ViewBag.ValidCheck)
 			{
 				<button id="add-review-btn" data-get="/Client/ClientFeedbackForm?attractionId=@Model.Id">Add Review</button>
 			}

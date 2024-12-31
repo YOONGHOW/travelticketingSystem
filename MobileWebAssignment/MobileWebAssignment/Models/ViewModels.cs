@@ -26,13 +26,14 @@ public class AttractionInsertVM
     public string Id { get; set; }
 
     [StringLength(100)]
-    [RegularExpression(@"^[a-z A-Z]+$", ErrorMessage = "Invalid {0}.")]
+    [RegularExpression(@"^[a-zA-Z0-9\s]+$", ErrorMessage = "Attraction name can only contain letters, numbers, and spaces.")]
     public string Name { get; set; }
 
     [StringLength(1000)]
     public string Description { get; set; }
 
     [StringLength(1000)]
+    [RegularExpression(@"^[a-zA-Z0-9\s,.\-#]*$", ErrorMessage = "Address can only contain letters, numbers, spaces, commas, periods, dashes, and hash symbols.")]
     public string Location { get; set; }
     [StringLength(500)]
     public string? OperatingHours { get; set; }
@@ -72,13 +73,14 @@ public class AttractionUpdateVM
     public string Id { get; set; }
 
     [StringLength(100)]
-    [RegularExpression(@"^[a-z A-Z]+$", ErrorMessage = "Invalid {0}.")]
+    [RegularExpression(@"^[a-zA-Z0-9\s]+$", ErrorMessage = "Attraction name can only contain letters, numbers, and spaces.")]
     public string Name { get; set; }
 
     [StringLength(1000)]
     public string Description { get; set; }
 
     [StringLength(1000)]
+    [RegularExpression(@"^[a-zA-Z0-9\s,.\-#]*$", ErrorMessage = "Address can only contain letters, numbers, spaces, commas, periods, dashes, and hash symbols.")]
     public string Location { get; set; }
     [StringLength(500)]
     public string? OperatingHours { get; set; }
@@ -178,6 +180,17 @@ public class Comment()
     
     public string? Review { get; set; }
 }
+
+public class PurchaseItemList()
+{
+    public List<PurchaseItem> Items { get; set; }
+}
+
+public class TicketList()
+{
+    public List<Ticket> tickets { get; set; }
+}
+
 
 //================================== USER Account Features ===========================================================
 public class LoginVm
@@ -332,6 +345,7 @@ public class CartItem
     public string TicketId { get; set; }
     public int Quantity { get; set; }
     public DateOnly? DateOnly { get; set; }
+    public string? PurchaseID{ get; set; }
 }
 
 public class AdminTicketDetails
@@ -396,6 +410,8 @@ public class PaymentVM()
     [Required(ErrorMessage = "CVV is required.")]
     [RegularExpression(@"^\d{3,4}$", ErrorMessage = "Invalid CVV. Must be 3 or 4 digits.")]
     public string CVV { get; set; }
+
+    public string? DiscountID { get; set; }
 }
 
 public class CartPaymentVM()
@@ -438,4 +454,13 @@ public class PurchaseViewModel
     public string? PhotoURL { get; set; }
     public IEnumerable<Payment> Payment { get; set; } = new List<Payment>();
 
+}
+public class PurchasePaypal
+{
+    public string OrderId { get; set; }
+    public string TransactionId { get; set; }
+    public string Amount { get; set; }
+    public string Currency { get; set; }
+    public string PaymentStatus { get; set; }
+    public string PurchaseDetails { get; set; }
 }

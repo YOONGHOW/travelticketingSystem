@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using X.PagedList.Extensions;
 using Microsoft.AspNetCore.Authorization;
+using ClosedXML.Excel;
 
 
 namespace MobileWebAssignment.Controllers;
@@ -24,7 +25,7 @@ public class AdminController : Controller
 
 
     //==================================== Attraction Type start =========================================================
-    
+
     [Authorize(Roles = "Admin")]
     public IActionResult AdminAttraction(string? Aname, string? Asort, string? Adir, int ATpage = 1, int Apage = 1)
     {
@@ -314,6 +315,17 @@ public class AdminController : Controller
             }
         }
 
+        //checked Location
+        if (ModelState.IsValid("Location"))
+        {
+            string validation = hp.ValidateMalaysianAddress(vm.Location);
+
+            if (!validation.Equals("valid"))
+            {
+                ModelState.AddModelError("Location", validation);
+            }
+        }
+
         //perform validation
         int errorCount = 0;
         int i = 0;
@@ -415,20 +427,36 @@ public class AdminController : Controller
             return RedirectToAction("AdminAttraction");
         }
 
-        //check photo if have
-        if (ModelState.IsValid("Photo.images"))
-        {
 
-            if (vm.Photo.images.Count == 0)
+        //null check for attraction type id
+        if (ModelState.IsValid("AttractionTypeId") && vm.AttractionTypeId.Equals("none"))
+        {
+            ModelState.AddModelError("AttractionTypeId", "Please select an attraction type");
+        }
+
+        //checked Location
+        if (ModelState.IsValid("Location"))
+        {
+            string validation = hp.ValidateMalaysianAddress(vm.Location);
+
+            if (!validation.Equals("valid"))
             {
-                ModelState.AddModelError("Photo", "Please upload the attraction image(s)");
-            }
-            else
-            {
-                var e = hp.ValidateMultiplePhoto(vm.Photo.images);
-                if (e != "") ModelState.AddModelError("Photo.images", e);
+                ModelState.AddModelError("Location", validation);
             }
         }
+
+        //check photo if have
+        if (vm.Photo != null)
+        {
+            var e = hp.ValidateMultiplePhoto(vm.Photo.images);
+            if (e != "") ModelState.AddModelError("Photo.images", e);
+        }
+        else
+        {
+            vm.Photo = new UpdateImageSet();
+        }
+
+        vm.Photo.imagePaths = hp.SplitImagePath(a.ImagePath);
 
         //perform validation
         int errorCount = 0;
@@ -471,7 +499,7 @@ public class AdminController : Controller
             a.Location = vm.Location.Trim();
             a.OperatingHours = vm.OperatingHours;
             a.AttractionTypeId = vm.AttractionTypeId;
-            if (vm.Photo != null)
+            if (vm.Photo != null && vm.Photo.images != null)
             {
                 hp.DeleteMultiplePhoto(a.ImagePath, "attractionImages");
                 a.ImagePath = hp.SaveMultiplePhoto(vm.Photo.images, "attractionImages");
@@ -482,7 +510,8 @@ public class AdminController : Controller
             return RedirectToAction("AdminAttraction");
 
         }
-        vm.Photo.imagePaths = hp.SplitImagePath(a.ImagePath);
+
+
 
 
         return View(vm);
@@ -537,7 +566,7 @@ public class AdminController : Controller
 
     //============================================ Attraction end =========================================================
     //============================================ Ticket start =========================================================
-    
+
     [Authorize(Roles = "Admin")]
     public IActionResult AdminTicket()
     {
@@ -806,7 +835,7 @@ public class AdminController : Controller
         return RedirectToAction("AdminFeedback");
     }
 
-    [HttpPost] 
+    [HttpPost]
     public IActionResult DeleteComment(string replyId)
     {
 
@@ -827,7 +856,7 @@ public class AdminController : Controller
     //============================================ Feedback end =========================================================
 
     //============================================ Promotion start =========================================================
-    
+
     [Authorize(Roles = "Admin")]
     public IActionResult AdminDiscount(string name = "")
     {
@@ -849,7 +878,44 @@ public class AdminController : Controller
             })
             .ToList();
 
+        if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+        {
+            // Return only the table HTML if the request is AJAX
+            string tableHtml = GenerateTableHtml(promotions);
+            return Content(tableHtml, "text/html");
+        }
+
+        // Return the full view for normal requests
         return View(promotions);
+    }
+
+    private string GenerateTableHtml(List<PromotionInsertVM> promotions)
+    {
+        string tableHtml = "<table><thead><tr>" +
+                           "<th>Discount ID</th><th>Title</th><th>Discount Amount</th>" +
+                           "<th>Start Date</th><th>End Date</th><th>Status</th>" +
+                           "<th colspan='2' style='text-align:center;'>Action</th></tr></thead><tbody>";
+
+        foreach (var promo in promotions)
+        {
+            tableHtml += $"<tr>" +
+                         $"<td>{promo.Id}</td>" +
+                         $"<td>{promo.Title}</td>" +
+                         $"<td>{promo.PriceDeduction}</td>" +
+                         $"<td>{promo.StartDate:yyyy-MM-dd}</td>" +
+                         $"<td>{promo.EndDate:yyyy-MM-dd}</td>" +
+                         $"<td>{promo.PromoStatus}</td>" +
+                         $"<td style='text-align:center;'>" +
+                         $"<a href='/Admin/AdminDiscountUpdate/{promo.Id}'><button class='update'>Update</button></a>" +
+                         $"</td>" +
+                         $"<td style='text-align:center;'>" +
+                         $"<a href='/Admin/AdminDiscountDelete/{promo.Id}'><button class='delete'>Delete</button></a>" +
+                         $"</td>" +
+                         $"</tr>";
+        }
+
+        tableHtml += "</tbody></table>";
+        return tableHtml;
     }
 
     private string GenerateRandomCode(int length)
@@ -859,6 +925,7 @@ public class AdminController : Controller
         return new string(Enumerable.Repeat(chars, length)
             .Select(s => s[random.Next(s.Length)]).ToArray());
     }
+
 
     // GET: Admin/AdminDiscountCreate
     [Authorize(Roles = "Admin")]
@@ -990,6 +1057,7 @@ public class AdminController : Controller
         TempData["Info"] = "Promotion deleted successfully.";
         return RedirectToAction("AdminDiscount");
     }
+
     // GET: Admin/DiscountUpdate
     [Authorize(Roles = "Admin")]
     public IActionResult AdminDiscountUpdate(string? id)
@@ -1041,7 +1109,138 @@ public class AdminController : Controller
         return View(vm);
     }
 
-    //============================================ Promotion End =========================================================
+    [Authorize(Roles = "Admin")]
+    public IActionResult AdminReport(DateTime? startDate, DateTime? endDate)
+    {
+        // If no start or end date is provided, use the current month and year
+        if (!startDate.HasValue || !endDate.HasValue)
+        {
+            startDate = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
+            endDate = startDate.Value.AddMonths(1).AddDays(-1);  // Set to the last day of the current month
+        }
+
+        // Make sure the endDate includes the whole day by setting it to 23:59:59
+        endDate = endDate?.AddHours(23).AddMinutes(59).AddSeconds(59);
+
+        // Get the sales data for the selected date range
+        var salesData = GetSalesDataGroupedByDate(startDate.Value, endDate.Value);
+
+        // Calculate total sales for the selected month and year without filtering by Status
+        var totalSalesThisMonth = db.Purchase
+            .Where(p => p.PaymentDateTime.Month == startDate.Value.Month && p.PaymentDateTime.Year == startDate.Value.Year)
+            .Sum(p => p.Amount);
+
+        var totalSalesThisYear = db.Purchase
+            .Where(p => p.PaymentDateTime.Year == startDate.Value.Year)
+            .Sum(p => p.Amount);
+
+        // Get the best-selling attractions
+        var bestSellingAttractions = GetBestSellingAttractions(startDate.Value, endDate.Value);
+
+        // Pass the filtered data to the view
+        ViewBag.Labels = salesData.Labels;
+        ViewBag.Data = salesData.Data;
+        ViewBag.TotalSalesThisMonth = totalSalesThisMonth;
+        ViewBag.TotalSalesThisYear = totalSalesThisYear;
+        ViewBag.StartDate = startDate.Value.ToString("yyyy-MM-dd");
+        ViewBag.EndDate = endDate.Value.ToString("yyyy-MM-dd");
+
+        // Pass the best-selling attractions to the view
+        ViewBag.BestSellingAttractionsLabels = bestSellingAttractions.Select(a => a.Name).ToList();
+        ViewBag.BestSellingAttractionsData = bestSellingAttractions.Select(a => a.SalesCount).ToList();
+
+        return View();
+    }
+
+    // Helper function to fetch sales data grouped by date
+    private (List<string> Labels, List<decimal> Data) GetSalesDataGroupedByDate(DateTime startDate, DateTime endDate)
+    {
+        var groupedData = db.Purchase
+            .Where(p => p.PaymentDateTime >= startDate && p.PaymentDateTime <= endDate) // Filter by date range
+            .GroupBy(p => p.PaymentDateTime.Date)
+            .Select(g => new
+            {
+                Date = g.Key,
+                TotalAmount = g.Sum(p => p.Amount)
+            })
+            .OrderBy(g => g.Date)
+            .ToList();
+
+        var labels = groupedData.Select(g => g.Date.ToString("yyyy-MM-dd")).ToList();
+        var data = groupedData.Select(g => g.TotalAmount).ToList();
+
+        return (labels, data);
+    }
+
+    // Helper function to fetch best-selling attractions
+    private List<BestSellingAttraction> GetBestSellingAttractions(DateTime startDate, DateTime endDate)
+    {
+        var bestSellingAttractions = db.PurchaseItem
+            .Where(pi => pi.Purchase.PaymentDateTime >= startDate && pi.Purchase.PaymentDateTime <= endDate)
+            .GroupBy(pi => pi.Ticket.Attraction.Name)
+            .Select(g => new BestSellingAttraction
+            {
+                Name = g.Key,
+                SalesCount = g.Sum(pi => pi.Quantity)
+            })
+            .OrderByDescending(a => a.SalesCount)  // Sort by sales count in descending order
+            .Take(5)  // Get the top 5 attractions
+            .ToList();
+
+        return bestSellingAttractions;
+    }
+    public class BestSellingAttraction
+    {
+        public string Name { get; set; }
+        public int SalesCount { get; set; }
+    }
+    public IActionResult DownloadSalesReport()
+    {
+        // Fetch data from the database
+        var salesData = db.Purchase
+            .Select(p => new
+            {
+                Date = p.PaymentDateTime.Date,
+                Amount = p.Amount
+            })
+            .OrderBy(p => p.Date)
+            .ToList();
+
+        // Create a new Excel workbook
+        using (var workbook = new XLWorkbook())
+        {
+            var worksheet = workbook.Worksheets.Add("Sales Report");
+
+            // Add headers
+            worksheet.Cell(1, 1).Value = "Date";
+            worksheet.Cell(1, 2).Value = "Sales";
+
+            // Insert data into the worksheet
+            for (int i = 0; i < salesData.Count; i++)
+            {
+                worksheet.Cell(i + 2, 1).Value = salesData[i].Date.ToString("yyyy-MM-dd");
+                worksheet.Cell(i + 2, 2).Value = salesData[i].Amount;
+            }
+
+            // Auto adjust columns
+            worksheet.Columns().AdjustToContents();
+
+            // Save the workbook to a memory stream
+            using (var stream = new MemoryStream())
+            {
+                workbook.SaveAs(stream);
+                stream.Seek(0, SeekOrigin.Begin);
+
+                // Return the Excel file as a downloadable file
+                return File(stream.ToArray(),
+                            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                            "SalesReport.xlsx");
+            }
+
+        }
+
+    }
+    //============================================ Report End =================================================================
     //============================================ Member Maintenance =========================================================
 
     // Generate ID for create account
@@ -1111,7 +1310,7 @@ public class AdminController : Controller
         var members = membersQuery.ToPagedList(MemberPage, 5); //convert filtered memberQuery into paginated list, MemberPage specifies the number of member for current page
 
         // Filter and paginate admins
-        var adminsQuery = db.User.OfType<Admin>().AsQueryable(); 
+        var adminsQuery = db.User.OfType<Admin>().AsQueryable();
         if (!string.IsNullOrEmpty(AdminSearch))
         {
             adminsQuery = adminsQuery.Where(a =>
@@ -1288,32 +1487,6 @@ public class AdminController : Controller
     }
 
     //============================================ Member Maintenance End =========================================================
-
-    //multiple photo upload
-    [Authorize(Roles = "Admin")]
-    public IActionResult MultiplePhotoUpload(IFormFile[] images)
-    {
-
-        //Ensure model state is valid  
-        if (ModelState.IsValid)
-        {   //iterating through multiple file collection   
-            foreach (IFormFile image in images)
-            {
-                //Checking file is available to save.  
-                if (image != null)
-                {
-                    var saveImage = Path.Combine(en.WebRootPath, "uploads", image.FileName);
-                    //Save file to server folder  
-                    using var stream = System.IO.File.Create(saveImage);
-                    image.CopyTo(stream);
-
-                }
-
-            }
-            TempData["Info"] = "Image(s) uploaded.";
-        }
-        return View();
-    }
 
     //------------------------------------------
     //Admin purchase
