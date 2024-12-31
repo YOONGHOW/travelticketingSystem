@@ -54,7 +54,7 @@
             width:400px;
             height:250px;
         }
-
+         
         .text-danger{
             margin-top:0;
             padding-top:0;
@@ -192,7 +192,19 @@
         </div>
     </div>
     <script>
-                document.addEventListener('DOMContentLoaded', () => {
+       
+
+        document.addEventListener('DOMContentLoaded', () => {
+        const urlParams = new URLSearchParams(window.location.search);
+
+        // Extract the purchaseID parameter
+        const purchaseID = urlParams.get('purchaseID');
+
+        if(purchaseID){
+            paymentMethodSelect.innerHTML = '<option value="card">Bank Card</option>';
+        }
+
+
             // Select the first container
             const firstContainer = document.querySelector('.orderContainer1');
 

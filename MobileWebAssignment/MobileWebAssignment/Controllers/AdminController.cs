@@ -5,6 +5,16 @@ using Microsoft.EntityFrameworkCore;
 using X.PagedList.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using ClosedXML.Excel;
+using Microsoft.IdentityModel.Tokens;
+
+using iText.Kernel.Pdf;
+using iText.Layout;
+using iText.Layout.Element;
+using iText.Layout.Properties;
+using iText.IO.Font;
+using iText.Kernel.Font;
+using System.IO;
+
 
 
 namespace MobileWebAssignment.Controllers;
@@ -1482,39 +1492,40 @@ public class AdminController : Controller
     //------------------------------------------
     //Admin purchase
     //------------------------------------------
-    public List<Purchase> getAllPurcahse(bool unpaid)
+    public List<Purchase> getAllPurcahse(bool? unpaid,bool? refundpayment)
     {
         var allPurchases = db.Purchase
-               .Include(p => p.PurchaseItems)
-                   .ThenInclude(pi => pi.Ticket)
-                       .ThenInclude(at => at.Attraction)
-               .Include(us => us.User)
-               .Where(p => p.User is Member)
-               .OrderByDescending(p => p.PaymentDateTime)
-               .ToList();
+                .Include(p => p.PurchaseItems)
+                    .ThenInclude(pi => pi.Ticket)
+                        .ThenInclude(at => at.Attraction)
+                .Include(us => us.User)
+                .Include(po => po.Promotion)
+                .OrderByDescending(p => p.PaymentDateTime)
+                .ToList();
+
 
         if (unpaid == false)
         {
             allPurchases = allPurchases
             .Where(p => p.Status == "S") // Compare p.Id with Payment.PurchaseId
              .ToList();
-            return allPurchases;
         }
-
-        allPurchases = allPurchases
-             .Where(p => p.Status == "F")
-             .ToList();
-
+        if (refundpayment==true)
+        {
+            allPurchases = allPurchases
+            .Where(p=>p.Status=="M"||p.Status=="R") // Compare p.Id with Payment.PurchaseId
+            .OrderBy(p=>p.Status) 
+            .ToList();
+        }
 
         return allPurchases;
     }
 
     [Authorize(Roles = "Admin")]
-    public IActionResult AdminPurchase(string? purchaseID, DateTime? validdate, string? payment)
+    public IActionResult AdminPurchase(string? purchaseID, DateTime? validdate, string? payment,string? refundPayment)
     {
 
-        var allPurchases = getAllPurcahse(false);
-
+        var allPurchases = getAllPurcahse(false,null);
 
         IEnumerable<Purchase> purchaseItems;
         //Purcahse fillter
@@ -1525,7 +1536,11 @@ public class AdminController : Controller
         }
         else if (payment != null)
         {
-            purchaseItems = getAllPurcahse(true);  // If no validdate is provided, show all purchase items(Unpaid)
+            purchaseItems = getAllPurcahse(true, null);  // If no validdate is provided, show all purchase items(Unpaid)
+        }
+        else if (!string.IsNullOrEmpty(refundPayment))
+        {
+            purchaseItems = getAllPurcahse(null, true);
         }
         else
         {
@@ -1746,43 +1761,105 @@ public class AdminController : Controller
     //-------------------------------------
     //change status
     //-------------------------------------
+   
     [HttpPost]
     public IActionResult ChangePurchseStatus(string? purchaseID)
     {
         if (purchaseID == null)
         {
-            TempData["SuccessMessage"] = "Purchase Not found!" + purchaseID;
-            return Redirect("/Admin/AdminPurchase");
+            return Json(new { success = false, message = "Purchase ID not provided." });
         }
 
         var purchaseItems = db.Purchase
-           .Where(pi => pi.Id == purchaseID)
-           .FirstOrDefault();
+            .FirstOrDefault(pi => pi.Id == purchaseID);
 
         if (purchaseItems == null)
         {
-            TempData["SuccessMessage"] = "Purchase Not found!";
-            return Redirect("/Admin/AdminPurchase");
+            return Json(new { success = false, message = "Purchase not found!" });
         }
 
         var payment = db.Payment
-            .Where(pi => pi.PurchaseId == purchaseID)
-           .FirstOrDefault();
+            .FirstOrDefault(p => p.PurchaseId == purchaseID);
 
         if (payment != null)
         {
-            purchaseItems.Status = "R"; //refund
+            purchaseItems.Status = "R"; // Refund
             payment.Status = "R";
             db.SaveChanges();
-            TempData["SuccessMessage"] = "Purchase cancle successfully!";
-            return Redirect("/Admin/AdminPurchase");
 
+            return Json(new { success = true, message = "Purchase canceled successfully!" });
         }
 
-        TempData["SuccessMessage"] = "Try again later !";
-        return Redirect("/Admin/AdminPurchase");
+        return Json(new { success = false, message = "Try again later!" });
+    }
+    [HttpGet]
+    public IActionResult GenerateInvoice()
+    {
+        // Create a MemoryStream to hold the PDF data
+        using (var memoryStream = new MemoryStream())
+        {
+            // Initialize PDF writer and document
+            PdfWriter writer = new PdfWriter(memoryStream);
+            PdfDocument pdf = new PdfDocument(writer);
+            Document document = new Document(pdf);
 
+            // Add Invoice Header
+            document.Add(new Paragraph("INVOICE")
+                .SetFontSize(20)
+                .SetTextAlignment(TextAlignment.CENTER));
 
+            // Add Company Information
+            document.Add(new Paragraph("APITemplate.io")
+                .SetFontSize(12));
+            document.Add(new Paragraph("1234 Main Street\nCity, State, Zip\nPhone: (555) 555-5555\nEmail: hello@apitemplate.io"));
+
+            // Add Client Information
+           document.Add(new Paragraph("\nBill To:").SetFontSize(12));
+            document.Add(new Paragraph("Client Name\nClient Address\nCity, State, Zip\nPhone: (555) 555-5555\nEmail: client@example.com"));
+
+            // Add Invoice Table
+            Table table = new Table(4, true); // 4 columns
+            table.AddHeaderCell("Description");
+            table.AddHeaderCell("Quantity");
+            table.AddHeaderCell("Unit Price");
+            table.AddHeaderCell("Total");
+
+            table.AddCell("Item 1");
+            table.AddCell("2");
+            table.AddCell("$10.00");
+            table.AddCell("$20.00");
+
+            table.AddCell("Item 2");
+            table.AddCell("1");
+            table.AddCell("$15.00");
+            table.AddCell("$15.00");
+
+            table.AddCell("Item 3");
+            table.AddCell("4");
+            table.AddCell("$7.50");
+            table.AddCell("$30.00");
+
+            document.Add(table);
+
+            // Add Invoice Total
+            document.Add(new Paragraph("\nSubtotal: $65.00\nTax (10%): $6.50\nTotal: $71.50")
+                .SetFontSize(12)
+                .SetTextAlignment(TextAlignment.RIGHT));
+
+            // Add Footer
+            document.Add(new Paragraph("\nThank you for your business!")
+                .SetFontSize(10)
+                .SetTextAlignment(TextAlignment.CENTER));
+            document.Add(new Paragraph("Please make the payment by the due date.")
+                .SetFontSize(10)
+                .SetTextAlignment(TextAlignment.CENTER));
+
+            // Close the document
+            document.Close();
+
+            // Return the PDF as a FileResult
+            return File(memoryStream.ToArray(), "application/pdf", "Invoice.pdf");
+        }
     }
 }
 
