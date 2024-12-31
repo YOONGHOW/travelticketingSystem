@@ -675,6 +675,35 @@ namespace MobileWebAssignment.Controllers
                         });
                     }
                 }
+                List<Ticket> ticketList = new List<Ticket>();
+
+                //retrieve ticket for every purchase item
+                foreach (var p in purchaseItems)
+                {
+                    foreach (var item in p.Items)
+                    {
+                        ticketList.Add(db.Ticket.FirstOrDefault(t => t.Id == item.TicketId));
+                    }
+                }
+
+                int attractionCheck = 0;
+
+                foreach(var t in ticketList)
+                {
+                    if(t.AttractionId == a.Id)
+                    {
+                        attractionCheck++;
+                    }
+                }
+
+                if (attractionCheck > 0)
+                {
+                    ViewBag.ValidCheck = true;
+                }
+                else
+                {
+                    ViewBag.ValidCheck = false;
+                }
             }
             else
             {
@@ -1086,7 +1115,7 @@ namespace MobileWebAssignment.Controllers
             return View(vm);
         }
 
-
+        [Authorize(Roles = "Member")]
         public IActionResult ClientFeedbackUpdate(string? Id)
         {
             var f = db.Feedback.Find(Id);
@@ -1333,7 +1362,8 @@ namespace MobileWebAssignment.Controllers
                     paymentDB.Status = "S";
                     paymentDB.Type = "B";
                     paymentDB.PaymentDateTime = DateTime.Now;
-                    if (vm!=null) {
+                    if (vm != null)
+                    {
                         var getDBPromotionData = db.Promotion
                         .FirstOrDefault(p => p.Id == vm.DiscountID && p.PromoStatus == "Active");
                         if (getDBPromotionData != null)
@@ -1364,7 +1394,8 @@ namespace MobileWebAssignment.Controllers
 
             decimal total = m.Sum(t => t.Subtotal);
             string promotionID = string.Empty;
-            if (vm!=null) {
+            if (vm != null)
+            {
                 var getDBPromotion = db.Promotion
                     .FirstOrDefault(p => p.Id == vm.DiscountID && p.PromoStatus == "Active");
                 if (getDBPromotion != null && paymentType == "Bank")
@@ -1382,7 +1413,7 @@ namespace MobileWebAssignment.Controllers
                 Amount = total,
                 UserId = userID,
                 PurchaseItems = new List<PurchaseItem>() // Initialize the list
-                
+
             };
             //if (!string.IsNullOrEmpty(promotionID)&&paymentType=="Bank")
             //{            //    purchase.PromotionId = promotionID;
@@ -1404,7 +1435,7 @@ namespace MobileWebAssignment.Controllers
                 count++;
             }
 
-            
+
             db.Purchase.Add(purchase);
             int changes = db.SaveChanges();
             if (paymentType == "Bank")
@@ -1488,7 +1519,7 @@ namespace MobileWebAssignment.Controllers
             var userID = hp.GetUserID();
 
             var changes = CheckOut(userID, null, "Paypal", false);
-         
+
 
             if (!string.IsNullOrEmpty(changes))
             {
@@ -1549,6 +1580,7 @@ namespace MobileWebAssignment.Controllers
         // ===========================================
         // show result PurchaseHIS
         // ===========================================
+        [Authorize(Roles = "Member")]
         public List<Purchase> getAllPurcahse(bool? unpaid, string? statusTicket, bool? refundPayment)
         {
             getUserID();
@@ -1558,7 +1590,7 @@ namespace MobileWebAssignment.Controllers
                     .ThenInclude(pi => pi.Ticket)
                         .ThenInclude(at => at.Attraction)
                 .Include(us => us.User)
-                .Include(po=>po.Promotion)
+                .Include(po => po.Promotion)
                 .Where(p => p.UserId == userID && p.User is Member)
                 .OrderByDescending(p => p.PaymentDateTime)
                 .ToList();
@@ -1612,6 +1644,7 @@ namespace MobileWebAssignment.Controllers
         //============================================
         //PurchaseHIS GET
         //============================================
+        [Authorize(Roles = "Member")]
         public IActionResult ClientPaymentHIS(string? Unpaid,
             string? statusTicket, string? message, string? refund, string? refundPayment)
         {
@@ -1847,7 +1880,7 @@ namespace MobileWebAssignment.Controllers
 
             var discount = db.Promotion
                              .Where(d => d.Code == code && d.PromoStatus == "Active")
-                             .Select(d => new { priceDeduction= d.PriceDeduction, promotionID=d.Id})
+                             .Select(d => new { priceDeduction = d.PriceDeduction, promotionID = d.Id })
                              .FirstOrDefault();
 
             if (discount != null)
@@ -1886,8 +1919,8 @@ namespace MobileWebAssignment.Controllers
             var payment = db.Payment
                 .FirstOrDefault(pi => pi.PurchaseId == purchaseID);
 
-            var purchaseItem=db.PurchaseItem
-                .Where(p=>p.PurchaseId==purchaseID)
+            var purchaseItem = db.PurchaseItem
+                .Where(p => p.PurchaseId == purchaseID)
                 .ToList();
             if (payment != null)
             {
