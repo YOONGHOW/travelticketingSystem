@@ -217,9 +217,7 @@
 			geocodeAddress(address);
 		});
 
-		// Function to geocode the address entered by the user
-		function geocodeAddress(address) {
-			// Reference point for proximity ranking (Penang, Malaysia)
+			function geocodeAddress(address) {
 			const referenceLatitude = 5.4164;
 			const referenceLongitude = 100.3327;
 
@@ -228,25 +226,26 @@
 			fetch(searchURL)
 				.then(response => response.json())
 				.then(data => {
-					if (data.results && data.results.length > 0) {
-						// Get coordinates of the closest match
+					console.log(data); // Log the response to check its structure
+					if (data && data.results && data.results.length > 0) {
 						const coordinates = data.results[0].position;
-
-						// Debugging: Check the returned coordinates in the console
-						console.log("Coordinates:", coordinates);
-
 						if (coordinates) {
-							// Set the camera to the geocoded coordinates
+							const lon = coordinates.lon;
+							const lat = coordinates.lat;
+
+							// Set camera view to the location
 							map.setCamera({
-								center: [coordinates.lon, coordinates.lat],
+								center: [lon, lat],
 								zoom: 15
 							});
 
-							// Add marker
-							addMarker([coordinates.lon, coordinates.lat]);
+							// Add marker to the map
+							addMarker([lon, lat]);
 
-							// Display coordinates in the textarea
-							// displayCoordinates([coordinates.lon, coordinates.lat]);
+							// Optionally, display the coordinates in the textarea
+							displayCoordinates([lon, lat]);
+						} else {
+							alert('No valid coordinates found.');
 						}
 					} else {
 						alert('Address not found.');
@@ -257,6 +256,7 @@
 					alert('An error occurred while searching for the address.');
 				});
 		}
+
 
 		// Function to add a marker to the map
 		function addMarker(coordinates) {
