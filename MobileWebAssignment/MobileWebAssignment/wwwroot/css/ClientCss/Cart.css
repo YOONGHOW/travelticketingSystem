@@ -92,7 +92,7 @@
         color: #555;
     }
 
-    .summary-item .value {
+    #summary-item .value {
         color: #333;
     }
 

@@ -16,3 +16,4 @@
         })
         .catch(error => console.error('Error fetching exchange rate:', error));
 });
+

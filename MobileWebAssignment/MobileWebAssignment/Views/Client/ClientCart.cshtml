@@ -82,7 +82,7 @@
     </div>
     <div class="summary-item">
         <span class="label">Total Price:</span>
-        <span class="value">@totalPrice.ToString("C")</span>
+		<span id="value" class="ticket-price" data-base-price="@totalPrice.ToString("C")">@totalPrice.ToString("C")</span>
     </div>
 			<button class="checkout-btn" id="checkoutButton">Proceed to Checkout</button>
 
