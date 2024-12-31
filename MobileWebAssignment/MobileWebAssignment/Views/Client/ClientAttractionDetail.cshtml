@@ -27,14 +27,17 @@
 				<div class="review-container">
 					<p>No review yet.</p>
 					<p class="location">📍@Model.Location</p>
-					<form method="post">
-						<input type="hidden" name="attractionID" value="@Model.Id" style="display:none;" />
-						<button type="submit" class="wishlist-btn" id="wishlistButton" asp-action="addWish" asp-controller="Client">
-							<span>
-								@(ViewBag.IsInWishlist ? "❤️ Saved to Wishlist" : "🤍 Saved to Wishlist")
-							</span>
-						</button>
-					</form>
+					@if (ViewBag.User != null)
+					{
+						<form method="post">
+							<input type="hidden" name="attractionID" value="@Model.Id" style="display:none;" />
+							<button type="submit" class="wishlist-btn" id="wishlistButton" asp-action="addWish" asp-controller="Client">
+								<span>
+									@(ViewBag.IsInWishlist ? "❤️ Saved to Wishlist" : "🤍 Saved to Wishlist")
+								</span>
+							</button>
+						</form>
+					}
 				</div>
 			}
 			else

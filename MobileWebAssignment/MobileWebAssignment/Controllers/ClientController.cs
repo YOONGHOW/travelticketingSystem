@@ -626,7 +626,6 @@ namespace MobileWebAssignment.Controllers
             }
 
 
-
             var tickets = db.Ticket.Where(t => t.AttractionId == attractionId).ToList();
             ViewBag.Tickets = tickets.Select(t => new TicketVM
             {
@@ -709,9 +708,6 @@ namespace MobileWebAssignment.Controllers
             {
                 ViewBag.ValidCheck = false;
             }
-
-
-
 
 
             return View(vm);
