@@ -5,18 +5,18 @@
     @if (Model.Purchases.Count() == 0 || Model == null)
     {
         <div class="card mb-2">
-            <div class="card-body">
+            <div class="card-body" style="max-height：500px">
 
                 <div class="d-flex justify-content-between align-items-center">
                     <div class="w-25 me-3">
                         <img src="~/images/no-order.png" alt="Product Image" class="img-fluid rounded"
-                             onerror="this.onerror=null; this.src='~/images/error.png';">
+                        onerror="this.onerror=null; this.src='~/images/error.png';">
                     </div>
                     <div>
                         <h3 class="card-title" style="padding:60px">No Purchases Record Found</h3><a>Click ->(To purchase right now !!)</a>
                     </div>
                 </div>
-                
+
             </div>
         </div>
     }
@@ -24,45 +24,79 @@
     {
         <!-- Order Card Example -->
         <div class="card mb-3">
-
-            <div class="card-body">
-
-                <div class="d-flex justify-content-between align-items-center">
-                    <div class="w-25 me-3">@*userImage*@
+            <div class="card-body" >
+                <div class="row align-items-center">
+                    <!-- Image Section -->
+                    <div class="col-md-3 col-sm-12 text-center mb-3 mb-md-0">
                         <img src="~/images/@Model.PhotoURL"
-                             alt="Product Image" 
-                             class="img-fluid rounded" 
-                              onerror="this.onerror=null; this.src='@Url.Content("~/images/error.png")';"> 
+                        alt="Product Image"
+                        class="img-fluid rounded"
+                        style="max-width: 200px;"
+                        onerror="this.onerror=null; this.src='@Url.Content("~/images/error.png")';">
                     </div>
-                    <div>
-                        <h5 class="card-title"> @s.User.Name (@s.User.Id) : @s.User.Email </h5>
-                        <p class="card-text text-muted">Payment Date-Time:  @s.PaymentDateTime.ToString("yyyy/MM/dd hh:mm tt") </p>
-                        <p class="card-text"> Purchase Price RM @(s.Amount)</p>
-                        @(s.Status == "R" ? Html.Raw("<p class='red-text'>(Cancelled Purchase: Refunded)</p>") : "")
-                        
-                    </div>
+                    <!-- Details Section -->
+                    <div class="col-md-6 col-sm-12">
+                        <h5 class="card-title">
+                            @s.User.Name (@s.User.Id) : @s.User.Email
+                        </h5>
+                        <p class="card-text text-muted">
+                            Payment Date-Time: @s.PaymentDateTime.ToString("yyyy/MM/dd hh:mm tt")
+                        </p>
+                        @{
+                            decimal total = 0;
+                            decimal discount = 0;
+                            if (!string.IsNullOrEmpty(s.PromotionId))
+                            {
+                                discount = s.Promotion.PriceDeduction * s.Amount;
+                                total= discount+ s.Amount;
 
-                    <div class="text-end ">
-                        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#detailModal" data-purchaseid="@s.Id">Detail</button>
-                        <button class="btn btn-primary btn-sm" data-bs-toggle="modal"  data-purchaseid="@s.Id"
-                        @(s.Status == "R" ? "style=display:none;" : "") @(s.Status == "F" ? "style=display:none;" : "")>E-Receipt</button>
-                        <button class="btn btn-primary btn-sm cancel-purchase"
+                            }
+                            else
+                            {
+                                total = s.Amount;
+                            }
+
+                        }
+                        <p class="card-text">
+                            Purchase Price: RM @(total.ToString("F2"))
+                        </p>
+                        @(s.Status == "R" ? Html.Raw("<p class='text-danger'>(Cancelled Purchase: Refunded)</p>") : "")
+                        @(s.Status == "M" ? Html.Raw("<p class='text-danger'>(Refund Purchase: Request)</p>") : "")
+                        @if (!string.IsNullOrEmpty(s.PromotionId))
+                        {
+                            <p>Discount: RM @discount.ToString("F2")</p>
+                       }
+                        <p class="card-text">
+                            Payment: RM @(s.Amount)
+                        </p>
+                    </div>
+                    <!-- Actions Section -->
+                    <div class="col-md-3 col-sm-12 text-end">
+                        <button class="btn btn-primary btn-sm mb-2" data-bs-toggle="modal" data-bs-target="#detailModal" data-purchaseid="@s.Id">
+                            Detail
+                        </button>
+                        <button class="btn btn-primary btn-sm mb-2"
+                                data-bs-toggle="modal"
+                                data-purchaseid="@s.Id"
+                        @(s.Status == "R" || s.Status == "M" ? "style=display:none;" : "")
+                        @(s.Status == "F" ? "style=display:none;" : "")>
+                            E-Receipt
+                        </button>
+                        <button class="btn btn-primary btn-sm mb-2"
                         @(s.Status == "F" ? "" : "style=display:none;")
-                                data-purchaseid="@s.Id">
+                                onclick="window.location.href='/Client/ClientPayment?purchaseID=@s.Id'">
                             Payment
                         </button>
-                        <button class="btn btn-primary btn-sm btn-danger cancel-purchase"
-                        @(s.Status == "R" ? "style=display:none;" : "")
+                        <button class="btn btn-danger btn-sm mb-2  @(s.Status == "S" ? " cancel-purchase " : "cancel-payment")"
+                        @(s.Status == "R" || s.Status == "M" ? "style=display:none;" : "")
                                 data-purchaseid="@s.Id">
                             Cancel
                         </button>
-                        
                     </div>
                 </div>
-
             </div>
-
         </div>
+
     }
 
 
@@ -71,25 +105,79 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <script>
-       $(document).on("click", ".cancel-purchase", function () {
-        const purchaseId = $(this).data("purchaseid");
+       let count1 = 0;  // For cancel purchase
+    let count2 = 0;  // For cancel payment
 
+    // Cancel Purchase Handler
+    $(document).on("click", ".cancel-purchase", function (event) {
+        event.preventDefault(); // Prevent default form submission or link behavior
+        console.log("Cancel Purchase Clicked");
+
+        const purchaseId = $(this).data("purchaseid");  // Get purchase ID from the clicked element
         if (!purchaseId) {
-            alert("Invalid Purchase ID!");
+            alert("Invalid Purchase ID!");  // If no purchase ID, show error message
             return;
         }
 
-        $.ajax({
-            url: '/Admin/ChangePurchseStatus',
-            type: 'POST',
-            data: { purchaseID: purchaseId },
-            success: function (response) {
-                alert(response.message || "Purchase cancelled successfully!");
-                location.reload(); // Reload the page or update the DOM as needed
-            },
-            error: function () {
-                alert("An error occurred while processing the request.");
-            }
-        });
+        const message = "Are you certain you want to cancel the purchase?";  // Confirmation message
+
+        // Check if confirm dialog was accepted and if the count is less than 1
+        if (confirm(message) && count1 < 1) {
+            count1++;  // Increment count1 to prevent further requests
+
+            $.ajax({
+                url: '/Client/RefundPurchaseRequest',  // Adjust URL if needed
+                type: 'POST',
+                data: { purchaseID: purchaseId },  // Send purchase ID to the server
+                success: function (response) {
+                    if (response.success) {
+                        alert(response.message);  // Show success message
+                        location.reload();  // Optionally reload the page to reflect changes
+                    } else {
+                        alert(response.message);  // Show failure message
+                    }
+                },
+                error: function () {
+                    alert("An error occurred while processing the request.");  // Handle AJAX errors
+                }
+            });
+        } else {
+            console.log("Purchase cancellation canceled.");
+        }
     });
+
+    // Cancel Payment Handler
+    $(document).on("click", ".cancel-payment", function (event) {
+        event.preventDefault(); // Prevent default form submission or link behavior
+        const purchaseId = $(this).data("purchaseid");  // Get purchase ID from the clicked element
+        if (!purchaseId) {
+            alert("Invalid Purchase ID!");  // If no purchase ID, show error message
+            return;
+        }
+
+        const message = "Are you certain you want to cancel the payment?";  // Confirmation message
+        if (confirm(message) && count2 < 1) {
+            count2++;  // Increment count2 to prevent further requests
+
+            $.ajax({
+                url: '/Client/DeletePayment',  // Adjust URL if needed
+                type: 'POST',
+                data: { purchaseID: purchaseId },  // Send purchase ID to the server
+                success: function (response) {
+                    if (response.success) {
+                        alert(response.message);  // Show success message
+                        location.reload();  // Optionally reload the page to reflect changes
+                    } else {
+                        alert(response.message);  // Show failure message
+                    }
+                },
+                error: function () {
+                    alert("An error occurred while processing the request.");  // Handle AJAX errors
+                }
+            });
+        } else {
+            console.log("Payment cancellation canceled.");
+        }
+    });
+
 </script>
