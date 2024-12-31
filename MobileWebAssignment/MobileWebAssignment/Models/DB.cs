@@ -256,7 +256,7 @@ public class Payment
     [MaxLength(1)] // Example: B (for Bank)
     public string Type { get; set; }
     [Required]
-    [MaxLength(1)] // Example: S (Success) or F (Fail)
+    [MaxLength(1)] // Example: S (Success) or F (Fail) or R (Retrun / Refund)
     public string Status { get; set; }
     [MaxLength(100)]
     public string Reference { get; set; } // Renamed REF for clarity
@@ -265,7 +265,6 @@ public class Payment
     [Required]
     [Precision(18, 2)] // Ensures accuracy for monetary values
     public decimal Amount { get; set; } // Changed to decimal for currency values
-
 
     //fk
     public String PurchaseId { get; set; }

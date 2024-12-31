@@ -10,7 +10,25 @@
 }
 .navbar {
     min-width: 1200px;
-    max-width: 1200px;
+    max-width: 1800px;
+    font-weight: 700;
+    min-height:90px;
+    font-size:20px;
+}
+    .navbar ul a:hover {
+        color: black;
+    }
+
+    .navbar ul a {
+        color: gray;
+    }
+
+        .navbar ul a:active {
+            color: black;
+        }
+
+.custom-width {
+    height: 800px;
 }
 
 .custom-width {
