@@ -127,3 +127,30 @@ th {
     padding: 10px;
     font-size:17px;
 }
+
+.file-upload-form {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-left:auto;
+}
+
+.import-label {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    font-size: 1rem;
+    color: #007bff;
+}
+
+    .import-label:hover {
+        color: #0056b3;
+    }
+
+#ticketAddBtn {
+    min-width: 100px;
+}
+
+#ticketSubmitBtn {
+    min-width: 100px;
+}
