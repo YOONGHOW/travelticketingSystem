@@ -68,9 +68,9 @@
 								{
 									if (t.ticketStatus == "Good" && t.stockQty > 0)
 									{
-										<span class="ticket-price">
-											start with RM
-											@t.ticketPrice
+										<span class="ticket-prices">
+											start with
+											<span class="ticket-price" data-base-price="@t.ticketPrice">@t.ticketPrice</span>
 											per ticket
 										</span>
 									}

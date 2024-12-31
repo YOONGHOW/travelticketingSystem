@@ -69,7 +69,7 @@
 									<button onclick="window.location.href='@Url.Action("ClientAttractionDetail", "Client", new { AttractionId = item.AttractionId })'" class="btn_update">Update</button>
 									<form method="post">
 										<input type="hidden" name="ticketId" value="@item.TicketId" style="display:none;" />
-										<button asp-action="deleteCart" asp-controller="Client" type="submit" class="btn_delete">Delete</button>
+										<button asp-action="deleteCart" asp-controller="Client" type="submit" class="btn_delete">Remove</button>
 									</form>
 
 									
@@ -88,7 +88,7 @@
     </div>
     <div class="summary-item">
         <span class="label">Total Price:</span>
-        <span class="value">@totalPrice.ToString("C")</span>
+				<span id="value" class="ticket-price" data-base-price="@totalPrice">@totalPrice</span>
     </div>
 			<button class="checkout-btn" id="checkoutButton">Proceed to Checkout</button>
 
