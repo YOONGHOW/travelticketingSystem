@@ -55,8 +55,9 @@
 							<td>
 								<input style="background-color:#d3d8de; border-radius:4px;padding-left:5px" class="date-input" type="date" id="validDate" name="Dateonly" min="@min" max="@max" value="@min" />
 							</td>
-							<td>@item.Price</td>
-							<td>@item.TotalPrice.ToString("F2")</td>
+							<td><span class="ticket-price" data-base-price="@item.Price">@item.Price</span></td>
+							<td><span class="ticket-price" data-base-price="@item.TotalPrice.ToString("F2")">@item.TotalPrice.ToString("F2")</span></td>
+
 							<td>
 								<span style="display:flex;">
 									<button onclick="window.location.href='@Url.Action("ClientAttractionDetail", "Client", new { AttractionId = item.AttractionId })'" class="btn_update">Update</button>

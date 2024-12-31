@@ -27,12 +27,20 @@
 			</div>
 			<nav>
 				<ul>
+					<li>
+						<select id="language-selector">
+							<option value="MYR">MYR</option>
+							<option value="USD">USD</option>
+							<option value="EUR">EUR</option>
+							<option value="JPY">JPY</option>
+							<option value="CNY">CNY</option>
+							<option value="SGD">SGD</option>
+						</select>
+						<script src="/js/exchange.js"></script>
+
+					</li>
 					<li><a href="/Client/HomePage">Home</a></li>
 					<li><a href="/Client/ClientAttraction">Attraction</a></li>
-
-
-
-
 					@if (User.Identity!.IsAuthenticated && User.IsInRole("Member"))
 					{
 
