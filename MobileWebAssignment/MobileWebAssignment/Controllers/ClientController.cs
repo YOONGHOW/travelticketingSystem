@@ -151,7 +151,6 @@ namespace MobileWebAssignment.Controllers
         [HttpPost]
         public async Task<IActionResult> Login(LoginVm vm, string? returnURL)
         {
-
             if (vm.RecaptchaToken == null)
             {
                 ModelState.AddModelError("", "reCAPTCHA validation failed.");
@@ -179,22 +178,42 @@ namespace MobileWebAssignment.Controllers
             var failedAttemptsCookie = Request.Cookies["FailedLoginAttempts"];
             int failedAttempts = string.IsNullOrEmpty(failedAttemptsCookie) ? 0 : int.Parse(failedAttemptsCookie);
 
+            // Retrieve the block time
+            var blockTimestampCookie = Request.Cookies["BlockTimestamp"];
+            DateTime blockTimestamp = string.IsNullOrEmpty(blockTimestampCookie) ? DateTime.MinValue : DateTime.Parse(blockTimestampCookie);
+
             // Check if the user is temporarily blocked
             if (failedAttempts >= 3)
             {
-                ModelState.AddModelError("", "Your account is temporarily blocked. Please try again after some time.");
-                return View(vm);
+                // Check if the block time has expired
+                TimeSpan blockDuration = TimeSpan.FromSeconds(30); // Block duration 30 seconds
+                DateTime blockEndTime = blockTimestamp.Add(blockDuration);
+
+                if (DateTime.Now < blockEndTime)
+                {
+                    TimeSpan remainingTime = blockEndTime - DateTime.Now;
+                    string remainingTimeMessage = $"Your account is temporarily blocked. Please try again after {remainingTime.Seconds} seconds.";
+                    ModelState.AddModelError("", remainingTimeMessage);
+                    return View(vm);
+                }
+                else
+                {
+                    // Reset the block and failed attempts after the block period ends
+                    Response.Cookies.Delete("FailedLoginAttempts");
+                    Response.Cookies.Delete("BlockTimestamp");
+                    failedAttempts = 0;
+                }
             }
+
+            // Increase the failed attempts
+            failedAttempts++;
 
             // Find user in the database
             var user = db.User.SingleOrDefault(u => u.Email == vm.Email);
 
             if (user == null || string.IsNullOrEmpty(user.Password) || !hp.VerifyPassword(user.Password, vm.PasswordCurrent))
             {
-                // Increment the failed attempts
-                failedAttempts++;
-
-                // Update the cookie
+                // Update the cookies
                 CookieOptions options = new()
                 {
                     Expires = DateTime.Now.AddSeconds(30), // Block for 30 seconds
@@ -204,8 +223,10 @@ namespace MobileWebAssignment.Controllers
 
                 Response.Cookies.Append("FailedLoginAttempts", failedAttempts.ToString(), options);
 
-                if (failedAttempts >= 3)
+                if (failedAttempts == 3)
                 {
+                    // Save the block timestamp when the user is blocked
+                    Response.Cookies.Append("BlockTimestamp", DateTime.Now.ToString(), options);
                     ModelState.AddModelError("", "Your account is temporarily blocked due to multiple failed login attempts.");
                 }
                 else
@@ -1170,7 +1191,9 @@ namespace MobileWebAssignment.Controllers
                     .Select(p => new CartPaymentVM
                     {
                         Ticket = p,
+
                         Quantity = cart[p.Id].Quantity,
+
                         Subtotal = p.ticketPrice * cart[p.Id].Quantity,
                         imagepath = p.Attraction.ImagePath,
                     }).ToList();
@@ -1751,7 +1774,6 @@ namespace MobileWebAssignment.Controllers
             var purchaseItems = db.Purchase
                 .Where(pi => pi.Id == purchaseID)
                 .FirstOrDefault();
-
             if (purchaseItems == null)
             {
                 TempData["SuccessMessage"] = "Purchase Not found!";
