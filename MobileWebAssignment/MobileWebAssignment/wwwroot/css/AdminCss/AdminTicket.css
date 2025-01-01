@@ -132,7 +132,7 @@ th {
     display: flex;
     align-items: center;
     gap: 10px;
-    margin-left:auto;
+    margin-left: auto;
 }
 
 .import-label {
@@ -151,6 +151,18 @@ th {
     min-width: 100px;
 }
 
-#ticketSubmitBtn {
-    min-width: 100px;
+#fileName {
+    font-size: 0.9rem;
+    color: #555;
+    margin-left: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
+
+.file-name-display {
+    flex-shrink: 1;
+    max-width: 200px; /* Adjust as needed */
+}
+
+</style >
