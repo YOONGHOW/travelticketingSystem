@@ -77,13 +77,13 @@
                         <button class="btn btn-primary btn-sm mb-2" data-bs-toggle="modal" data-bs-target="#detailModal" data-purchaseid="@s.Id">
                             Detail
                         </button>
-                        <button class="btn btn-primary btn-sm mb-2"
-                                data-bs-toggle="modal"
-                                data-purchaseid="@s.Id"
-                        @(s.Status == "R" || s.Status == "M" ? "style=display:none;" : "")
-                        @(s.Status == "F" ? "style=display:none;" : "")>
-                            E-Receipt
-                        </button>
+                        @*  <button class="btn btn-primary btn-sm mb-2"
+         data-bs-toggle="modal"
+         data-purchaseid="@s.Id"
+ @(s.Status == "R" || s.Status == "M" ? "style=display:none;" : "")
+ @(s.Status == "F" ? "style=display:none;" : "")>
+     E-Receipt
+ </button> *@
                         <button class="btn btn-primary btn-sm mb-2"
                         @(s.Status == "F" ? "" : "style=display:none;")
                                 onclick="window.location.href='/Client/ClientPayment?purchaseID=@s.Id'">
