@@ -10,10 +10,10 @@
 }
 .navbar {
     min-width: 1200px;
-    max-width: 1800px;
-    font-weight: 700;
+    max-width: 1900px;
+    font-weight: 900;
     min-height:90px;
-    font-size:20px;
+    font-size:15px;
 }
     .navbar ul a:hover {
         color: black;
@@ -27,13 +27,8 @@
             color: black;
         }
 
-.custom-width {
-    height: 800px;
-}
 
-.custom-width {
-    height: 400px;
-}
+
 .red-text {
     color: red;
 }
@@ -206,7 +201,7 @@
     font-size: 40px;
 }
 
-.info {
+.infoTicket {
     display: flex;
     justify-content: flex-start;
     font-size: 15px;
