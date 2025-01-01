@@ -312,3 +312,23 @@ li.content3 {
         margin-left: 4%;
     }
 
+.selectCountry {
+    font-family: "Times New Roman", Times, serif;
+    background: none;
+    border: none;
+    color: white;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+    .selectCountry option {
+        font-family: "Times New Roman", Times, serif;
+        background: none;
+        border: none;
+        color: black;
+    }
+
+.country{
+    width:2em;
+    height:2em;
+}

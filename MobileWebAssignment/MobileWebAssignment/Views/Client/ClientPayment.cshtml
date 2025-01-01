@@ -97,10 +97,10 @@
                         <div class="orderContainer@(count) orderContainer p-3 rounded mb-2" style="background-color:#b6b6b6;cursor: pointer"
                              onclick="updateProductDetail(this,'@s.Ticket.ticketName', 'RM @s.Ticket.ticketPrice', '@s.imagepath')">
                             <p class="form-control-plaintext fw-bold">@s.Ticket.ticketName</p>
-                            <p class="form-control-plaintext text-end ticketPrice">RM @s.Subtotal</p>
+                            <p class="form-control-plaintext text-end ticketPrice"><span class="ticket-price" data-base-price="@s.Subtotal">@s.Subtotal</span></p>
                             <p class="form-control-plaintext">x @s.Quantity</p>
                             <input type="hidden" value="@s.imagepath" />
-                            <p class="form-control-plaintext ">RM @s.Ticket.ticketPrice</p>
+                            <p class="form-control-plaintext "><span class="ticket-price" data-base-price="@s.Ticket.ticketPrice"> @s.Ticket.ticketPrice</span></p>
                         </div>
                     }
                 </div>

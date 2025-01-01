@@ -91,27 +91,4 @@
 
 	</div>
 }
-<script>
-		// Get all 'Reply' buttons on the page
-	const replyButtons = document.querySelectorAll('#replyButton');
 
-	// Get all 'View Comment' buttons on the page
-	const viewCommentButtons = document.querySelectorAll('#viewComment');
-
-		// Reply Button Logic
-	replyButtons.forEach(button => {
-		button.addEventListener('click', function() {
-			const actionsDiv = this.closest('.review').querySelector('.actions');
-			actionsDiv.style.display = (actionsDiv.style.display === 'none' || actionsDiv.style.display === '') ? 'block' : 'none';
-		});
-	});
-
-	// View Comment Button Logic
-	viewCommentButtons.forEach(button => {
-		button.addEventListener('click', function() {
-			const replyListDiv = this.closest('.review').querySelector('#replyList');
-			replyListDiv.style.display = (replyListDiv.style.display === 'none' || replyListDiv.style.display === '') ? 'block' : 'none';
-		});
-	});
-
-</script>
