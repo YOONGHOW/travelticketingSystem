@@ -25,6 +25,7 @@
         <!-- Order Card Example -->
         <div class="card mb-3">
             <div class="card-body" >
+
                 <div class="row align-items-center">
                     <!-- Image Section -->
                     <div class="col-md-3 col-sm-12 text-center mb-3 mb-md-0">
@@ -60,7 +61,7 @@
 
                         }
                         <p class="card-text">
-                            Purchase Price: RM @(total.ToString("F2"))
+                            Purchase Price: <span class="ticket-price" data-base-price="@(total.ToString("F2"))">@(total.ToString("F2"))</span>
                         </p>
                         @(s.Status == "R" ? Html.Raw("<p class='text-danger'>(Cancelled Purchase: Refunded)</p>") : "")
                         @(s.Status == "M" ? Html.Raw("<p class='text-danger'>(Refund Purchase: Request)</p>") : "")
@@ -68,8 +69,8 @@
                         {
                             <p>Discount: RM @discount.ToString("F2")</p>
                        }
-                        <p class="card-text">
-                            Payment: RM @(s.Amount)
+                        <p class="card-text ticket-price" data-base-price="@(s.Amount)">
+                            Payment:@(s.Amount)
                         </p>
                     </div>
                     <!-- Actions Section -->
