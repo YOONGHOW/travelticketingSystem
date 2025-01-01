@@ -740,6 +740,75 @@ public class AdminController : Controller
         }
         return RedirectToAction("AdminTicketDetails", new { id = vm.AttractionId });
     }
+
+    [HttpPost]
+    public IActionResult Import(IFormFile file)
+    {
+        if (file != null
+            && file.FileName.EndsWith(".txt")
+            && file.ContentType == "text/plain")
+        {
+            int n = ImportTicket(file);
+            TempData["Info"] = $"{n} tickets imported.";
+        }
+
+        return RedirectToAction("AdminTicket");
+    }
+
+    private int ImportTicket(IFormFile file)
+    {
+        // Count the number of valid events added
+        int newEventsInserted = 0;
+        string maxId = db.Ticket.Max(s => s.Id) ?? "TK0000";
+        int currentIdCounter = int.Parse(maxId.Substring(2));
+
+        using var stream = file.OpenReadStream();
+        using var reader = new StreamReader(stream);
+
+        while (!reader.EndOfStream)
+        {
+            var line = reader.ReadLine() ?? "";
+            if (string.IsNullOrWhiteSpace(line)) continue;
+
+            try
+            {
+                var data = line.Split("\t", StringSplitOptions.TrimEntries);
+
+                if (data.Length < 7)
+                    throw new FormatException("Missing required columns in the input file.");
+
+                if (!int.TryParse(data[1], out int stockQty))
+                    throw new FormatException($"Invalid stock quantity: {data[1]}");
+
+                if (!decimal.TryParse(data[2], out decimal ticketPrice))
+                    throw new FormatException($"Invalid ticket price: {data[2]}");
+
+                currentIdCounter++;
+                string newTicketId = $"TK{currentIdCounter:D4}";
+
+                db.Ticket.Add(new Ticket
+                {
+                    Id = newTicketId,
+                    ticketName = data[0],
+                    stockQty = stockQty,
+                    ticketPrice = ticketPrice,
+                    ticketStatus = data[3],
+                    ticketDetails = data[4],
+                    ticketType = data[5],
+                    AttractionId = data[6],
+                });
+                db.SaveChanges();
+                newEventsInserted++;
+                
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error processing line: {line}. Exception: {ex.Message}");
+            }
+        }       
+        return newEventsInserted;
+    }
+
     //============================================ Feedback start =========================================================
 
     [Authorize(Roles = "Admin")]
