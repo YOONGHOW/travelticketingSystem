@@ -2190,5 +2190,31 @@ namespace MobileWebAssignment.Controllers
                 return File(memoryStream.ToArray(), "application/pdf", "Invoice.pdf");
             }
         }
+
+
+
+        public IActionResult CheckValid(string purchaseItemId, string TicketID)
+        {
+            if (string.IsNullOrEmpty(purchaseItemId) || string.IsNullOrEmpty(TicketID))
+            {
+                // Return an error or bad request if parameters are missing
+                return BadRequest("Invalid parameters.");
+            }
+
+            // Retrieve the PurchaseItem and Ticket from the database using the provided IDs
+            var purchaseItem = db.PurchaseItem
+                                  .FirstOrDefault(pi => pi.Id == purchaseItemId && pi.TicketId == TicketID);
+
+            if (purchaseItem == null)
+            {
+                return NotFound("Purchase item or ticket not found.");
+            }
+
+            // Logic to check if the purchase item is valid
+            bool isValid = purchaseItem.validDate.Date >= DateTime.Now.Date;
+
+            // Return the result to the view or as a JSON response
+            return Json(new { isValid = isValid, purchaseItem = purchaseItem });
+        }
     }
 }
