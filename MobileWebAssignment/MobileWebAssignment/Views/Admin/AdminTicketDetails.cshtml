@@ -33,19 +33,35 @@
                 Add
             </button>
 
-            <form method="post" enctype="multipart/form-data" class="file-upload-form" style="display: flex; align-items: center; gap: 10px;">
+            <form method="post" enctype="multipart/form-data" class="file-upload-form">
                 <div class="form-group">
-                    <label for="file" class="import-label" style="cursor: pointer; margin: 0; display: flex; align-items: center;">
-                        <i class="fas fa-file-import" style="font-size: 1.5rem; color: #007bff;"></i>
-                        <span style="margin-left: 5px;">Import Tickets</span>
+                    <label for="file" class="import-label">
+                        <i class="fas fa-file-import"></i>
+                        <span>Import Tickets</span>
                     </label>
                     <input type="file" name="file" accept="text/plain" id="file" class="form-control-file" style="display: none;">
                 </div>
+
+                <!-- Ensure the file name is visible -->
+                <span id="fileName" class="file-name-display"></span>
 
                 <button id="ticketAddBtn" type="submit" asp-action="Import" asp-controller="Admin" class="btn btn-primary">
                     Submit
                 </button>
             </form>
+
+            <script>
+                document.getElementById('file').addEventListener('change', function () {
+                    const fileNameSpan = document.getElementById('fileName');
+                    const selectedFile = this.files[0];
+
+                    if (selectedFile) {
+                        fileNameSpan.textContent = `Selected: ${selectedFile.name}`;
+                    } else {
+                        fileNameSpan.textContent = '';
+                    }
+                });
+            </script>   
         </div>
        
     @if (Model.Tickets.Any())
