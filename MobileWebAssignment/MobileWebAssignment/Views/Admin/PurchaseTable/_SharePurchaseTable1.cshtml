@@ -32,7 +32,7 @@
                 <div class="d-flex justify-content-between align-items-center">
                     <div class="w-25 me-3">@*userImage*@
                         <img src="@(s.PurchaseItems.Any(pi => pi.validDate.Date >= DateTime.Now.Date) ?
-    (Model.Payment.FirstOrDefault(p => p.PurchaseId == s.Id)?.Status == "F" ? "/images/unchecked.png" : "/images/check.png") :
+    (Model.Payment.FirstOrDefault(p => p.PurchaseId == s.Id)?.Status == "F" ? "/images/unchecked.png" : "/images/Unexpired.png") :
     "/images/expired.png")" 
                              alt="Product Image"
                              class="img-fluid rounded" 
@@ -40,7 +40,7 @@
                     </div>
                     <div class="col-md-6 col-sm-12">
                         <h5 class="card-title"> @s.User.Name (@s.User.Id) : @s.User.Email </h5>
-                        <p class="card-text text-muted">Payment Date-Time:  @s.PaymentDateTime.ToString("yyyy/MM/dd HH:mm:ss") </p>
+                        <p class="card-text text-muted">Payment Date-Time:  @s.PaymentDateTime.ToString("yyyy/MM/dd HH:mm:ss") (@s.Id) </p>
                         @{
                             decimal total = 0;
                             decimal discount = 0;
@@ -73,13 +73,15 @@
                         <button class="btn btn-primary btn-sm mb-2" data-bs-toggle="modal" data-bs-target="#detailModal" data-purchaseid="@s.Id">
                             Detail
                         </button>
-                        @*  <button class="btn btn-primary btn-sm mb-2"
-         data-bs-toggle="modal"
-         data-purchaseid="@s.Id"
- @(s.Status == "R" || s.Status == "M" ? "style=display:none;" : "")
- @(s.Status == "F" ? "style=display:none;" : "")>
-     E-Receipt
- </button> *@
+
+                         <button class="btn btn-primary btn-sm mb-2"
+                                data-bs-toggle="modal"
+                                data-purchaseid="@s.Id"
+                        @(s.Status == "R" || s.Status == "M" ? "style=display:none;" : "")
+                        @(s.Status == "F" ? "style=display:none;" : "")
+                                onclick="generateReceipt(this)">
+                            E-Receipt
+                        </button> 
                         
                         <button class="btn btn-danger btn-sm mb-2 cancel-purchase" 
                         @(s.Status == "R" || s.Status == "M" || s.PurchaseItems.Any(pi => pi.validDate.Date < DateTime.Now.Date) ? "style=display:none;" : "")
@@ -106,7 +108,7 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <script>
-         let count1 = 0;  // For cancel purchase
+    let count1 = 0;  // For cancel purchase
     let count2 = 0;  // For cancel payment
 
     // Cancel Purchase Handler
@@ -185,4 +187,39 @@
             console.log("Purchase cancellation canceled.");
         }
     });
+
+
+        function generateReceipt(button) {
+        // Get the purchase ID from the button's data-purchaseid attribute
+        const purchaseId = button.getAttribute('data-purchaseid');
+
+        // Log the purchase ID for debugging (optional)
+        console.log('Generating receipt for Purchase ID:', purchaseId);
+
+        // Make an AJAX call to the server to generate the receipt
+        fetch(`/Admin/GenerateInvoice?purchaseID=${purchaseId}`, {
+            method: 'GET',
+        })
+        .then(response => {
+            if (response.ok) {
+                return response.blob(); // Receive the PDF as a blob
+            } else {
+                throw new Error('Failed to generate receipt.');
+            }
+        })
+        .then(blob => {
+            // Create a link element to download the receipt
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `Receipt_${purchaseId}.pdf`;
+            link.click();
+            window.URL.revokeObjectURL(url); // Clean up the URL object
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to generate receipt. Please try again later.');
+        });
+    }
 </script>
+
