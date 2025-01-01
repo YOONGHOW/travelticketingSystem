@@ -699,9 +699,11 @@ namespace MobileWebAssignment.Controllers
 
                 int attractionCheck = 0;
 
-                foreach(var t in ticketList)
+
+                foreach (var t in ticketList)
                 {
-                    if(t.AttractionId == a.Id)
+                    if (t.AttractionId == a.Id)
+
                     {
                         attractionCheck++;
                     }
@@ -765,7 +767,7 @@ namespace MobileWebAssignment.Controllers
                 var dbTicket = db.Ticket.SingleOrDefault(t => t.Id == ticket.TicketId);
                 if (dbTicket == null || dbTicket.stockQty < ticket.Quantity)
                 {
-                    TempData["Error"] = $"Invalid ticket or insufficient stock for ticket {ticket.TicketId}.";
+                    TempData["Info"] = $"Invalid ticket or insufficient stock for ticket {ticket.TicketId}.";
                     continue;
                 }
 
@@ -774,6 +776,11 @@ namespace MobileWebAssignment.Controllers
                 var existingCart = db.Cart.SingleOrDefault(c => c.UserId == userId && c.TicketId == ticket.TicketId);
                 if (existingCart != null)
                 {
+                    if (existingCart.Quantity + ticket.Quantity > dbTicket.stockQty)
+                    {
+                        TempData["Info"] = $"Adding {ticket.Quantity} more tickets would exceed available stock for ticket {ticket.TicketId}.";
+                        continue;
+                    }
                     existingCart.Quantity += ticket.Quantity;
                 }
                 else
@@ -862,6 +869,7 @@ namespace MobileWebAssignment.Controllers
 
             return Json(new { message = "Checkout successful!" });
         }
+       
         [HttpPost]
         public IActionResult deleteCart(string TicketId)
         {
@@ -1123,6 +1131,7 @@ namespace MobileWebAssignment.Controllers
             return View(vm);
         }
 
+
         [Authorize(Roles = "Member")]
         public IActionResult ClientFeedbackUpdate(string? Id)
         {
@@ -1184,9 +1193,6 @@ namespace MobileWebAssignment.Controllers
 
             return View(vm);
         }
-
-
-
 
 
         //------------------------------------------ FeedBack end ----------------------------------------------
@@ -1619,6 +1625,7 @@ namespace MobileWebAssignment.Controllers
         //PayPal
         //------------
         [HttpPost]
+        [Authorize(Roles = "Member")]
         public IActionResult PurchasePaypal([FromBody] PurchasePaypal purchaseData)
         {
             getUserID();

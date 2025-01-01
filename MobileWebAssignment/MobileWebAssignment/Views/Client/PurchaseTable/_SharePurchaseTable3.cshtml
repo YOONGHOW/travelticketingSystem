@@ -65,12 +65,12 @@
                                                     <div>${item.validDate}</div>
                                                 </section>
                                                 <section>
-                                                    <div class="title">Ticket Price (RM)</div>
-                                                    <div>${item.ticketPrice}</div>
+                                                    <div class="title">Ticket Price </div>
+                                                    <div><span class="ticket-price" data-base-price="${item.ticketPrice}">${item.ticketPrice}</span></div>
                                                 </section>
                                                 <section>
-                                                    <div class="title">Total Price (RM)</div>
-                                                    <div>${item.amount}</div>
+                                                    <div class="title">Total Price </div>
+                                                    <div><span class="ticket-price" data-base-price="${item.amount}">${item.amount}</span></div>
                                                 </section>
                                                 <div class="qrcode" id="qrcode-${index}" data-qrcode="${item.ticketID}"></div>
                                                    
@@ -111,3 +111,4 @@
     });
 
 </script>
+<script src="/js/exchange.js"></script>

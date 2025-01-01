@@ -73,6 +73,7 @@
                         <button class="btn btn-primary btn-sm mb-2" data-bs-toggle="modal" data-bs-target="#detailModal" data-purchaseid="@s.Id">
                             Detail
                         </button>
+
                          <button class="btn btn-primary btn-sm mb-2"
                                 data-bs-toggle="modal"
                                 data-purchaseid="@s.Id"
@@ -187,6 +188,9 @@
         }
     });
 
+</script>
+
+
         function generateReceipt(button) {
         // Get the purchase ID from the button's data-purchaseid attribute
         const purchaseId = button.getAttribute('data-purchaseid');
@@ -220,3 +224,4 @@
         });
     }
 </script>
+
