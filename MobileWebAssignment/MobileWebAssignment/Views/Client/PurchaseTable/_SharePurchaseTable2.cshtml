@@ -57,7 +57,7 @@
                                                     <h5 class="card-title">Attraction : ${item.attractionName}</h5>
                                                     <p class="card-text">Valid Date:<b> ${item.validDate}</b></p>
                                                     <p class="card-text">Ticket Quantity: ${item.totalQuantity}</p>
-                                                    <p class="card-text">Amount: RM ${item.totalAmount}</p>
+                                                    <span class="card-text ticket-price" data-base-price="${item.totalAmount}">Amount: ${item.totalAmount}</span>
                                                     <p class="card-text">Tiket Type: # ${item.ticketType}</p>
                                                 </div>
                                                 <div class="text-end">
@@ -83,3 +83,4 @@
         });
     });
 </script>
+<script src="/js/exchange.js"></script>
