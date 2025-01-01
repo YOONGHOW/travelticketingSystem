@@ -17,6 +17,18 @@ using Microsoft.IdentityModel.Tokens;
 using MobileWebAssignment.Models;
 using MobileWebAssignment.Service;
 
+using iText.Kernel.Pdf;
+using iText.Layout;
+using iText.Layout.Element;
+using iText.Layout.Properties;
+using iText.IO.Font;
+using iText.Kernel.Font;
+using System.IO;
+using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
+using iText.Layout.Borders;
+using iText.Kernel.Colors;
+using MobileWebAssignment.Models;
+
 namespace MobileWebAssignment.Controllers
 {
     public class ClientController : Controller
@@ -586,7 +598,7 @@ namespace MobileWebAssignment.Controllers
         }
 
         //GET: AttractionDetail
-        public IActionResult ClientAttractionDetail(string? AttractionId)
+        public IActionResult ClientAttractionDetail(string? attractionId)
         {
             // Retrieve the logged-in user's email
             var email = User.Identity!.Name;
@@ -596,15 +608,18 @@ namespace MobileWebAssignment.Controllers
 
             ViewBag.User = user;
 
-            var a = db.Attraction.Find(AttractionId);
-            var feedbacks = db.Feedback.Where(f => f.AttractionId == AttractionId).ToList();
-
-            bool isInWishlist = db.Wish.Any(w => w.AttractionId == AttractionId && w.UserId == user.Id);
-            ViewBag.IsInWishlist = isInWishlist;
+            var a = db.Attraction.Find(attractionId);
+            var feedbacks = db.Feedback.Where(f => f.AttractionId == attractionId).ToList();
 
             if (a == null)
             {
                 return RedirectToAction("ClientAttractionDetail");
+            }
+
+            if (user != null)
+            {
+                bool isInWishlist = db.Wish.Any(w => w.AttractionId == attractionId && w.UserId == user.Id);
+                ViewBag.IsInWishlist = isInWishlist;
             }
 
             ViewBag.Feedbacks = new List<FeedbackInsertVM>();
@@ -623,8 +638,7 @@ namespace MobileWebAssignment.Controllers
             }
 
 
-
-            var tickets = db.Ticket.Where(t => t.AttractionId == AttractionId).ToList();
+            var tickets = db.Ticket.Where(t => t.AttractionId == attractionId).ToList();
             ViewBag.Tickets = tickets.Select(t => new TicketVM
             {
                 Id = t.Id,
@@ -652,6 +666,61 @@ namespace MobileWebAssignment.Controllers
             };
 
             vm.Photo.imagePaths = hp.SplitImagePath(a.ImagePath);
+
+            if (user != null)
+            {
+                //check whether user has purchase ticket for this attraction or not
+                //get all purchase record of this user
+                var purchaseHIS = db.Purchase.Where(ph => ph.UserId == user.Id).ToList();
+
+                //get all purchase item record of all the purchase record get just now  
+                var purchaseItems = new List<PurchaseItemList>();
+
+                foreach (var p in purchaseHIS)
+                {
+                    if (db.PurchaseItem.Any(pi => pi.PurchaseId == p.Id))
+                    {
+                        purchaseItems.Add(new PurchaseItemList
+                        {
+                            Items = db.PurchaseItem.Where(pi => pi.PurchaseId == p.Id).ToList(),
+                        });
+                    }
+                }
+                List<Ticket> ticketList = new List<Ticket>();
+
+                //retrieve ticket for every purchase item
+                foreach (var p in purchaseItems)
+                {
+                    foreach (var item in p.Items)
+                    {
+                        ticketList.Add(db.Ticket.FirstOrDefault(t => t.Id == item.TicketId));
+                    }
+                }
+
+                int attractionCheck = 0;
+
+                foreach(var t in ticketList)
+                {
+                    if(t.AttractionId == a.Id)
+                    {
+                        attractionCheck++;
+                    }
+                }
+
+                if (attractionCheck > 0)
+                {
+                    ViewBag.ValidCheck = true;
+                }
+                else
+                {
+                    ViewBag.ValidCheck = false;
+                }
+            }
+            else
+            {
+                ViewBag.ValidCheck = false;
+            }
+
 
             return View(vm);
         }
@@ -1054,7 +1123,7 @@ namespace MobileWebAssignment.Controllers
             return View(vm);
         }
 
-
+        [Authorize(Roles = "Member")]
         public IActionResult ClientFeedbackUpdate(string? Id)
         {
             var f = db.Feedback.Find(Id);
@@ -1221,12 +1290,14 @@ namespace MobileWebAssignment.Controllers
             // Check if the user ID is null
             if (string.IsNullOrEmpty(userID))
             {
+
                 TempData["Message"] = "User is not logged in. Please log in to proceed with the payment.";
                 return RedirectToAction("ClientCart");
             }
 
             // Validate the model
             if (!ModelState.IsValid)
+
             {
                 TempData["Message"] = "Invalid payment details. Please correct the errors and try again.";
                 return RedirectToAction("ClientCart?Unpaid=unpaid");
@@ -1241,6 +1312,12 @@ namespace MobileWebAssignment.Controllers
             if (cart.Any(item => purchaseInclude.Contains(item.Value.PurchaseID)))
             {
                 changes = CheckOut(userID, vm, "Bank", true);
+                if (changes.Length > 10)
+                {
+                    TempData["Message"] = changes;
+                    return RedirectToAction("ClientPaymentHIS");
+                }
+
             }
             else
             {
@@ -1248,7 +1325,12 @@ namespace MobileWebAssignment.Controllers
                 changes = CheckOut(userID, vm, "Bank", false);
             }
             // Handle the result of the payment
-            if (int.Parse(changes) > 0)
+            if (changes.Length>10)
+            {
+                TempData["Message"] = changes;
+                return RedirectToAction("ClientCart");
+            }
+            if (int.Parse(changes) > 0&&changes.Length < 10)
             {
                 TempData["Message"] = "Successfully made the payment.";
 
@@ -1294,6 +1376,35 @@ namespace MobileWebAssignment.Controllers
                 var paymentDB = db.Payment.FirstOrDefault(p => p.PurchaseId == cart.Values.First().PurchaseID);
                 if (purchaseDB != null && paymentDB != null)
                 {
+
+                    var checkStock = db.Ticket
+               .Include(t => t.Attraction)
+               .Where(t => cart.Keys.Contains(t.Id))
+               .Select(p => new CartPaymentVM
+               {
+
+                   Ticket = p,
+                   Quantity = cart[p.Id].Quantity,
+                   Subtotal = cart[p.Id].Quantity > p.stockQty
+                        ? 0 : p.ticketPrice * cart[p.Id].Quantity,
+               })
+               .ToList();
+
+                    var zeroSubtotalItem = checkStock
+                             .Where(item => item.Subtotal == 0)
+                             .Select(item => new
+                             {
+                                 ticketName = item.Ticket.ticketName,
+                                 Quantity = item.Ticket.stockQty,
+                             })
+                             .ToList();
+
+                    if (zeroSubtotalItem.Any())
+                    {
+                        return "Please purchase quantity under: " +
+                        string.Join(", ", zeroSubtotalItem.Select(item => $"{item.Quantity} => {item.ticketName}"));
+                    }
+
                     // Update the Status
                     purchaseDB.Status = "S";
                     paymentDB.Status = "S";
@@ -1312,7 +1423,24 @@ namespace MobileWebAssignment.Controllers
                         }
                     }
                     // Save changes to the database
-                    db.SaveChanges();
+                    int save=db.SaveChanges();
+                    if (save > 0)
+                    {
+                        foreach (var ticket in db.Ticket
+                           .Include(t => t.Attraction)
+                           .Where(t => cart.Keys.Contains(t.Id)))
+                        {
+                            var cartQuantity = cart[ticket.Id].Quantity;
+
+                            ticket.stockQty -= cartQuantity;
+                            if (ticket.stockQty < 0)
+                            {
+                                ticket.stockQty = 0;
+                            }
+                        }
+                        db.SaveChanges();
+
+                    }
                     return "1";
                 }
                 return "0";
@@ -1322,11 +1450,28 @@ namespace MobileWebAssignment.Controllers
                .Where(t => cart.Keys.Contains(t.Id))
                .Select(p => new CartPaymentVM
                {
+                 
                    Ticket = p,
                    Quantity = cart[p.Id].Quantity,
-                   Subtotal = p.ticketPrice * cart[p.Id].Quantity,
+                   Subtotal = cart[p.Id].Quantity > p.stockQty
+                        ? 0 : p.ticketPrice * cart[p.Id].Quantity,
                })
                .ToList();
+
+            var zeroSubtotalItems = m
+                     .Where(item => item.Subtotal == 0)
+                     .Select(item => new
+                     {
+                         ticketName = item.Ticket.ticketName,
+                         Quantity = item.Ticket.stockQty,
+                     })
+                     .ToList();
+
+            if (zeroSubtotalItems.Any())
+            {
+                return "Please purchase quantity under: " +
+        string.Join(", ", zeroSubtotalItems.Select(item => $"{item.Quantity} => {item.ticketName}"));
+            }
 
             decimal total = m.Sum(t => t.Subtotal);
             string promotionID = string.Empty;
@@ -1341,7 +1486,7 @@ namespace MobileWebAssignment.Controllers
                     promotionID = getDBPromotion.Id;
                 }
             }
-
+            
             var purchase = new Purchase
             {
                 Id = NextPurchase_Id(),
@@ -1350,7 +1495,7 @@ namespace MobileWebAssignment.Controllers
                 Amount = total,
                 UserId = userID,
                 PurchaseItems = new List<PurchaseItem>() // Initialize the list
-                
+
             };
             if (!string.IsNullOrEmpty(promotionID) && paymentType == "Bank")
             {            
@@ -1372,9 +1517,27 @@ namespace MobileWebAssignment.Controllers
                 });
                 count++;
             }
-            
+
+
             db.Purchase.Add(purchase);
             int changes = db.SaveChanges();
+            if (changes>0 && purchase.Status!="F")
+            {
+                foreach (var ticket in db.Ticket
+                   .Include(t => t.Attraction)
+                   .Where(t => cart.Keys.Contains(t.Id)))
+                {
+                    var cartQuantity = cart[ticket.Id].Quantity;
+
+                    ticket.stockQty -= cartQuantity;
+                    if (ticket.stockQty < 0)
+                    {
+                        ticket.stockQty = 0;
+                    }
+                }
+                db.SaveChanges();
+
+            }
             if (paymentType == "Bank")
             {
                 if (changes > 0)
@@ -1493,6 +1656,7 @@ namespace MobileWebAssignment.Controllers
                 }
             }
             return Json(new { success = false, message = "Failed to record purchase." });
+
         }
 
 
@@ -1521,6 +1685,7 @@ namespace MobileWebAssignment.Controllers
         // ===========================================
         // show result PurchaseHIS
         // ===========================================
+        [Authorize(Roles = "Member")]
         public List<Purchase> getAllPurcahse(bool? unpaid, string? statusTicket, bool? refundPayment)
         {
             getUserID();
@@ -1530,7 +1695,7 @@ namespace MobileWebAssignment.Controllers
                     .ThenInclude(pi => pi.Ticket)
                         .ThenInclude(at => at.Attraction)
                 .Include(us => us.User)
-                .Include(po=>po.Promotion)
+                .Include(po => po.Promotion)
                 .Where(p => p.UserId == userID && p.User is Member)
                 .OrderByDescending(p => p.PaymentDateTime)
                 .ToList();
@@ -1586,6 +1751,7 @@ namespace MobileWebAssignment.Controllers
         //============================================
         //PurchaseHIS GET
         //============================================
+        [Authorize(Roles = "Member")]
         public IActionResult ClientPaymentHIS(string? Unpaid,
             string? statusTicket, string? message, string? refund, string? refundPayment)
         {
@@ -1778,11 +1944,13 @@ namespace MobileWebAssignment.Controllers
         [HttpPost]
         public IActionResult RefundPurchaseRequest(string? purchaseID)
         {
+
             if (purchaseID == null)
             {
                 TempData["SuccessMessage"] = "Purchase Not found!" + purchaseID;
                 return Json(new { success = false, message = TempData["SuccessMessage"] });
             }
+
 
             var purchaseItems = db.Purchase
                 .Where(pi => pi.Id == purchaseID)
@@ -1822,7 +1990,7 @@ namespace MobileWebAssignment.Controllers
 
             var discount = db.Promotion
                              .Where(d => d.Code == code && d.PromoStatus == "Active")
-                             .Select(d => new { priceDeduction= d.PriceDeduction, promotionID=d.Id})
+                             .Select(d => new { priceDeduction = d.PriceDeduction, promotionID = d.Id })
                              .FirstOrDefault();
 
             if (discount != null)
@@ -1861,8 +2029,8 @@ namespace MobileWebAssignment.Controllers
             var payment = db.Payment
                 .FirstOrDefault(pi => pi.PurchaseId == purchaseID);
 
-            var purchaseItem=db.PurchaseItem
-                .Where(p=>p.PurchaseId==purchaseID)
+            var purchaseItem = db.PurchaseItem
+                .Where(p => p.PurchaseId == purchaseID)
                 .ToList();
             if (payment != null)
             {
@@ -1885,5 +2053,135 @@ namespace MobileWebAssignment.Controllers
             return Json(new { success = false, message = "Payment not found or unable to delete!" });
         }
 
+
+        [HttpGet]
+        public IActionResult GenerateInvoice(string? purchaseID)
+        {
+            var getRecortPurchase = db.Purchase
+                  .Include(p => p.PurchaseItems)
+                        .ThenInclude(pi => pi.Ticket)
+                            .ThenInclude(at => at.Attraction)
+                    .Include(us => us.User)
+                    .Include(po => po.Promotion)
+                    .Where(p => p.Id == purchaseID)
+                    .OrderByDescending(p => p.PaymentDateTime)
+                    .ToList();
+
+            var purchaseItems = getRecortPurchase
+                    .SelectMany(p => p.PurchaseItems)
+                    .ToList();
+
+            // Create a MemoryStream to hold the PDF data
+            using (var memoryStream = new MemoryStream())
+            {
+
+                // Initialize PDF writer and document
+                PdfWriter writer = new PdfWriter(memoryStream);
+                PdfDocument pdf = new PdfDocument(writer);
+                Document document = new Document(pdf);
+
+                // Add Invoice Header
+                document.Add(new Paragraph("INVOICE")
+                    .SetFontSize(20)
+                    .SetTextAlignment(TextAlignment.CENTER));
+
+                // Add Company Information
+                document.Add(new Paragraph("Phaethon Miyobi")
+                    .SetFontSize(12));
+                document.Add(new Paragraph("https://localhost:7190/Client/HomePage"));
+
+                // Add Client Information
+                document.Add(new Paragraph("\nBill To:").SetFontSize(12));
+
+                var purchase = getRecortPurchase.FirstOrDefault();
+
+                if (purchase?.User != null)
+                {
+                    string userName = purchase.User.Name ?? "N/A";
+                    string userEmail = purchase.User.Email ?? "N/A";
+                    string userPhone = purchase.User.PhoneNumber ?? "N/A";
+                    document.Add(new Paragraph($"{userName}\n{userEmail}\nPhone: {userPhone}"));
+                }
+                else
+                {
+                    document.Add(new Paragraph("User information is not available."));
+                }
+                // Add Invoice Table
+                Table table = new Table(5, true); // 4 columns  
+                Cell headerCell;
+
+                // Add header cells with gray background
+                headerCell = new Cell().Add(new Paragraph("Ticket Name"))
+                    .SetBackgroundColor(ColorConstants.LIGHT_GRAY);
+                table.AddCell(headerCell);
+
+                headerCell = new Cell().Add(new Paragraph("Available Time"))
+                    .SetBackgroundColor(ColorConstants.LIGHT_GRAY);
+                table.AddCell(headerCell);
+
+                headerCell = new Cell().Add(new Paragraph("Quantity"))
+                    .SetBackgroundColor(ColorConstants.LIGHT_GRAY);
+                table.AddCell(headerCell);
+
+                headerCell = new Cell().Add(new Paragraph("Unit Price (RM)"))
+                    .SetBackgroundColor(ColorConstants.LIGHT_GRAY);
+                table.AddCell(headerCell);
+
+                headerCell = new Cell().Add(new Paragraph("Total (RM)"))
+                    .SetBackgroundColor(ColorConstants.LIGHT_GRAY);
+                table.AddCell(headerCell);
+
+                decimal subtotal = 0;
+                foreach (var s in purchaseItems)
+                {
+                    table.AddCell(s.Ticket.ticketName); // Ticket Name
+                    table.AddCell(s.validDate.ToString("yyyy-MM-dd")); // Available Time
+                    table.AddCell(s.Quantity.ToString()); // Quantity
+                    table.AddCell($"RM{s.Ticket.ticketPrice:0.00}"); // Unit Price with formatting
+                    var total = s.Ticket.ticketPrice * s.Quantity; // Total for this item
+                    table.AddCell($"RM{total:0.00}"); // Add formatted Total
+                    subtotal += total; // Add to subtotal
+                }
+                document.Add(table);
+
+
+                decimal processFee = 4.9m;
+                decimal grandTotal = subtotal + processFee;
+                decimal discount = 0;
+                var promotion = getRecortPurchase.FirstOrDefault(p => p.PromotionId != null)?.Promotion.PriceDeduction;
+
+                if (promotion != null)
+                {
+                    discount = grandTotal * promotion.Value;
+                }
+                // Add Invoice Total
+                document.Add(new Paragraph($"\nSubtotal: RM{subtotal:0.00}").SetFontSize(12)
+                    .SetTextAlignment(TextAlignment.RIGHT));
+                document.Add(new Paragraph($"Process Fee : RM{processFee:0.00}").SetFontSize(12)
+                    .SetTextAlignment(TextAlignment.RIGHT));
+                if (discount != 0)
+                {
+                    document.Add(new Paragraph($"Discount : RM{discount:0.00}").SetFontSize(12)
+                   .SetTextAlignment(TextAlignment.RIGHT));
+                    grandTotal -= discount;
+                }
+                document.Add(new Paragraph($"Total: RM{grandTotal:0.00}").SetFontSize(12)
+                    .SetTextAlignment(TextAlignment.RIGHT));
+
+                // Add Footer
+                document.Add(new Paragraph("\nThank you for your purchase!")
+                    .SetFontSize(10)
+                    .SetTextAlignment(TextAlignment.CENTER));
+                document.Add(new Paragraph("payment successful")
+                    .SetFontSize(10)
+                    .SetTextAlignment(TextAlignment.CENTER));
+
+                // Close the document
+                document.Close();
+
+                // Return the PDF as a FileResult
+                return File(memoryStream.ToArray(), "application/pdf", "Invoice.pdf");
+            }
+        }
     }
 }

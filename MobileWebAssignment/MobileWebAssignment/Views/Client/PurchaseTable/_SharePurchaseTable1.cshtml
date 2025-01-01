@@ -22,6 +22,7 @@
     }
     @foreach (var s in Model.Purchases)
     {
+
         <!-- Order Card Example -->
         <div class="card mb-3">
             <div class="card-body" >
@@ -29,7 +30,7 @@
                     <!-- Image Section -->
                     <div class="col-md-3 col-sm-12 text-center mb-3 mb-md-0">
                         <img src="@(s.PurchaseItems.Any(pi => pi.validDate.Date >= DateTime.Now.Date) ?
-    (Model.Payment.FirstOrDefault(p => p.PurchaseId == s.Id)?.Status == "F" ? "/images/unchecked.png" : "/images/check.png") :
+    (Model.Payment.FirstOrDefault(p => p.PurchaseId == s.Id)?.Status == "F" ? "/images/unchecked.png" : "/images/Unexpired.png") :
     "/images/expired.png")"
                         alt="Product Image"
                         class="img-fluid rounded"
@@ -77,13 +78,14 @@
                         <button class="btn btn-primary btn-sm mb-2" data-bs-toggle="modal" data-bs-target="#detailModal" data-purchaseid="@s.Id">
                             Detail
                         </button>
-                        <button class="btn btn-primary btn-sm mb-2"
+                         <button class="btn btn-primary btn-sm mb-2"
                                 data-bs-toggle="modal"
                                 data-purchaseid="@s.Id"
                         @(s.Status == "R" || s.Status == "M" ? "style=display:none;" : "")
-                        @(s.Status == "F" ? "style=display:none;" : "")>
+                        @(s.Status == "F" ? "style=display:none;" : "")
+                                onclick="generateReceipt(this)">
                             E-Receipt
-                        </button>
+                        </button> 
                         <button class="btn btn-primary btn-sm mb-2"
                         @(s.Status == "F" ? "" : "style=display:none;")
                                 onclick="window.location.href='/Client/ClientPayment?purchaseID=@s.Id'">
@@ -182,4 +184,36 @@
         }
     });
 
+        function generateReceipt(button) {
+        // Get the purchase ID from the button's data-purchaseid attribute
+        const purchaseId = button.getAttribute('data-purchaseid');
+        const dateText = document.querySelector('.card-text.text-muted').textContent;
+        // Log the purchase ID for debugging (optional)
+        console.log('Generating receipt for Purchase ID:', purchaseId);
+
+        // Make an AJAX call to the server to generate the receipt
+        fetch(`/Admin/GenerateInvoice?purchaseID=${purchaseId}`, {
+            method: 'GET',
+        })
+        .then(response => {
+            if (response.ok) {
+                return response.blob(); // Receive the PDF as a blob
+            } else {
+                throw new Error('Failed to generate receipt.');
+            }
+        })
+        .then(blob => {
+            // Create a link element to download the receipt
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `Receipt_${dateText}.pdf`;
+            link.click();
+            window.URL.revokeObjectURL(url); // Clean up the URL object
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to generate receipt. Please try again later.');
+        });
+    }
 </script>

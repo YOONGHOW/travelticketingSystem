@@ -5,7 +5,6 @@ using Microsoft.EntityFrameworkCore;
 using X.PagedList.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using ClosedXML.Excel;
-using Microsoft.IdentityModel.Tokens;
 
 using iText.Kernel.Pdf;
 using iText.Layout;
@@ -14,6 +13,10 @@ using iText.Layout.Properties;
 using iText.IO.Font;
 using iText.Kernel.Font;
 using System.IO;
+using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
+using iText.Layout.Borders;
+using iText.Kernel.Colors;
+using MobileWebAssignment.Models;
 
 
 
@@ -35,7 +38,7 @@ public class AdminController : Controller
 
 
     //==================================== Attraction Type start =========================================================
-    
+
     [Authorize(Roles = "Admin")]
     public IActionResult AdminAttraction(string? Aname, string? Asort, string? Adir, int ATpage = 1, int Apage = 1)
     {
@@ -325,6 +328,17 @@ public class AdminController : Controller
             }
         }
 
+        //checked Location
+        if (ModelState.IsValid("Location"))
+        {
+            string validation = hp.ValidateMalaysianAddress(vm.Location);
+
+            if (!validation.Equals("valid"))
+            {
+                ModelState.AddModelError("Location", validation);
+            }
+        }
+
         //perform validation
         int errorCount = 0;
         int i = 0;
@@ -426,20 +440,36 @@ public class AdminController : Controller
             return RedirectToAction("AdminAttraction");
         }
 
-        //check photo if have
-        if (ModelState.IsValid("Photo.images"))
-        {
 
-            if (vm.Photo.images.Count == 0)
+        //null check for attraction type id
+        if (ModelState.IsValid("AttractionTypeId") && vm.AttractionTypeId.Equals("none"))
+        {
+            ModelState.AddModelError("AttractionTypeId", "Please select an attraction type");
+        }
+
+        //checked Location
+        if (ModelState.IsValid("Location"))
+        {
+            string validation = hp.ValidateMalaysianAddress(vm.Location);
+
+            if (!validation.Equals("valid"))
             {
-                ModelState.AddModelError("Photo", "Please upload the attraction image(s)");
-            }
-            else
-            {
-                var e = hp.ValidateMultiplePhoto(vm.Photo.images);
-                if (e != "") ModelState.AddModelError("Photo.images", e);
+                ModelState.AddModelError("Location", validation);
             }
         }
+
+        //check photo if have
+        if (vm.Photo != null)
+        {
+            var e = hp.ValidateMultiplePhoto(vm.Photo.images);
+            if (e != "") ModelState.AddModelError("Photo.images", e);
+        }
+        else
+        {
+            vm.Photo = new UpdateImageSet();
+        }
+
+        vm.Photo.imagePaths = hp.SplitImagePath(a.ImagePath);
 
         //perform validation
         int errorCount = 0;
@@ -482,7 +512,7 @@ public class AdminController : Controller
             a.Location = vm.Location.Trim();
             a.OperatingHours = vm.OperatingHours;
             a.AttractionTypeId = vm.AttractionTypeId;
-            if (vm.Photo != null)
+            if (vm.Photo != null && vm.Photo.images != null)
             {
                 hp.DeleteMultiplePhoto(a.ImagePath, "attractionImages");
                 a.ImagePath = hp.SaveMultiplePhoto(vm.Photo.images, "attractionImages");
@@ -493,7 +523,8 @@ public class AdminController : Controller
             return RedirectToAction("AdminAttraction");
 
         }
-        vm.Photo.imagePaths = hp.SplitImagePath(a.ImagePath);
+
+
 
 
         return View(vm);
@@ -548,7 +579,7 @@ public class AdminController : Controller
 
     //============================================ Attraction end =========================================================
     //============================================ Ticket start =========================================================
-    
+
     [Authorize(Roles = "Admin")]
     public IActionResult AdminTicket()
     {
@@ -561,8 +592,8 @@ public class AdminController : Controller
     private string NextTicketId()
     {
         string max = db.Ticket.Max(s => s.Id) ?? "TK0000";
-        int n = int.Parse(max[2..]);
-        return (n + 1).ToString("'TK'0000");
+        int n = int.Parse(max.Substring(2)); // Skip the "TK" prefix
+        return $"TK{(n + 1):D4}"; // This ensures the next ID has a leading zero if necessary
     }
     // Insert ticket
     [Authorize(Roles = "Admin")]
@@ -726,6 +757,63 @@ public class AdminController : Controller
         }
         return RedirectToAction("AdminTicketDetails", new { id = vm.AttractionId });
     }
+
+
+    [HttpPost]
+    public IActionResult Import(IFormFile file)
+    {
+        if (file != null
+            && file.FileName.EndsWith(".txt")
+            && file.ContentType == "text/plain")
+        {
+            int n = ImportTicket(file);
+            TempData["Info"] = $"{n} tickets imported.";
+        }
+
+        return RedirectToAction("AdminTicket");
+    }
+
+    private int ImportTicket(IFormFile file)
+    {
+        // Read from uploaded file --> import events
+        // Return number new events inserted
+        using var stream = file.OpenReadStream();
+        using var reader = new StreamReader(stream);
+
+        while (!reader.EndOfStream)
+        {
+            var line = reader.ReadLine() ?? "";
+            if (line.Trim() == "") continue;
+            var data = line.Split("\t", StringSplitOptions.TrimEntries);
+
+            if (!int.TryParse(data[1], out int stockQty))
+            {
+                throw new FormatException($"Invalid stock quantity: {data[1]}");
+            }
+
+            if (!decimal.TryParse(data[2], out decimal ticketPrice))
+            {
+                throw new FormatException($"Invalid ticket price: {data[2]}");
+            }
+
+
+
+            db.Ticket.Add(new()
+            {
+
+                Id = NextTicketId(),
+                ticketName = data[0],
+                stockQty = stockQty,
+                ticketPrice = ticketPrice,
+                ticketStatus = data[3],
+                ticketDetails = data[4],
+                ticketType = data[5],
+                AttractionId = data[6],
+            });
+        }
+
+        return db.SaveChanges();
+    }
     //============================================ Feedback start =========================================================
 
     [Authorize(Roles = "Admin")]
@@ -817,7 +905,7 @@ public class AdminController : Controller
         return RedirectToAction("AdminFeedback");
     }
 
-    [HttpPost] 
+    [HttpPost]
     public IActionResult DeleteComment(string replyId)
     {
 
@@ -838,7 +926,7 @@ public class AdminController : Controller
     //============================================ Feedback end =========================================================
 
     //============================================ Promotion start =========================================================
-    
+
     [Authorize(Roles = "Admin")]
     public IActionResult AdminDiscount(string name = "")
     {
@@ -908,7 +996,9 @@ public class AdminController : Controller
             .Select(s => s[random.Next(s.Length)]).ToArray());
     }
 
+
     // GET: Admin/AdminDiscountCreate
+    [Authorize(Roles = "Admin")]
     public IActionResult AdminDiscountCreate()
     {
         var autoGeneratedId = $"PM{(db.Promotion.Count() + 1).ToString("D4")}"; // Example of auto-generating ID
@@ -989,6 +1079,7 @@ public class AdminController : Controller
 
 
     // GET: Admin/AdminDiscountDelete/{id}
+    [Authorize(Roles = "Admin")]
     public IActionResult AdminDiscountDelete(string id)
     {
         if (string.IsNullOrEmpty(id))
@@ -1036,7 +1127,9 @@ public class AdminController : Controller
         TempData["Info"] = "Promotion deleted successfully.";
         return RedirectToAction("AdminDiscount");
     }
+
     // GET: Admin/DiscountUpdate
+    [Authorize(Roles = "Admin")]
     public IActionResult AdminDiscountUpdate(string? id)
     {
         var promotion = db.Promotion.Find(id);
@@ -1085,6 +1178,8 @@ public class AdminController : Controller
 
         return View(vm);
     }
+
+    [Authorize(Roles = "Admin")]
     public IActionResult AdminReport(DateTime? startDate, DateTime? endDate)
     {
         // If no start or end date is provided, use the current month and year
@@ -1285,7 +1380,7 @@ public class AdminController : Controller
         var members = membersQuery.ToPagedList(MemberPage, 5); //convert filtered memberQuery into paginated list, MemberPage specifies the number of member for current page
 
         // Filter and paginate admins
-        var adminsQuery = db.User.OfType<Admin>().AsQueryable(); 
+        var adminsQuery = db.User.OfType<Admin>().AsQueryable();
         if (!string.IsNullOrEmpty(AdminSearch))
         {
             adminsQuery = adminsQuery.Where(a =>
@@ -1462,32 +1557,6 @@ public class AdminController : Controller
     }
 
     //============================================ Member Maintenance End =========================================================
-
-    //multiple photo upload
-    [Authorize(Roles = "Admin")]
-    public IActionResult MultiplePhotoUpload(IFormFile[] images)
-    {
-
-        //Ensure model state is valid  
-        if (ModelState.IsValid)
-        {   //iterating through multiple file collection   
-            foreach (IFormFile image in images)
-            {
-                //Checking file is available to save.  
-                if (image != null)
-                {
-                    var saveImage = Path.Combine(en.WebRootPath, "uploads", image.FileName);
-                    //Save file to server folder  
-                    using var stream = System.IO.File.Create(saveImage);
-                    image.CopyTo(stream);
-
-                }
-
-            }
-            TempData["Info"] = "Image(s) uploaded.";
-        }
-        return View();
-    }
 
     //------------------------------------------
     //Admin purchase
@@ -1793,11 +1862,26 @@ public class AdminController : Controller
         return Json(new { success = false, message = "Try again later!" });
     }
     [HttpGet]
-    public IActionResult GenerateInvoice()
+    public IActionResult GenerateInvoice(string? purchaseID)
     {
+        var getRecortPurchase = db.Purchase
+              .Include(p => p.PurchaseItems)
+                    .ThenInclude(pi => pi.Ticket)
+                        .ThenInclude(at => at.Attraction)
+                .Include(us => us.User)
+                .Include(po => po.Promotion)
+                .Where(p=>p.Id==purchaseID)
+                .OrderByDescending(p => p.PaymentDateTime)
+                .ToList();
+
+        var purchaseItems = getRecortPurchase
+                .SelectMany(p => p.PurchaseItems)
+                .ToList();
+
         // Create a MemoryStream to hold the PDF data
         using (var memoryStream = new MemoryStream())
         {
+
             // Initialize PDF writer and document
             PdfWriter writer = new PdfWriter(memoryStream);
             PdfDocument pdf = new PdfDocument(writer);
@@ -1809,48 +1893,92 @@ public class AdminController : Controller
                 .SetTextAlignment(TextAlignment.CENTER));
 
             // Add Company Information
-            document.Add(new Paragraph("APITemplate.io")
+            document.Add(new Paragraph("Phaethon Miyobi")
                 .SetFontSize(12));
-            document.Add(new Paragraph("1234 Main Street\nCity, State, Zip\nPhone: (555) 555-5555\nEmail: hello@apitemplate.io"));
+            document.Add(new Paragraph("https://localhost:7190/Client/HomePage"));
 
             // Add Client Information
            document.Add(new Paragraph("\nBill To:").SetFontSize(12));
-            document.Add(new Paragraph("Client Name\nClient Address\nCity, State, Zip\nPhone: (555) 555-5555\nEmail: client@example.com"));
 
+            var purchase = getRecortPurchase.FirstOrDefault();
+
+            if (purchase?.User != null)
+            {
+                string userName = purchase.User.Name ?? "N/A";
+                string userEmail = purchase.User.Email ?? "N/A";
+                string userPhone = purchase.User.PhoneNumber ?? "N/A";
+                document.Add(new Paragraph($"{userName}\n{userEmail}\nPhone: {userPhone}"));
+            }
+            else
+            {
+                document.Add(new Paragraph("User information is not available."));
+            }
             // Add Invoice Table
-            Table table = new Table(4, true); // 4 columns
-            table.AddHeaderCell("Description");
-            table.AddHeaderCell("Quantity");
-            table.AddHeaderCell("Unit Price");
-            table.AddHeaderCell("Total");
+            Table table = new Table(5, true); // 4 columns  
+            Cell headerCell;
 
-            table.AddCell("Item 1");
-            table.AddCell("2");
-            table.AddCell("$10.00");
-            table.AddCell("$20.00");
+            // Add header cells with gray background
+            headerCell = new Cell().Add(new Paragraph("Ticket Name"))
+                .SetBackgroundColor(ColorConstants.LIGHT_GRAY);
+            table.AddCell(headerCell);
 
-            table.AddCell("Item 2");
-            table.AddCell("1");
-            table.AddCell("$15.00");
-            table.AddCell("$15.00");
+            headerCell = new Cell().Add(new Paragraph("Available Time"))
+                .SetBackgroundColor(ColorConstants.LIGHT_GRAY);
+            table.AddCell(headerCell);
 
-            table.AddCell("Item 3");
-            table.AddCell("4");
-            table.AddCell("$7.50");
-            table.AddCell("$30.00");
+            headerCell = new Cell().Add(new Paragraph("Quantity"))
+                .SetBackgroundColor(ColorConstants.LIGHT_GRAY);
+            table.AddCell(headerCell);
 
+            headerCell = new Cell().Add(new Paragraph("Unit Price (RM)"))
+                .SetBackgroundColor(ColorConstants.LIGHT_GRAY);
+            table.AddCell(headerCell);
+
+            headerCell = new Cell().Add(new Paragraph("Total (RM)"))
+                .SetBackgroundColor(ColorConstants.LIGHT_GRAY);
+            table.AddCell(headerCell);
+
+            decimal subtotal = 0;
+            foreach (var s in purchaseItems) {
+                table.AddCell(s.Ticket.ticketName); // Ticket Name
+                table.AddCell(s.validDate.ToString("yyyy-MM-dd")); // Available Time
+                table.AddCell(s.Quantity.ToString()); // Quantity
+                table.AddCell($"RM{s.Ticket.ticketPrice:0.00}"); // Unit Price with formatting
+                var total = s.Ticket.ticketPrice * s.Quantity; // Total for this item
+                table.AddCell($"RM{total:0.00}"); // Add formatted Total
+                subtotal += total; // Add to subtotal
+            }
             document.Add(table);
 
+
+            decimal processFee = 4.9m; 
+            decimal grandTotal = subtotal + processFee;
+            decimal discount = 0;
+            var promotion = getRecortPurchase.FirstOrDefault(p => p.PromotionId != null)?.Promotion.PriceDeduction;
+
+            if (promotion != null)
+            {
+                discount = grandTotal * promotion.Value;
+            }
             // Add Invoice Total
-            document.Add(new Paragraph("\nSubtotal: $65.00\nTax (10%): $6.50\nTotal: $71.50")
-                .SetFontSize(12)
+            document.Add(new Paragraph($"\nSubtotal: RM{subtotal:0.00}").SetFontSize(12)
+                .SetTextAlignment(TextAlignment.RIGHT));
+            document.Add(new Paragraph($"Process Fee : RM{processFee:0.00}").SetFontSize(12)
+                .SetTextAlignment(TextAlignment.RIGHT));
+            if (discount!=0)
+            {
+                document.Add(new Paragraph($"Discount : RM{discount:0.00}").SetFontSize(12)
+               .SetTextAlignment(TextAlignment.RIGHT));
+                grandTotal-=discount;
+            }
+            document.Add(new Paragraph($"Total: RM{grandTotal:0.00}").SetFontSize(12)
                 .SetTextAlignment(TextAlignment.RIGHT));
 
             // Add Footer
-            document.Add(new Paragraph("\nThank you for your business!")
+            document.Add(new Paragraph("\nThank you for your purchase!")
                 .SetFontSize(10)
                 .SetTextAlignment(TextAlignment.CENTER));
-            document.Add(new Paragraph("Please make the payment by the due date.")
+            document.Add(new Paragraph("payment successful")
                 .SetFontSize(10)
                 .SetTextAlignment(TextAlignment.CENTER));
 
