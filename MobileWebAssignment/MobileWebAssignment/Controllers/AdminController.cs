@@ -771,14 +771,10 @@ public class AdminController : Controller
 
     private int ImportTicket(IFormFile file)
     {
-
         // Count the number of valid events added
         int newEventsInserted = 0;
         string maxId = db.Ticket.Max(s => s.Id) ?? "TK0000";
         int currentIdCounter = int.Parse(maxId.Substring(2));
-
-        // Read from uploaded file --> import events
-        // Return number new events inserted
 
         using var stream = file.OpenReadStream();
         using var reader = new StreamReader(stream);
@@ -786,7 +782,6 @@ public class AdminController : Controller
         while (!reader.EndOfStream)
         {
             var line = reader.ReadLine() ?? "";
-
             if (string.IsNullOrWhiteSpace(line)) continue;
 
             try
@@ -818,47 +813,17 @@ public class AdminController : Controller
                 });
                 db.SaveChanges();
                 newEventsInserted++;
-                
+
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error processing line: {line}. Exception: {ex.Message}");
             }
-        }       
+        }
         return newEventsInserted;
     }
 
-            if (line.Trim() == "") continue;
-            var data = line.Split("\t", StringSplitOptions.TrimEntries);
 
-            if (!int.TryParse(data[1], out int stockQty))
-            {
-                throw new FormatException($"Invalid stock quantity: {data[1]}");
-            }
-
-            if (!decimal.TryParse(data[2], out decimal ticketPrice))
-            {
-                throw new FormatException($"Invalid ticket price: {data[2]}");
-            }
-
-
-
-            db.Ticket.Add(new()
-            {
-
-                Id = NextTicketId(),
-                ticketName = data[0],
-                stockQty = stockQty,
-                ticketPrice = ticketPrice,
-                ticketStatus = data[3],
-                ticketDetails = data[4],
-                ticketType = data[5],
-                AttractionId = data[6],
-            });
-        }
-
-        return db.SaveChanges();
-    }
     //============================================ Feedback start =========================================================
 
     [Authorize(Roles = "Admin")]
