@@ -34,7 +34,23 @@
     margin-bottom: 10px;
 }
 
+.qrcode img{
+    width:75px;
+    height:85px;
+    padding-bottom:15px;
+}
+/* Initial QR code size */
+.qrcode {
+    width: 80px; /* Set initial width */
+    height: 90px; /* Set initial height */
+    transition: transform 0.3s ease; /* Smooth zoom effect */
+}
 
+    /* Zoom effect when hovering over the QR code */
+    .qrcode:hover {
+        transform: scale(2); /* Scale the QR code */
+        cursor: pointer; /* Change the cursor to a pointer to indicate interactiveness */
+    } 
 #info {
     position: fixed;
     color: #fff;

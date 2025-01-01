@@ -20,26 +20,28 @@
         </div>
     </div>
 </div>
-
+<script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
 <script>
-         document.addEventListener('DOMContentLoaded', function () {
+            document.addEventListener('DOMContentLoaded', function () {
         const trackTicketModal = document.getElementById('trackTicketModal');
 
         // Event listener for when the modal is shown
         trackTicketModal.addEventListener('show.bs.modal', function (event) {
             const button = event.relatedTarget; // Button that triggered the modal
             const purchaseId = button.getAttribute('data-purchaseid'); // Extract purchaseId from data attribute
-             const validDate = button.getAttribute('data-validdate');
+            const validDate = button.getAttribute('data-validdate');
+            const attr = button.getAttribute('data-attr');
+
             if (purchaseId) {
                 // Fetch ticket details from the server
-                fetch(`/Client/ClientPurchaseTicket?purchaseId=${purchaseId}&validDate=${validDate}`)
+                fetch(`/Client/ClientPurchaseTicket?purchaseId=${purchaseId}&validDate=${validDate}&attraction=${attr}`)
                     .then(response => response.json())
                     .then(data => {
                         // Update modal content
                         if (data.error) {
                             trackTicketModal.querySelector('.modal-body').innerHTML = `<p>${data.error}</p>`;
                         } else {
-                            // Iterate over the response array
+                            // Iterate over the response array to generate ticket content
                             let content = '';
                             data.forEach((item, index) => {
                                 content += `
@@ -70,14 +72,30 @@
                                                     <div class="title">Total Price (RM)</div>
                                                     <div>${item.amount}</div>
                                                 </section>
-                                                <button class="button-78" role="button" data-bs-toggle="modal" data-bs-target="#updateTicketModel"  data-purchaseItemID="${item.purchaseItemId}" data-ticketID="${item.ticketID}" >Update detail</button>
+                                                <div class="qrcode" id="qrcode-${index}" data-qrcode="${item.ticketID}"></div>
+                                                   
                                             </div>
                                         </div>
                                     </div>
                                 `;
                             });
 
+                            // Set modal content
                             trackTicketModal.querySelector('.modal-body').innerHTML = content;
+
+                            // Generate QR codes for each ticket
+                            setTimeout(() => {
+                                data.forEach((item, index) => {
+                                    const qrCodeContainer = document.getElementById(`qrcode-${index}`);
+                                    if (qrCodeContainer) {
+                                        const qrData = `https://localhost:7190/Client/checkValid?purchaseItemId=${item.purchaseItemId}&TicketID=${item.ticketID}`;
+
+                                        // Create a new QR code inside the container
+                                        new QRCode(qrCodeContainer, qrData);
+
+                                    }
+                                });
+                            }, 100); // Delay to ensure content is loaded before QR generation
                         }
                     })
                     .catch(error => {
@@ -88,6 +106,8 @@
                 trackTicketModal.querySelector('.modal-body').innerHTML = '<p>Purchase ID is missing.</p>';
             }
         });
+
+      
     });
 
 </script>

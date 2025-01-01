@@ -28,7 +28,9 @@
                 <div class="row align-items-center">
                     <!-- Image Section -->
                     <div class="col-md-3 col-sm-12 text-center mb-3 mb-md-0">
-                        <img src="~/images/@Model.PhotoURL"
+                        <img src="@(s.PurchaseItems.Any(pi => pi.validDate.Date >= DateTime.Now.Date) ?
+    (Model.Payment.FirstOrDefault(p => p.PurchaseId == s.Id)?.Status == "F" ? "/images/unchecked.png" : "/images/check.png") :
+    "/images/expired.png")"
                         alt="Product Image"
                         class="img-fluid rounded"
                         style="max-width: 200px;"
@@ -37,7 +39,7 @@
                     <!-- Details Section -->
                     <div class="col-md-6 col-sm-12">
                         <h5 class="card-title">
-                            @s.User.Name (@s.User.Id) : @s.User.Email
+                            @s.User.Name: @s.User.Email
                         </h5>
                         <p class="card-text text-muted">
                             Payment Date-Time: @s.PaymentDateTime.ToString("yyyy/MM/dd hh:mm tt")
@@ -75,20 +77,20 @@
                         <button class="btn btn-primary btn-sm mb-2" data-bs-toggle="modal" data-bs-target="#detailModal" data-purchaseid="@s.Id">
                             Detail
                         </button>
-                        <button class="btn btn-primary btn-sm mb-2"
-                                data-bs-toggle="modal"
-                                data-purchaseid="@s.Id"
-                        @(s.Status == "R" || s.Status == "M" ? "style=display:none;" : "")
-                        @(s.Status == "F" ? "style=display:none;" : "")>
-                            E-Receipt
-                        </button>
+                        @*  <button class="btn btn-primary btn-sm mb-2"
+         data-bs-toggle="modal"
+         data-purchaseid="@s.Id"
+ @(s.Status == "R" || s.Status == "M" ? "style=display:none;" : "")
+ @(s.Status == "F" ? "style=display:none;" : "")>
+     E-Receipt
+ </button> *@
                         <button class="btn btn-primary btn-sm mb-2"
                         @(s.Status == "F" ? "" : "style=display:none;")
                                 onclick="window.location.href='/Client/ClientPayment?purchaseID=@s.Id'">
                             Payment
                         </button>
                         <button class="btn btn-danger btn-sm mb-2  @(s.Status == "S" ? " cancel-purchase " : "cancel-payment")"
-                        @(s.Status == "R" || s.Status == "M" ? "style=display:none;" : "")
+                        @(s.Status == "R" || s.Status == "M" || s.PurchaseItems.Any(pi => pi.validDate.Date < DateTime.Now.Date) ? "style=display:none;" : "")
                                 data-purchaseid="@s.Id">
                             Cancel
                         </button>
